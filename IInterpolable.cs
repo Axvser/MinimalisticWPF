@@ -8,6 +8,9 @@ using System.Windows;
 
 namespace MinimalisticWPF
 {
+    /// <summary>
+    /// Allows a class to be an animatable property
+    /// </summary>
     public interface IInterpolable
     {
         /// <summary>

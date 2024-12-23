@@ -7,9 +7,21 @@ using System.Windows.Threading;
 
 namespace MinimalisticWPF
 {
+    /// <summary>
+    /// Transition execution unit
+    /// <para>StartTransition()</para>
+    /// <para>StopTransition()</para>
+    /// </summary>
     public interface IExecutableTransition
     {
-        public void Start();
-        public void Stop(bool IsUnsafeStoped = false);
+        /// <summary>
+        /// Starting transitions
+        /// </summary>
+        public void StartTransition();
+        /// <summary>
+        /// Terminating a transition
+        /// </summary>
+        /// <param name="IsUnsafeStoped">Whether to terminate the Usafe transition</param>
+        public void StopTransition(bool IsUnsafeStoped = false);
     }
 }

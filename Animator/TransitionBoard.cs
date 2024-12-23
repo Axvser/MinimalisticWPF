@@ -21,9 +21,10 @@ namespace MinimalisticWPF
         internal bool IsStatic { get; set; } = false;
         internal T? Target { get; set; }
         internal StateMachine? Machine { get; set; }
-        public State TempState { get; internal set; } = new State() { StateName = Transition.TempName };
-        public Action<TransitionParams>? TransitionParams { get; set; }
-        public List<List<Tuple<PropertyInfo, List<object?>>>>? Preload { get; set; }
+        internal State TempState { get; set; } = new State() { StateName = Transition.TempName };
+        internal Action<TransitionParams>? TransitionParams { get; set; }
+        internal TransitionParams? ParamsInstance { get; set; }
+        internal List<List<Tuple<PropertyInfo, List<object?>>>>? Preload { get; set; }
 
         public TransitionBoard<T> SetProperty(Expression<Func<T, double>> propertyLambda, double newValue)
         {

@@ -7,11 +7,14 @@ using System.Threading.Tasks;
 
 namespace MinimalisticWPF
 {
+    /// <summary>
+    /// A transition unit is allowed to perform merge operations with other transition units
+    /// </summary>
     public interface IMergeableTransition
     {
         /// <summary>
-        /// Merge transitions according to the built-in priorities and algorithms
+        /// Merges multiple transitions with itself
         /// </summary>
-        public void Merge(params ITransitionMeta[] meta);
+        public void Merge<T>(ICollection<T> metas) where T : ITransitionMeta, IMergeableTransition, IRecomputableTransitionMeta;
     }
 }

@@ -7,9 +7,18 @@ using System.Threading.Tasks;
 
 namespace MinimalisticWPF
 {
+    /// <summary>
+    /// The basic data needed to describe the transition effect
+    /// </summary>
     public interface ITransitionMeta
     {
+        /// <summary>
+        /// A table of parameters describing the details of the animation
+        /// </summary>
         public TransitionParams TransitionParams { get; }
+        /// <summary>
+        /// Ordered animation frames
+        /// </summary>
         public List<List<Tuple<PropertyInfo, List<object?>>>> FrameSequence { get; }
     }
 }

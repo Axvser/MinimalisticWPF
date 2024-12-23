@@ -161,6 +161,19 @@ namespace MinimalisticWPF
         public List<IExecutableTransition> UnSafeInterpreters { get; internal set; } = [];
 
         /// <summary>
+        /// Copy a state machine . When you use this method to get a state machine, there is no limit on the number of state machines per instance
+        /// </summary>
+        public StateMachine Copy()
+        {
+            var result = new StateMachine(Target);
+            foreach(var state in States)
+            {
+                result.States.Add(state);
+            }
+            return result;
+        }
+
+        /// <summary>
         /// Interrupt transition
         /// </summary>
         /// <param name="IsStopUnsafe">Whether the unsafe transition is terminated</param>
@@ -168,14 +181,14 @@ namespace MinimalisticWPF
         {
             IsReSet = true;
             CurrentState = null;
-            Interpreter?.Stop();
+            Interpreter?.StopTransition();
             Interpreter = null;
             Interpreters.Clear();
             if (IsStopUnsafe)
             {
                 foreach (var item in UnSafeInterpreters)
                 {
-                    item.Stop(true);
+                    item.StopTransition(true);
                 }
             }
         }
@@ -211,7 +224,7 @@ namespace MinimalisticWPF
                 Interpreters.Enqueue(Tuple.Create<string, ITransitionMeta>(stateName, new TransitionMeta(temp, preload ?? [])));
                 if (!temp.IsQueue)
                 {
-                    Interpreter?.Stop();
+                    Interpreter?.StopTransition();
                 }
             }
         }
@@ -250,7 +263,7 @@ namespace MinimalisticWPF
                 CurrentState = stateName;
                 Interpreter = animationInterpreter;
             }
-            var task = Task.Run(() => { animationInterpreter.Start(); });
+            var task = Task.Run(() => { animationInterpreter.StartTransition(); });
         }
         internal StateMachine(object viewModel, params State[] states)
         {

@@ -28,7 +28,7 @@ namespace MinimalisticWPF
         private int LoopDepth { get; set; } = 0;
         private int FrameDepth { get; set; } = 0;
 
-        public void Start()
+        public void StartTransition()
         {
             if (IsStop || IsRunning) { WhileEnded(); return; }
             IsRunning = true;
@@ -74,7 +74,7 @@ namespace MinimalisticWPF
 
             WhileEnded();
         }
-        public void Stop(bool IsUnsafeStoped = false)
+        public void StopTransition(bool IsUnsafeStoped = false)
         {
             if (TransitionParams.IsUnSafe && !IsUnsafeStoped) return;
             IsStop = IsRunning;
