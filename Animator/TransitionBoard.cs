@@ -6,7 +6,7 @@ using MinimalisticWPF.StructuralDesign.Animator;
 
 namespace MinimalisticWPF
 {
-    public class TransitionBoard<T> : ITransitionMeta, IMergeableTransition, IRecomputableTransitionMeta, IConvertibleTransitionMeta, IFramePreloading, IPropertyRecorder<TransitionBoard<T>, T>, IExecutableTransition, ITargetedTransition where T : class
+    public sealed class TransitionBoard<T> : ITransitionMeta, IMergeableTransition, IRecomputableTransitionMeta, IConvertibleTransitionMeta, IFramePreloading, IPropertyRecorder<TransitionBoard<T>, T>, IExecutableTransition, ITransitionWithTarget where T : class
     {
         internal TransitionBoard() { }
         internal State TempState { get; set; } = new State() { StateName = Transition.TempName };

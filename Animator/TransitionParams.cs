@@ -8,7 +8,7 @@ using System.Windows.Threading;
 
 namespace MinimalisticWPF
 {
-    public class TransitionParams
+    public sealed class TransitionParams
     {
         public TransitionParams() { }
 

@@ -6,8 +6,11 @@ using System.Threading.Tasks;
 
 namespace MinimalisticWPF.StructuralDesign.Animator
 {
-    public interface ITargetedTransition
+    public interface ITransitionWithTarget
     {
+        /// <summary>
+        /// The effect only applies to the specified object
+        /// </summary>
         public object? Target { get; set; }
     }
 }

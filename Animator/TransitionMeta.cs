@@ -11,7 +11,7 @@ using System.Windows.Media;
 
 namespace MinimalisticWPF
 {
-    public class TransitionMeta : IRecomputableTransitionMeta, IMergeableTransition, ITransitionMeta, IConvertibleTransitionMeta, IExecutableTransition, ITargetedTransition
+    public sealed class TransitionMeta : IRecomputableTransitionMeta, IMergeableTransition, ITransitionMeta, IConvertibleTransitionMeta, IExecutableTransition, ITransitionWithTarget
     {
         internal TransitionMeta() { }
         public TransitionMeta(TransitionParams transitionParams, List<List<Tuple<PropertyInfo, List<object?>>>> frames)

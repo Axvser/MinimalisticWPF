@@ -10,7 +10,7 @@ using System.Windows.Threading;
 
 namespace MinimalisticWPF
 {
-    public class TransitionInterpreter : IExecutableTransition, ITransitionMeta
+    public sealed class TransitionInterpreter : IExecutableTransition, ITransitionMeta
     {
         internal TransitionInterpreter(StateMachine machine, TransitionParams transitionParams)
         {
