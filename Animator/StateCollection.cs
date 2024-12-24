@@ -9,9 +9,9 @@ using System.Xml.Linq;
 
 namespace MinimalisticWPF
 {
-    public class StateCollection : ICollection<State>
+    public sealed class StateCollection : ICollection<State>
     {
-        private List<State> _nodes = new List<State>();
+        private List<State> _nodes = [];
 
         public State this[int index] { get => _nodes[index < _nodes.Count && index > -1 ? index : throw new ArgumentOutOfRangeException($"Index value [ {index} ] is out of collection range")]; }
         public State this[string stateName]

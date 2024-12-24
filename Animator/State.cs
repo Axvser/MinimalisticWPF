@@ -4,10 +4,11 @@ using System.Linq.Expressions;
 using System.Windows.Media;
 using System.Windows;
 using System.Collections.Concurrent;
+using MinimalisticWPF.StructuralDesign.Animator;
 
 namespace MinimalisticWPF
 {
-    public class State
+    public sealed class State
     {
         internal State() { }
         internal State(object Target, ICollection<string> WhileList, ICollection<string> BlackList)
@@ -60,7 +61,7 @@ namespace MinimalisticWPF
         }
     }
 
-    public class ObjectTempState<T>
+    public class ObjectTempState<T> : IPropertyRecorder<ObjectTempState<T>, T>
     {
         internal ObjectTempState(T target) { Value = target; }
 
@@ -240,7 +241,7 @@ namespace MinimalisticWPF
             BlackList = properties.Select(p => ((MemberExpression)p.Body).Member.Name).ToArray();
             return this;
         }
-      
+
         public State ToState(bool IsWhiteList = true)
         {
             if (Value == null) throw new ArgumentNullException("Target object loss");
@@ -251,8 +252,7 @@ namespace MinimalisticWPF
             return result;
         }
     }
-
-    public class TypeTempState<T>
+    public class TypeTempState<T> : IPropertyRecorder<TypeTempState<T>, T>
     {
         internal TypeTempState() { Target = new State(); }
 

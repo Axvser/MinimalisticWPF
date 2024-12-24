@@ -10,9 +10,9 @@ namespace MinimalisticWPF
 {
     public class TransitionParams
     {
-        internal TransitionParams() { }
+        public TransitionParams() { }
 
-        internal TransitionParams(Action<TransitionParams>? action)
+        public TransitionParams(Action<TransitionParams>? action)
         {
             action?.Invoke(this);
         }

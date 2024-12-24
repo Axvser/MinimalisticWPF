@@ -1,31 +1,88 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
+﻿using System.Linq.Expressions;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Media;
 using System.Windows;
+using MinimalisticWPF.StructuralDesign.Animator;
 
 namespace MinimalisticWPF
 {
-    public class TransitionBoard<T> where T : class
+    public class TransitionBoard<T> : ITransitionMeta, IMergeableTransition, IRecomputableTransitionMeta, IConvertibleTransitionMeta, IFramePreloading, IPropertyRecorder<TransitionBoard<T>, T>, IExecutableTransition, ITargetedTransition where T : class
     {
         internal TransitionBoard() { }
-        internal TransitionBoard(T target)
-        {
-            Target = target;
-            Machine = StateMachine.Create(target);
-        }
-        internal bool IsStatic { get; set; } = false;
-        internal T? Target { get; set; }
-        internal StateMachine? Machine { get; set; }
         internal State TempState { get; set; } = new State() { StateName = Transition.TempName };
-        internal Action<TransitionParams>? TransitionParams { get; set; }
-        internal TransitionParams? ParamsInstance { get; set; }
-        internal List<List<Tuple<PropertyInfo, List<object?>>>>? Preload { get; set; }
+        internal bool IsPreloaded { get; set; } = false;
 
+        public object? Target { get; set; }
+        public TransitionParams TransitionParams { get; set; } = new();
+        public List<List<Tuple<PropertyInfo, List<object?>>>> FrameSequence { get; set; } = [];
+        public StateMachine Machine => Target == null ? throw new ArgumentNullException("The metadata is missing the target instance for this transition effect") : StateMachine.Create(Target);
+        public void PreLoad(TransitionParams transitionParams)
+        {
+            if (!IsPreloaded)
+            {
+                TransitionParams = transitionParams;
+                PreLoad();
+            }
+        }
+        public TransitionMeta Merge<T1>(ICollection<T1> metas) where T1 : ITransitionMeta, IMergeableTransition, IRecomputableTransitionMeta
+        {
+            if (!IsPreloaded)
+            {
+                PreLoad();
+            }
+            foreach (var meta in metas)
+            {
+                var target = meta as IFramePreloading;
+                target?.PreLoad(TransitionParams);
+            }
+            TransitionMeta transitionMeta = new(this);
+            transitionMeta.Target = Target;
+            transitionMeta.Merge(metas);
+            return transitionMeta;
+        }
+        public List<List<Tuple<PropertyInfo, List<object?>>>> RecomputeFrames(int fps)
+        {
+            TransitionMeta transitionMeta = new(this);
+            transitionMeta.Target = Target;
+            transitionMeta.RecomputeFrames(fps);
+            FrameSequence = transitionMeta.FrameSequence;
+            return FrameSequence;
+        }
+        public State ToState()
+        {
+            TransitionMeta transitionMeta = new(this);
+            transitionMeta.Target = Target;
+            return transitionMeta.ToState();
+        }
+        public TransitionBoard<T1> ToTransitionBoard<T1>() where T1 : class
+        {
+            TransitionMeta transitionMeta = new(this);
+            transitionMeta.Target = Target;
+            return transitionMeta.ToTransitionBoard<T1>();
+        }
+        public TransitionMeta ToTransitionMeta()
+        {
+            TransitionMeta transitionMeta = new(this);
+            transitionMeta.Target = Target;
+            return transitionMeta;
+        }
+        public void Start(T target)
+        {
+            var Machine = StateMachine.Create(target);
+            Machine.Interrupt();
+            TempState.StateName = Transition.TempName + Machine.States.BoardSuffix;
+            Machine.States.Add(TempState);
+            Machine.Transition(TempState.StateName, TransitionParams, IsPreloaded ? FrameSequence : null);
+        }
+        public void Start()
+        {
+            if (Target == null) throw new ArgumentNullException("The metadata is missing the target instance for this transition effect");
+            var Machine = StateMachine.Create(Target);
+            Machine.Interrupt();
+            TempState.StateName = Transition.TempName + Machine.States.BoardSuffix;
+            Machine.States.Add(TempState);
+            Machine.Transition(TempState.StateName, TransitionParams, IsPreloaded ? FrameSequence : null);
+        }
         public TransitionBoard<T> SetProperty(Expression<Func<T, double>> propertyLambda, double newValue)
         {
             if (propertyLambda.Body is MemberExpression propertyExpr)
@@ -120,50 +177,53 @@ namespace MinimalisticWPF
             }
             return this;
         }
+        public void Stop(bool IsUnsafeStoped = false)
+        {
+            Machine.Interrupt(IsUnsafeStoped);
+        }
         public TransitionBoard<T> SetParams(Action<TransitionParams> modifyParams)
         {
-            TransitionParams = modifyParams;
+            var temp = new TransitionParams();
+            modifyParams(temp);
+            if (temp.FrameRate != TransitionParams.FrameRate)
+            {
+                RecomputeFrames(temp.FrameRate);
+            }
+            TransitionParams = temp;
             return this;
         }
-        public TransitionBoard<T> ReflectAny(T reflected)
+        public TransitionBoard<T> SetParams(TransitionParams newParams)
         {
-            TempState = new(reflected, Array.Empty<string>(), Array.Empty<string>())
+            if (TransitionParams.FrameRate != newParams.FrameRate)
+            {
+                RecomputeFrames(newParams.FrameRate);
+            }
+            TransitionParams = newParams;
+            return this;
+        }
+        public TransitionBoard<T> Reflect(T reflected, params string[] blackList)
+        {
+            TempState = new(reflected, Array.Empty<string>(), blackList)
             {
                 StateName = Transition.TempName
             };
-            return this;
-        }
-        public TransitionBoard<T> PreLoad()
-        {
-            var par = new TransitionParams();
-            TransitionParams?.Invoke(par);
-            Preload = StateMachine.PreloadFrames(Target, TempState, par);
+            PreLoad(reflected);
             return this;
         }
         public TransitionBoard<T> PreLoad(T target)
         {
-            var par = new TransitionParams();
-            TransitionParams?.Invoke(par);
-            Preload = StateMachine.PreloadFrames(target, TempState, par);
+            FrameSequence = StateMachine.PreloadFrames(target, TempState, TransitionParams) ?? [];
+            IsPreloaded = true;
             return this;
         }
-        public void Start()
+        public TransitionBoard<T> PreLoad()
         {
-            if (IsStatic) throw new InvalidOperationException("This method cannot be used under Type-based creation, instead use an overloaded version of the Start( object ) method");
-            if (Machine == null) throw new ArgumentException("StateMachine instance lost");
-            if (Target == null) throw new ArgumentException("Target object instance lost");
-            Machine.Interrupt();
-            TempState.StateName = Transition.TempName + "NonStatic";
-            Machine.States.Add(TempState);
-            Machine.Transition(TempState.StateName, TransitionParams, Preload);
-        }
-        public void Start(T target)
-        {
-            Machine = StateMachine.Create(target);
-            Machine.Interrupt();
-            TempState.StateName = Transition.TempName + Machine.States.BoardSuffix;
-            Machine.States.Add(TempState);
-            Machine.Transition(TempState.StateName, TransitionParams, Preload);
+            if (Target != null)
+            {
+                FrameSequence = StateMachine.PreloadFrames(Target, TempState, TransitionParams) ?? [];
+                IsPreloaded = true;
+            }
+            return this;
         }
     }
 }

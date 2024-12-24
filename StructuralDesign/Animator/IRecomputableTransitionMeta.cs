@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MinimalisticWPF
+namespace MinimalisticWPF.StructuralDesign.Animator
 {
     /// <summary>
     /// The transition units can recompute frames based on the new FPS

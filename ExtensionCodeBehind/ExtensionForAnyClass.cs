@@ -15,7 +15,7 @@ namespace MinimalisticWPF
     {
         public static TransitionBoard<T> Transition<T>(this T element) where T : class
         {
-            TransitionBoard<T> tempStoryBoard = new TransitionBoard<T>(element);
+            TransitionBoard<T> tempStoryBoard = new TransitionBoard<T>() { Target = element };
             return tempStoryBoard;
         }
         public static void BeginTransition<T>(this T source, TransitionBoard<T> transfer) where T : class
@@ -24,9 +24,18 @@ namespace MinimalisticWPF
         }
         public static void BeginTransition<T>(this T source, TransitionBoard<T> transfer, Action<TransitionParams> set) where T : class
         {
-            transfer.TransitionParams = set;
+            var param = new TransitionParams();
+            set.Invoke(param);
+            transfer.TransitionParams = param;
             transfer.Start(source);
         }
+        public static void BeginTransition<T>(this T source, TransitionBoard<T> transfer, TransitionParams set) where T : class
+        {
+            var param = new TransitionParams();
+            transfer.TransitionParams = param;
+            transfer.Start(source);
+        }
+
         public static void BeginTransition<T>(this T source, State state, Action<TransitionParams> set) where T : class
         {
             if (state == null) return;
@@ -43,13 +52,29 @@ namespace MinimalisticWPF
                 machine.Transition(state.StateName, set);
             }
         }
+        public static void BeginTransition<T>(this T source, State state, TransitionParams set) where T : class
+        {
+            if (state == null) return;
+            var machine = source.FindStateMachine();
+            if (machine == null)
+            {
+                var newMachine = StateMachine.Create(source, state);
+                newMachine.Transition(state.StateName, set);
+            }
+            else
+            {
+                machine.Interrupt();
+                machine.States.Add(state);
+                machine.Transition(state.StateName, set);
+            }
+        }
+
         public static StateMachine? FindStateMachine<T>(this T source) where T : class
         {
             if (StateMachine.TryGetMachine(source, out var machineA))
             {
                 return machineA;
             }
-
             return null;
         }
     }

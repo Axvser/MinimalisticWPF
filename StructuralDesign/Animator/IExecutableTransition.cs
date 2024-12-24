@@ -5,23 +5,25 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Threading;
 
-namespace MinimalisticWPF
+namespace MinimalisticWPF.StructuralDesign.Animator
 {
     /// <summary>
     /// Transition execution unit
-    /// <para>StartTransition()</para>
-    /// <para>StopTransition()</para>
     /// </summary>
     public interface IExecutableTransition
     {
         /// <summary>
+        /// The scheduler that manages this execution unit
+        /// </summary>
+        public StateMachine Machine { get; }
+        /// <summary>
         /// Starting transitions
         /// </summary>
-        public void StartTransition();
+        public void Start();
         /// <summary>
         /// Terminating a transition
         /// </summary>
         /// <param name="IsUnsafeStoped">Whether to terminate the Usafe transition</param>
-        public void StopTransition(bool IsUnsafeStoped = false);
+        public void Stop(bool IsUnsafeStoped = false);
     }
 }

@@ -169,8 +169,8 @@ Transition.StopUnSafe(grid,grid2);  // Only UnSafe transitions
 <h5 style="color:white">extension method</h5>
 
 ```csharp
-gd.StopTransition(IsStopSafe: true, IsStopUnSafe: false);
-gd.StopTransition(true,false);
+gd.Stop(IsStopSafe: true, IsStopUnSafe: false);
+gd.Stop(true,false);
 //The bool value indicates whether to terminate the Safe/UnSafe transition being performed by the object
 ```
 

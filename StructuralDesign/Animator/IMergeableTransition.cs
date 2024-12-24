@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MinimalisticWPF
+namespace MinimalisticWPF.StructuralDesign.Animator
 {
     /// <summary>
     /// A transition unit is allowed to perform merge operations with other transition units
@@ -15,6 +15,6 @@ namespace MinimalisticWPF
         /// <summary>
         /// Merges multiple transitions with itself
         /// </summary>
-        public void Merge<T>(ICollection<T> metas) where T : ITransitionMeta, IMergeableTransition, IRecomputableTransitionMeta;
+        public TransitionMeta Merge<T>(ICollection<T> metas) where T : ITransitionMeta, IMergeableTransition, IRecomputableTransitionMeta;
     }
 }

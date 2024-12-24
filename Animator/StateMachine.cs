@@ -3,6 +3,7 @@ using System.Windows;
 using System.Data;
 using System.Windows.Media;
 using System.Collections.Concurrent;
+using MinimalisticWPF.StructuralDesign.Animator;
 
 namespace MinimalisticWPF
 {
@@ -166,7 +167,7 @@ namespace MinimalisticWPF
         public StateMachine Copy()
         {
             var result = new StateMachine(Target);
-            foreach(var state in States)
+            foreach (var state in States)
             {
                 result.States.Add(state);
             }
@@ -181,14 +182,14 @@ namespace MinimalisticWPF
         {
             IsReSet = true;
             CurrentState = null;
-            Interpreter?.StopTransition();
+            Interpreter?.Stop();
             Interpreter = null;
             Interpreters.Clear();
             if (IsStopUnsafe)
             {
                 foreach (var item in UnSafeInterpreters)
                 {
-                    item.StopTransition(true);
+                    item.Stop(true);
                 }
             }
         }
@@ -224,7 +225,41 @@ namespace MinimalisticWPF
                 Interpreters.Enqueue(Tuple.Create<string, ITransitionMeta>(stateName, new TransitionMeta(temp, preload ?? [])));
                 if (!temp.IsQueue)
                 {
-                    Interpreter?.StopTransition();
+                    Interpreter?.Stop();
+                }
+            }
+        }
+        /// <summary>
+        /// Scheduling transition behavior
+        /// </summary>
+        public void Transition(string stateName, TransitionParams? param, List<List<Tuple<PropertyInfo, List<object?>>>>? preload = null)
+        {
+            IsReSet = false;
+
+            var temp = param ?? new();
+
+            if (temp.IsUnSafe)
+            {
+                InterpreterScheduler(stateName, temp, preload);
+                return;
+            }
+
+            if (Interpreter == null)
+            {
+                InterpreterScheduler(stateName, temp, preload);
+            }
+            else
+            {
+                var targetInterpreter = Interpreters.Where(x => x.Item1 == stateName).ToArray();
+                if (targetInterpreter.Length != 0 && temp.IsUnique)
+                {
+                    return;
+                }
+
+                Interpreters.Enqueue(Tuple.Create<string, ITransitionMeta>(stateName, new TransitionMeta(temp, preload ?? [])));
+                if (!temp.IsQueue)
+                {
+                    Interpreter?.Stop();
                 }
             }
         }
@@ -263,7 +298,7 @@ namespace MinimalisticWPF
                 CurrentState = stateName;
                 Interpreter = animationInterpreter;
             }
-            var task = Task.Run(() => { animationInterpreter.StartTransition(); });
+            var task = Task.Run(() => { animationInterpreter.Start(); });
         }
         internal StateMachine(object viewModel, params State[] states)
         {

@@ -1,7 +1,9 @@
-﻿using System;
+﻿using MinimalisticWPF.StructuralDesign.Animator;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Security.RightsManagement;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -9,7 +11,7 @@ using System.Windows.Media;
 
 namespace MinimalisticWPF
 {
-    public class TransitionMeta : IRecomputableTransitionMeta, IMergeableTransition, ITransitionMeta, IConvertibleTransitionMeta
+    public class TransitionMeta : IRecomputableTransitionMeta, IMergeableTransition, ITransitionMeta, IConvertibleTransitionMeta, IExecutableTransition, ITargetedTransition
     {
         internal TransitionMeta() { }
         public TransitionMeta(TransitionParams transitionParams, List<List<Tuple<PropertyInfo, List<object?>>>> frames)
@@ -27,16 +29,22 @@ namespace MinimalisticWPF
             Merge(transitionMetas);
         }
 
+        public TransitionMeta Merge<T>(params T[] metas) where T : ITransitionMeta, IMergeableTransition, IRecomputableTransitionMeta
+        {
+            return Merge(metas);
+        }
+        public IExecutableTransition ToPlayer()
+        {
+            return this;
+        }
+
+        public object? Target { get; set; }
         public TransitionParams TransitionParams { get; set; } = new();
         public List<List<Tuple<PropertyInfo, List<object?>>>> FrameSequence { get; set; } = [];
-
-        public void Merge<T>(params T[] metas) where T : ITransitionMeta, IMergeableTransition, IRecomputableTransitionMeta
+        public StateMachine Machine => Target == null ? throw new ArgumentNullException("The metadata is missing the target instance for this transition effect") : StateMachine.Create(Target);
+        public TransitionMeta Merge<T>(ICollection<T> metas) where T : ITransitionMeta, IMergeableTransition, IRecomputableTransitionMeta
         {
-            Merge(metas);
-        }
-        public void Merge<T>(ICollection<T> metas) where T : ITransitionMeta, IMergeableTransition, IRecomputableTransitionMeta
-        {
-            MergeSequence(metas);
+            return MergeSequence(metas);
         }
         public List<List<Tuple<PropertyInfo, List<object?>>>> RecomputeFrames(int fps)
         {
@@ -85,7 +93,6 @@ namespace MinimalisticWPF
             }
             return FrameSequence;
         }
-
         public TransitionMeta ToTransitionMeta()
         {
             return this;
@@ -106,44 +113,51 @@ namespace MinimalisticWPF
         {
             var result = Transition.CreateBoardFromType<T>();
             result.TempState = ToState();
-            result.ParamsInstance = TransitionParams;
+            result.Target = Target;
+            result.TransitionParams = TransitionParams;
+            result.FrameSequence = FrameSequence;
             return result;
         }
-
-        private void MergeSequence<T>(ICollection<T> metas) where T : ITransitionMeta, IMergeableTransition, IRecomputableTransitionMeta
+        public void Start()
         {
-            var list = metas.ToList();
-            for (int i = 0; i < list.Count; i++)
-            {
-                if (list[i].TransitionParams.FrameRate != TransitionParams.FrameRate)
-                {
-                    list[i].RecomputeFrames(TransitionParams.FrameRate);
-                }
-                MergeFrameSequences(list[i].FrameSequence);
-            }
+            if (Target == null) throw new ArgumentNullException("The metadata is missing the target instance for this transition effect");
+            Target.BeginTransition(ToState(), TransitionParams);
         }
-        private void MergeFrameSequences(List<List<Tuple<PropertyInfo, List<object?>>>> source)
+        public void Stop(bool IsUnsafeStoped = false)
+        {
+            Machine.Interrupt(IsUnsafeStoped);
+        }
+
+        private TransitionMeta MergeSequence<T>(ICollection<T> metas) where T : ITransitionMeta, IMergeableTransition, IRecomputableTransitionMeta
+        {
+            foreach (var meta in metas)
+            {
+                if (meta.TransitionParams.FrameRate != TransitionParams.FrameRate)
+                {
+                    meta.RecomputeFrames(TransitionParams.FrameRate);
+                }
+                MergeFrameSequences(meta.FrameSequence);
+            }
+            return this;
+        }
+        private TransitionMeta MergeFrameSequences(List<List<Tuple<PropertyInfo, List<object?>>>> source)
         {
             foreach (var propertyFrames in source)
             {
-                if (!propertyFrames.Any())
-                    continue;
-
-                var propertyInfo = propertyFrames.First().Item1;
-                var framesToAdd = propertyFrames.First().Item2;
-
-                var existingPropertyFrames = FrameSequence.FirstOrDefault(pf => pf.First().Item1 == propertyInfo);
-
-                if (existingPropertyFrames != null)
+                foreach (var frame in propertyFrames)
                 {
-                    existingPropertyFrames.Clear();
-                    existingPropertyFrames.AddRange(propertyFrames);
-                }
-                else
-                {
-                    FrameSequence.Add(new List<Tuple<PropertyInfo, List<object?>>>(propertyFrames));
+                    var old = FrameSequence.Select(pf => pf.FirstOrDefault(f => f.Item1 == frame.Item1)).FirstOrDefault();
+                    if (old == null)
+                    {
+                        FrameSequence.Add([frame]);
+                    }
+                    else
+                    {
+                        old = frame;
+                    }
                 }
             }
+            return this;
         }
     }
 }

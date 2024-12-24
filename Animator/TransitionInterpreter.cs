@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MinimalisticWPF.StructuralDesign.Animator;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -17,10 +18,10 @@ namespace MinimalisticWPF
             TransitionParams = transitionParams;
         }
 
-        public TransitionParams TransitionParams { get; internal set; }
-        public List<List<Tuple<PropertyInfo, List<object?>>>> FrameSequence { get; internal set; } = [];
+        public TransitionParams TransitionParams { get; set; }
+        public List<List<Tuple<PropertyInfo, List<object?>>>> FrameSequence { get; set; } = [];
 
-        internal StateMachine Machine { get; set; }
+        public StateMachine Machine { get; internal set; }
         internal int DeltaTime { get; set; } = 0;
 
         private bool IsRunning { get; set; } = false;
@@ -28,7 +29,7 @@ namespace MinimalisticWPF
         private int LoopDepth { get; set; } = 0;
         private int FrameDepth { get; set; } = 0;
 
-        public void StartTransition()
+        public void Start()
         {
             if (IsStop || IsRunning) { WhileEnded(); return; }
             IsRunning = true;
@@ -74,7 +75,7 @@ namespace MinimalisticWPF
 
             WhileEnded();
         }
-        public void StopTransition(bool IsUnsafeStoped = false)
+        public void Stop(bool IsUnsafeStoped = false)
         {
             if (TransitionParams.IsUnSafe && !IsUnsafeStoped) return;
             IsStop = IsRunning;

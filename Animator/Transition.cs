@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using MinimalisticWPF.StructuralDesign.Animator;
 
 namespace MinimalisticWPF
 {
@@ -20,17 +16,52 @@ namespace MinimalisticWPF
                 }
             }
         }
-        public static TransitionBoard<T> CreateBoardFromObject<T>(T target) where T : class
+        public static IExecutableTransition Create<T>() where T : class
         {
-            var result = new TransitionBoard<T>(target)
-            {
-                IsStatic = true
-            };
+            return CreateBoardFromType<T>();
+        }
+        public static IExecutableTransition Create<T>(T target) where T : class
+        {
+            var result = CreateBoardFromType<T>();
+            result.Target = target;
             return result;
         }
-        public static TransitionBoard<T> CreateBoardFromType<T>() where T : class
+        public static IExecutableTransition Create<T>(ICollection<T> values) where T : ITransitionMeta, IMergeableTransition, IRecomputableTransitionMeta
         {
-            return new TransitionBoard<T>() { IsStatic = true };
+            var meta = new TransitionMeta();
+            meta.Target = (values.FirstOrDefault() as ITargetedTransition)?.Target;
+            foreach (var value in values)
+            {
+                (value as IFramePreloading)?.PreLoad(values.FirstOrDefault()?.TransitionParams ?? new TransitionParams());
+            }
+            meta.Merge(values);
+            return meta;
+        }
+        public static IExecutableTransition Create<T>(ICollection<T> values, TransitionParams transitionParams) where T : ITransitionMeta, IMergeableTransition, IRecomputableTransitionMeta
+        {
+            var meta = new TransitionMeta();
+            meta.Target = (values.FirstOrDefault() as ITargetedTransition)?.Target;
+            foreach (var value in values)
+            {
+                (value as IFramePreloading)?.PreLoad(transitionParams);
+            }
+            meta.TransitionParams = transitionParams;
+            meta.Merge(values);
+            return meta;
+        }
+        public static IExecutableTransition Create<T>(ICollection<T> values, Action<TransitionParams> transitionSet) where T : ITransitionMeta, IMergeableTransition, IRecomputableTransitionMeta
+        {
+            var meta = new TransitionMeta();
+            var para = new TransitionParams();
+            transitionSet.Invoke(para);
+            meta.Target = (values.FirstOrDefault() as ITargetedTransition)?.Target;
+            foreach (var value in values)
+            {
+                (value as IFramePreloading)?.PreLoad(para);
+            }
+            meta.TransitionParams = para;
+            meta.Merge(values);
+            return meta;
         }
         public static void Dispose()
         {
@@ -76,6 +107,14 @@ namespace MinimalisticWPF
                     itor.Stop(true);
                 }
             }
+        }
+        internal static TransitionBoard<T> CreateBoardFromType<T>() where T : class
+        {
+            return new TransitionBoard<T>();
+        }
+        internal static TransitionBoard<T> CreateBoardFromObject<T>(T target) where T : class
+        {
+            return new TransitionBoard<T>() { Target = target };
         }
     }
 }

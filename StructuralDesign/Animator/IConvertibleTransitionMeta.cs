@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MinimalisticWPF
+namespace MinimalisticWPF.StructuralDesign.Animator
 {
     /// <summary>
     /// Instances are allowed to be converted into three types that describe how transitions are performed

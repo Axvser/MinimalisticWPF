@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Media;
 using System.Windows;
 
-namespace MinimalisticWPF
+namespace MinimalisticWPF.StructuralDesign.Animator
 {
     /// <summary>
     /// Allows a class to be an animatable property
