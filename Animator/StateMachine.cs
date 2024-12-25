@@ -266,7 +266,7 @@ namespace MinimalisticWPF.Animator
 
         internal async void InterpreterScheduler(string stateName, TransitionParams? actionSet, List<List<Tuple<PropertyInfo, List<object?>>>>? preload)
         {
-            var targetState = States.FirstOrDefault(x => x.StateName == stateName) ?? throw new ArgumentException($"The State Named [ {stateName} ] Cannot Be Found");
+            var targetState = States[stateName];
             actionSet ??= new TransitionParams();
             TransitionParams = actionSet;
             TransitionInterpreter animationInterpreter = new(this, actionSet)

@@ -1,23 +1,11 @@
 ﻿using System.Collections;
+using System.Collections.Concurrent;
 
 namespace MinimalisticWPF.Animator
 {
     public sealed class StateCollection : ICollection<State>
     {
-        private List<State> _nodes = [];
-
-        public State this[int index] { get => _nodes[index < _nodes.Count && index > -1 ? index : throw new ArgumentOutOfRangeException($"Index value [ {index} ] is out of collection range")]; }
-        public State this[string stateName]
-        {
-            get
-            {
-                State? result = _nodes.FirstOrDefault(x => x.StateName == stateName) ?? throw new ArgumentException($"There is no State named [ {stateName} ] in the collection");
-                return result;
-            }
-        }
-
-        public int Count => _nodes.Count;
-
+        private ConcurrentDictionary<string, State> _nodes = new();
         private int _suffix = 0;
         public int BoardSuffix
         {
@@ -36,13 +24,25 @@ namespace MinimalisticWPF.Animator
                 return -1;
             }
         }
+        public State this[int index]
+        {
+            get => _nodes.Values.ElementAtOrDefault(index) ?? throw new ArgumentOutOfRangeException($"Index value [ {index} ] is out of collection range");
+        }
+        public State this[string stateName]
+        {
+            get
+            {
+                if (!_nodes.TryGetValue(stateName, out var result))
+                    throw new ArgumentException($"There is no State named [ {stateName} ] in the collection");
+                return result;
+            }
+        }
 
+        public int Count => _nodes.Count;
         public bool IsReadOnly => false;
-
         public void Add(State item)
         {
-            _nodes.RemoveAll(x => x.StateName == item.StateName);
-            _nodes.Add(item);
+            _nodes.AddOrUpdate(item.StateName, item, (key, oldValue) => item);
         }
         public void Clear()
         {
@@ -50,23 +50,23 @@ namespace MinimalisticWPF.Animator
         }
         public bool Contains(State item)
         {
-            return _nodes.Contains(item);
+            return _nodes.ContainsKey(item.StateName);
         }
         public void CopyTo(State[] array, int arrayIndex)
         {
-            _nodes.CopyTo(array, arrayIndex);
+            _nodes.Values.CopyTo(array, arrayIndex);
         }
         public bool Remove(State item)
         {
-            return _nodes.Remove(item);
+            return _nodes.TryRemove(item.StateName, out _);
         }
         public IEnumerator<State> GetEnumerator()
         {
-            return _nodes.GetEnumerator();
+            return _nodes.Values.GetEnumerator();
         }
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return _nodes.GetEnumerator();
+            return _nodes.Values.GetEnumerator();
         }
     }
 }
