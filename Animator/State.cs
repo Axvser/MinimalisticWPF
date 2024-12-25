@@ -7,7 +7,7 @@ using MinimalisticWPF.StructuralDesign.Animator;
 
 namespace MinimalisticWPF.Animator
 {
-    public sealed class State
+    public sealed class State : ITransitionMeta
     {
         internal State() { }
         internal State(object Target, ICollection<string> WhileList, ICollection<string> BlackList)
@@ -25,6 +25,19 @@ namespace MinimalisticWPF.Animator
 
         public string StateName { get; internal set; } = string.Empty;
         public ConcurrentDictionary<string, object?> Values { get; internal set; } = new ConcurrentDictionary<string, object?>();
+        public TransitionParams TransitionParams { get; set; } = new();
+        public State PropertyState
+        {
+            get => this;
+            set
+            {
+                StateName = value.StateName;
+                Values = value.Values;
+                TransitionParams = value.TransitionParams;
+            }
+        }
+        public List<List<Tuple<PropertyInfo, List<object?>>>> FrameSequence => [];
+
         public object? this[string propertyName]
         {
             get
@@ -57,6 +70,25 @@ namespace MinimalisticWPF.Animator
         {
             TypeTempState<T> state = new();
             return state;
+        }
+        public State Merge(ICollection<ITransitionMeta> metas)
+        {
+            foreach (var meta in metas)
+            {
+                foreach (var values in meta.PropertyState.Values)
+                {
+                    AddProperty(values.Key, values.Value);
+                }
+            }
+            return this;
+        }
+        public State Merge(ITransitionMeta meta)
+        {
+            foreach (var values in meta.PropertyState.Values)
+            {
+                AddProperty(values.Key, values.Value);
+            }
+            return this;
         }
     }
 

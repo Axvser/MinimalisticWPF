@@ -24,10 +24,6 @@ namespace MinimalisticWPF.Animator
                 return -1;
             }
         }
-        public State this[int index]
-        {
-            get => _nodes.Values.ElementAtOrDefault(index) ?? throw new ArgumentOutOfRangeException($"Index value [ {index} ] is out of collection range");
-        }
         public State this[string stateName]
         {
             get

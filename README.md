@@ -13,11 +13,18 @@
 
 ## Important Notice
 
-2024 - 12 - 13 : 
+2024 - 12 - 25 : 
 
-The source generator now supports a constructor with parameters
+[Animation](#Animation) Updates :
 
-[Mvvm](#Mvvm) [ 2 - 2 ]
+[ 1 - 1 ] More formal writing
+
+[ 1 - 2 ] More formal writing
+
+★ [ 1 - 3 ] If you define multiple animations for the same class, since V2.4.0 you can compose them as a single animation instead of using the UnSafe parameter
+
+[ 1 - 5 ] API updates
+
 
 ---
 
@@ -48,77 +55,88 @@ Details
 <h4 style="color:white">Take the following two controls as examples to demonstrate some animation operations</h4>
 
 ```xml
-    <Grid>
-        <TextBlock x:Name="box" Foreground="White" FontSize="30" TextAlignment="Center" VerticalAlignment="Top" Margin="0,40,0,0"/>
-        <Grid x:Name="grid" Width="100" Height="200" Background="Gray"/>
-    </Grid>
+        <Grid>
+            <Grid x:Name="c1" Width="200" Height="200" Background="Lime"/>
+            <Grid x:Name="c2" Width="100" Height="100" Background="Gray" HorizontalAlignment="Right" VerticalAlignment="Bottom"/>
+        </Grid>
 ```
 
 A description of the animation parameters is in the Details directory [TransitionParams](#TransitionParams)
 
 <h4 style="color:White">[ 1 - 1 ] Warm Start</h4>
 
-<p style="font-size:14px;color:wheat">Transition（ ）</p>
-<p style="font-size:14px;color:wheat">SetProperty（ Property , Value ）</p>
-<p style="font-size:14px;color:wheat">SetParams（ Action&lt;TransitionParams> ）</p>
-<p style="font-size:14px;color:wheat">Start（ ）</p>
-
 ```csharp 
-var animaiton = grid.Transition()
-                 .SetProperty(x => x.Width, 200)
-                 .SetProperty(x => x.Height, 100)
-                 .SetParams((p) =>
-                 {
-                     p.Duration = 2;
-                     p.Acceleration = 1;
-                     p.StartAsync = async () =>
-                     {
-                         await Task.Delay(2000);
-                     };
-                     p.Update = () =>
-                     {
-                         box.Text = $"Width [{grid.Width} ] | Height [ {grid.Height} ]";
-                     };
-                     p.Completed = () =>
-                     {
-                         MessageBox.Show("Finished");
-                     };
-                 })
-                 .Start();
+        public void LoadAnimation_Warm()
+        {
+            var param = new TransitionParams()
+            {
+                Duration = 1,
+                IsAutoReverse = true,
+                LoopTime = 1
+            };
 
-// animaiton.Start(); It can also be executed like this
+            var animation = c1.Transition()
+                .SetProperty(x => x.Width, 500)
+                .SetProperty(x => x.Height, 300)
+                .SetProperty(x => x.Background, Brushes.Cyan)
+                .SetProperty(x => x.Opacity, 0.5)
+                .SetParams(param);
+
+            animation.Start();
+        }
 ```
+
 <h4 style="color:White">[ 1 - 2 ] Cold Start</h4>
 
-<h5 style="color:white">Transition Definition</h5>
-
 ```csharp
-        private static TransitionBoard<Grid> _animation = Transition.CreateBoardFromType<Grid>()
-            .SetProperty(x => x.Height, 100)
-            .SetProperty(x => x.Width, 200);
-
-        private static Action<TransitionParams> _params = (p) =>
+        public void LoadAnimation_Cold()
         {
-            p.Duration = 2;
-            p.Acceleration = 1;
-            p.StartAsync = async () =>
+            var param = new TransitionParams()
             {
-                await Task.Delay(2000);
+                Duration = 1,
+                IsAutoReverse = true,
+                LoopTime = 1
             };
-            p.Completed = () =>
-            {
-                MessageBox.Show("Finished");
-            };
-        };
+
+            var animation = Transition.Create<Grid>()
+                .SetProperty(x => x.Width, 500)
+                .SetProperty(x => x.Height, 300)
+                .SetProperty(x => x.Background, Brushes.Cyan)
+                .SetProperty(x => x.Opacity, 0.5)
+                .SetParams(param);
+
+            c1.BeginTransition(animation);
+            c2.BeginTransition(animation);
+        }
 ```
 
-<h5 style="color:white">Apply Transition</h5>
+<h4 style="color:White">[ 1 - 3 ] Merge Transitions</h4>
 
-```csharp
-grid.BeginTransition(_animation, _params);
+```csharp 
+        public void LoadAnimation_Merge()
+        {
+            var param = new TransitionParams()
+            {
+                Duration = 1,
+                IsAutoReverse = true,
+                LoopTime = 1
+            };
+
+            var animation1 = Transition.Create<Grid>()
+                .SetProperty(x => x.Width, 500)
+                .SetProperty(x => x.Height, 300);
+            var animation2 = Transition.Create<Grid>()
+                .SetProperty(x => x.Background, Brushes.Cyan)
+                .SetProperty(x => x.Opacity, 0.5);
+
+            var transition = Transition.Create([animation1, animation2], param, null);
+
+            transition.Start(c1);
+            transition.Start(c2);
+        }
 ```
 
-<h4 style="color:White">[ 1 - 3 ] Make custom properties participate in the transition</h4>
+<h4 style="color:White">[ 1 - 4 ] Make custom properties participate in the transition</h4>
 
 <h5 style="color:white">An interface is provided to allow types to participate in transitions</h5>Please describe how this type computes interpolation
 
@@ -155,23 +173,13 @@ grid.BeginTransition(_animation, _params);
         }
 ```
 
-<h4 style="color:White">[ 1 - 4 ] Stop</h4>
-
-<h5 style="color:white">static method</h5>
+<h4 style="color:White">[ 1 - 5 ] Stop Transition</h4>
 
 ```csharp
-Transition.Dispose();               // All transitions
-Transition.Stop(grid,grid2);        // Only transitions of the selected object
-Transition.StopSafe(grid,grid2);    // Only Safe transitions
-Transition.StopUnSafe(grid,grid2);  // Only UnSafe transitions
-```
-
-<h5 style="color:white">extension method</h5>
-
-```csharp
-gd.Stop(IsStopSafe: true, IsStopUnSafe: false);
-gd.Stop(true,false);
-//The bool value indicates whether to terminate the Safe/UnSafe transition being performed by the object
+Transition.DisposeAll();          // All transitions
+Transition.Dispose(c1,c2);        // Only transitions of the selected object
+Transition.DisposeSafe(c1,c2);    // Only Safe transitions
+Transition.DisposeUnSafe(c1,c2);  // Only UnSafe transitions
 ```
 
 ---

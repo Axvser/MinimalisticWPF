@@ -17,49 +17,39 @@ namespace MinimalisticWPF.Animator
             }
         }
 
-        public static IExecutableTransition Create<T>(T? target = null) where T : class
+        public static TransitionBoard<T> Create<T>(T? target = null) where T : class
         {
             return new TransitionBoard<T>() { Target = target };
         }
-        public static IExecutableTransition Create<T>(ICollection<T> values, object? target = null) where T : ITransitionMeta, IMergeableTransition, IRecomputableTransitionMeta
+        public static IExecutableTransition Create<T>(ICollection<T> values, object? target = null) where T : class, ITransitionMeta, IMergeableTransition, ITransitionWithTarget, IConvertibleTransitionMeta
         {
-            var meta = new TransitionMeta
+            var meta = new TransitionBoard<T>()
             {
-                Target = target ?? (values.FirstOrDefault() as ITransitionWithTarget)?.Target
+                Target = target,
             };
-            foreach (var value in values)
-            {
-                (value as IFramePreloading)?.PreLoad(values.FirstOrDefault()?.TransitionParams ?? new TransitionParams());
-            }
-            meta.Merge(values);
+            meta.Merge(values.Select(v => v as ITransitionMeta).ToArray());
             return meta;
         }
-        public static IExecutableTransition Create<T>(ICollection<T> values, TransitionParams transitionParams, object? target = null) where T : ITransitionMeta, IMergeableTransition, IRecomputableTransitionMeta
+        public static IExecutableTransition Create<T>(ICollection<T> values, TransitionParams transitionParams, object? target = null) where T : class, ITransitionMeta, IMergeableTransition, ITransitionWithTarget, IConvertibleTransitionMeta
         {
-            var meta = new TransitionMeta
+            var meta = new TransitionBoard<T>()
             {
-                Target = target ?? (values.FirstOrDefault() as ITransitionWithTarget)?.Target
+                Target = target,
+                TransitionParams = transitionParams
             };
-            foreach (var value in values)
-            {
-                (value as IFramePreloading)?.PreLoad(transitionParams);
-            }
-            meta.TransitionParams = transitionParams;
-            meta.Merge(values);
+            meta.Merge(values.Select(v => v as ITransitionMeta).ToArray());
             return meta;
         }
-        public static IExecutableTransition Create<T>(ICollection<T> values, Action<TransitionParams> transitionSet, object? target = null) where T : ITransitionMeta, IMergeableTransition, IRecomputableTransitionMeta
+        public static IExecutableTransition Create<T>(ICollection<T> values, Action<TransitionParams> transitionSet, object? target = null) where T : class, ITransitionMeta, IMergeableTransition, ITransitionWithTarget, IConvertibleTransitionMeta
         {
-            var meta = new TransitionMeta();
             var para = new TransitionParams();
-            transitionSet.Invoke(para);
-            meta.Target = target ?? (values.FirstOrDefault() as ITransitionWithTarget)?.Target;
-            foreach (var value in values)
+            transitionSet(para);
+            var meta = new TransitionBoard<T>()
             {
-                (value as IFramePreloading)?.PreLoad(para);
-            }
-            meta.TransitionParams = para;
-            meta.Merge(values);
+                Target = target,
+                TransitionParams = para
+            };
+            meta.Merge(values.Select(v => v as ITransitionMeta).ToArray());
             return meta;
         }
 

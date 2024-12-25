@@ -16,9 +16,10 @@ namespace MinimalisticWPF
     {
         public static TransitionBoard<T> Transition<T>(this T element) where T : class
         {
-            TransitionBoard<T> tempStoryBoard = new TransitionBoard<T>() { Target = element };
+            TransitionBoard<T> tempStoryBoard = new() { Target = element };
             return tempStoryBoard;
         }
+
         public static void BeginTransition<T>(this T source, TransitionBoard<T> transfer) where T : class
         {
             transfer.Start(source);

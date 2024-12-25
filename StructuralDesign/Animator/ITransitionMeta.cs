@@ -1,10 +1,5 @@
 ﻿using MinimalisticWPF.Animator;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MinimalisticWPF.StructuralDesign.Animator
 {
@@ -18,8 +13,12 @@ namespace MinimalisticWPF.StructuralDesign.Animator
         /// </summary>
         public TransitionParams TransitionParams { get; set; }
         /// <summary>
-        /// Ordered animation frames
+        /// Final value of property
         /// </summary>
-        public List<List<Tuple<PropertyInfo, List<object?>>>> FrameSequence { get; set; }
+        public State PropertyState { get; set; }
+        /// <summary>
+        /// Ordered frames
+        /// </summary>
+        public List<List<Tuple<PropertyInfo, List<object?>>>> FrameSequence { get; }
     }
 }

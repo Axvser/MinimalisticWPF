@@ -4,7 +4,7 @@ using System.Windows;
 
 namespace MinimalisticWPF.Animator
 {
-    public sealed class TransitionInterpreter : IExecutableTransition, ITransitionMeta
+    public sealed class TransitionInterpreter : IExecutableTransition
     {
         internal TransitionInterpreter(StateMachine machine, TransitionParams transitionParams)
         {
