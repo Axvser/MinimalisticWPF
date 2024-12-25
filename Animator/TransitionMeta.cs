@@ -1,15 +1,9 @@
 ﻿using MinimalisticWPF.StructuralDesign.Animator;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Security.RightsManagement;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 
-namespace MinimalisticWPF
+namespace MinimalisticWPF.Animator
 {
     public sealed class TransitionMeta : IRecomputableTransitionMeta, IMergeableTransition, ITransitionMeta, IConvertibleTransitionMeta, IExecutableTransition, ITransitionWithTarget
     {
@@ -41,7 +35,7 @@ namespace MinimalisticWPF
         public object? Target { get; set; }
         public TransitionParams TransitionParams { get; set; } = new();
         public List<List<Tuple<PropertyInfo, List<object?>>>> FrameSequence { get; set; } = [];
-        public StateMachine Machine => Target == null ? throw new ArgumentNullException("The metadata is missing the target instance for this transition effect") : StateMachine.Create(Target);
+        public StateMachine Machine => Target == null ? throw new ArgumentNullException(nameof(Target), "The metadata is missing the target instance for this transition effect") : StateMachine.Create(Target);
         public TransitionMeta Merge<T>(ICollection<T> metas) where T : ITransitionMeta, IMergeableTransition, IRecomputableTransitionMeta
         {
             return MergeSequence(metas);
@@ -111,16 +105,19 @@ namespace MinimalisticWPF
         }
         public TransitionBoard<T> ToTransitionBoard<T>() where T : class
         {
-            var result = Transition.CreateBoardFromType<T>();
-            result.TempState = ToState();
-            result.Target = Target;
-            result.TransitionParams = TransitionParams;
-            result.FrameSequence = FrameSequence;
+            var result = new TransitionBoard<T>
+            {
+                TempState = ToState(),
+                Target = Target,
+                TransitionParams = TransitionParams,
+                FrameSequence = FrameSequence
+            };
             return result;
         }
-        public void Start()
+        public void Start(object? target = null)
         {
-            if (Target == null) throw new ArgumentNullException("The metadata is missing the target instance for this transition effect");
+            Target = target ?? Target;
+            if (Target == null) throw new ArgumentNullException(nameof(target), "The metadata is missing the target instance for this transition effect");
             Target.BeginTransition(ToState(), TransitionParams);
         }
         public void Stop(bool IsUnsafeStoped = false)

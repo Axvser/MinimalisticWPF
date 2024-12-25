@@ -1,14 +1,8 @@
 ﻿using MinimalisticWPF.StructuralDesign.Animator;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Threading;
 
-namespace MinimalisticWPF
+namespace MinimalisticWPF.Animator
 {
     public sealed class TransitionInterpreter : IExecutableTransition, ITransitionMeta
     {
@@ -29,7 +23,7 @@ namespace MinimalisticWPF
         private int LoopDepth { get; set; } = 0;
         private int FrameDepth { get; set; } = 0;
 
-        public void Start()
+        public void Start(object? target = null)
         {
             if (IsStop || IsRunning) { WhileEnded(); return; }
             IsRunning = true;

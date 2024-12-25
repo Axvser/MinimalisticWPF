@@ -1,12 +1,11 @@
 ﻿using System.Reflection;
-using System.Dynamic;
 using System.Linq.Expressions;
 using System.Windows.Media;
 using System.Windows;
 using System.Collections.Concurrent;
 using MinimalisticWPF.StructuralDesign.Animator;
 
-namespace MinimalisticWPF
+namespace MinimalisticWPF.Animator
 {
     public sealed class State
     {
@@ -51,12 +50,12 @@ namespace MinimalisticWPF
         }
         public static ObjectTempState<T> FromObject<T>(T Target) where T : class
         {
-            ObjectTempState<T> result = new ObjectTempState<T>(Target);
+            ObjectTempState<T> result = new(Target);
             return result;
         }
         public static TypeTempState<T> FromType<T>() where T : class
         {
-            TypeTempState<T> state = new TypeTempState<T>();
+            TypeTempState<T> state = new();
             return state;
         }
     }
@@ -67,8 +66,8 @@ namespace MinimalisticWPF
 
         internal T Value { get; set; }
         internal string Name { get; set; } = string.Empty;
-        internal List<string> WhiteList { get; set; } = new List<string>();
-        internal string[] BlackList { get; set; } = Array.Empty<string>();
+        internal List<string> WhiteList { get; set; } = [];
+        internal string[] BlackList { get; set; } = [];
 
         public ObjectTempState<T> SetName(string stateName)
         {
@@ -244,11 +243,13 @@ namespace MinimalisticWPF
 
         public State ToState(bool IsWhiteList = true)
         {
-            if (Value == null) throw new ArgumentNullException("Target object loss");
+            if (Value == null) throw new ArgumentException("Target object loss");
             if (string.IsNullOrEmpty(Name)) throw new ArgumentException("The State name cannot be empty");
             if (!IsWhiteList) WhiteList.Clear();
-            State result = new State(Value, WhiteList, BlackList);
-            result.StateName = Name;
+            State result = new(Value, WhiteList, BlackList)
+            {
+                StateName = Name
+            };
             return result;
         }
     }

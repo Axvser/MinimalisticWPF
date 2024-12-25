@@ -1,6 +1,6 @@
 ﻿using MinimalisticWPF.StructuralDesign.Animator;
 
-namespace MinimalisticWPF
+namespace MinimalisticWPF.Animator
 {
     public static class Transition
     {
@@ -16,28 +16,17 @@ namespace MinimalisticWPF
                 }
             }
         }
-        public static TransitionBoard<T> CreateBoardFromType<T>() where T : class
-        {
-            return new TransitionBoard<T>();
-        }
-        public static TransitionBoard<T> CreateBoardFromObject<T>(T target) where T : class
+
+        public static IExecutableTransition Create<T>(T? target = null) where T : class
         {
             return new TransitionBoard<T>() { Target = target };
         }
-        public static IExecutableTransition Create<T>() where T : class
+        public static IExecutableTransition Create<T>(ICollection<T> values, object? target = null) where T : ITransitionMeta, IMergeableTransition, IRecomputableTransitionMeta
         {
-            return CreateBoardFromType<T>();
-        }
-        public static IExecutableTransition Create<T>(T target) where T : class
-        {
-            var result = CreateBoardFromType<T>();
-            result.Target = target;
-            return result;
-        }
-        public static IExecutableTransition Create<T>(ICollection<T> values) where T : ITransitionMeta, IMergeableTransition, IRecomputableTransitionMeta
-        {
-            var meta = new TransitionMeta();
-            meta.Target = (values.FirstOrDefault() as ITransitionWithTarget)?.Target;
+            var meta = new TransitionMeta
+            {
+                Target = target ?? (values.FirstOrDefault() as ITransitionWithTarget)?.Target
+            };
             foreach (var value in values)
             {
                 (value as IFramePreloading)?.PreLoad(values.FirstOrDefault()?.TransitionParams ?? new TransitionParams());
@@ -45,10 +34,12 @@ namespace MinimalisticWPF
             meta.Merge(values);
             return meta;
         }
-        public static IExecutableTransition Create<T>(ICollection<T> values, TransitionParams transitionParams) where T : ITransitionMeta, IMergeableTransition, IRecomputableTransitionMeta
+        public static IExecutableTransition Create<T>(ICollection<T> values, TransitionParams transitionParams, object? target = null) where T : ITransitionMeta, IMergeableTransition, IRecomputableTransitionMeta
         {
-            var meta = new TransitionMeta();
-            meta.Target = (values.FirstOrDefault() as ITransitionWithTarget)?.Target;
+            var meta = new TransitionMeta
+            {
+                Target = target ?? (values.FirstOrDefault() as ITransitionWithTarget)?.Target
+            };
             foreach (var value in values)
             {
                 (value as IFramePreloading)?.PreLoad(transitionParams);
@@ -57,12 +48,12 @@ namespace MinimalisticWPF
             meta.Merge(values);
             return meta;
         }
-        public static IExecutableTransition Create<T>(ICollection<T> values, Action<TransitionParams> transitionSet) where T : ITransitionMeta, IMergeableTransition, IRecomputableTransitionMeta
+        public static IExecutableTransition Create<T>(ICollection<T> values, Action<TransitionParams> transitionSet, object? target = null) where T : ITransitionMeta, IMergeableTransition, IRecomputableTransitionMeta
         {
             var meta = new TransitionMeta();
             var para = new TransitionParams();
             transitionSet.Invoke(para);
-            meta.Target = (values.FirstOrDefault() as ITransitionWithTarget)?.Target;
+            meta.Target = target ?? (values.FirstOrDefault() as ITransitionWithTarget)?.Target;
             foreach (var value in values)
             {
                 (value as IFramePreloading)?.PreLoad(para);
@@ -71,7 +62,8 @@ namespace MinimalisticWPF
             meta.Merge(values);
             return meta;
         }
-        public static void Dispose()
+
+        public static void DisposeAll()
         {
             foreach (var machinedic in StateMachine.MachinePool.Values)
             {
@@ -85,7 +77,7 @@ namespace MinimalisticWPF
                 }
             }
         }
-        public static void Stop(params object[] targets)
+        public static void Dispose(params object[] targets)
         {
             foreach (var target in targets)
             {
@@ -97,7 +89,7 @@ namespace MinimalisticWPF
                 }
             }
         }
-        public static void StopSafe(params object[] targets)
+        public static void DisposeSafe(params object[] targets)
         {
             foreach (var target in targets)
             {
@@ -105,7 +97,7 @@ namespace MinimalisticWPF
                 machine.Interpreter?.Stop();
             }
         }
-        public static void StopUnSafe(params object[] targets)
+        public static void DisposeUnSafe(params object[] targets)
         {
             foreach (var target in targets)
             {

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MinimalisticWPF.Animator;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -31,8 +32,7 @@ namespace MinimalisticWPF
         }
         public static void BeginTransition<T>(this T source, TransitionBoard<T> transfer, TransitionParams set) where T : class
         {
-            var param = new TransitionParams();
-            transfer.TransitionParams = param;
+            transfer.TransitionParams = set;
             transfer.Start(source);
         }
 

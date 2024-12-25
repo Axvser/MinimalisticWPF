@@ -4,7 +4,7 @@ using System.Windows.Media;
 using System.Windows;
 using MinimalisticWPF.StructuralDesign.Animator;
 
-namespace MinimalisticWPF
+namespace MinimalisticWPF.Animator
 {
     public sealed class TransitionBoard<T> : ITransitionMeta, IMergeableTransition, IRecomputableTransitionMeta, IConvertibleTransitionMeta, IFramePreloading, IPropertyRecorder<TransitionBoard<T>, T>, IExecutableTransition, ITransitionWithTarget where T : class
     {
@@ -15,7 +15,7 @@ namespace MinimalisticWPF
         public object? Target { get; set; }
         public TransitionParams TransitionParams { get; set; } = new();
         public List<List<Tuple<PropertyInfo, List<object?>>>> FrameSequence { get; set; } = [];
-        public StateMachine Machine => Target == null ? throw new ArgumentNullException("The metadata is missing the target instance for this transition effect") : StateMachine.Create(Target);
+        public StateMachine Machine => Target == null ? throw new ArgumentNullException(nameof(Target), "The metadata is missing the target instance for this transition effect") : StateMachine.Create(Target);
         public void PreLoad(TransitionParams transitionParams)
         {
             if (!IsPreloaded)
@@ -35,53 +35,72 @@ namespace MinimalisticWPF
                 var target = meta as IFramePreloading;
                 target?.PreLoad(TransitionParams);
             }
-            TransitionMeta transitionMeta = new(this);
-            transitionMeta.Target = Target;
+            TransitionMeta transitionMeta = new(this)
+            {
+                Target = Target
+            };
             transitionMeta.Merge(metas);
             return transitionMeta;
         }
         public List<List<Tuple<PropertyInfo, List<object?>>>> RecomputeFrames(int fps)
         {
-            TransitionMeta transitionMeta = new(this);
-            transitionMeta.Target = Target;
+            TransitionMeta transitionMeta = new(this)
+            {
+                Target = Target
+            };
             transitionMeta.RecomputeFrames(fps);
             FrameSequence = transitionMeta.FrameSequence;
             return FrameSequence;
         }
         public State ToState()
         {
-            TransitionMeta transitionMeta = new(this);
-            transitionMeta.Target = Target;
+            TransitionMeta transitionMeta = new(this)
+            {
+                Target = Target
+            };
             return transitionMeta.ToState();
         }
         public TransitionBoard<T1> ToTransitionBoard<T1>() where T1 : class
         {
-            TransitionMeta transitionMeta = new(this);
-            transitionMeta.Target = Target;
+            TransitionMeta transitionMeta = new(this)
+            {
+                Target = Target
+            };
             return transitionMeta.ToTransitionBoard<T1>();
         }
         public TransitionMeta ToTransitionMeta()
         {
-            TransitionMeta transitionMeta = new(this);
-            transitionMeta.Target = Target;
+            TransitionMeta transitionMeta = new(this)
+            {
+                Target = Target
+            };
             return transitionMeta;
         }
-        public void Start(T target)
+        public void Start(object? target = null)
         {
-            var Machine = StateMachine.Create(target);
-            Machine.Interrupt();
-            TempState.StateName = Transition.TempName + Machine.States.BoardSuffix;
-            Machine.States.Add(TempState);
-            Machine.Transition(TempState.StateName, TransitionParams, IsPreloaded ? FrameSequence : null);
-        }
-        public void Start()
-        {
-            if (Target == null) throw new ArgumentNullException("The metadata is missing the target instance for this transition effect");
-            var Machine = StateMachine.Create(Target);
-            Machine.Interrupt();
-            TempState.StateName = Transition.TempName + Machine.States.BoardSuffix;
-            Machine.States.Add(TempState);
-            Machine.Transition(TempState.StateName, TransitionParams, IsPreloaded ? FrameSequence : null);
+            if (target == null)
+            {
+                if (Target == null)
+                {
+                    throw new ArgumentNullException(nameof(target), "The metadata is missing the target instance for this transition effect");
+                }
+                else
+                {
+                    var Machine = StateMachine.Create(Target);
+                    Machine.Interrupt();
+                    TempState.StateName = Transition.TempName + Machine.States.BoardSuffix;
+                    Machine.States.Add(TempState);
+                    Machine.Transition(TempState.StateName, TransitionParams, IsPreloaded ? FrameSequence : null);
+                }
+            }
+            else
+            {
+                var Machine = StateMachine.Create(target);
+                Machine.Interrupt();
+                TempState.StateName = Transition.TempName + Machine.States.BoardSuffix;
+                Machine.States.Add(TempState);
+                Machine.Transition(TempState.StateName, TransitionParams, IsPreloaded ? FrameSequence : null);
+            }
         }
         public TransitionBoard<T> SetProperty(Expression<Func<T, double>> propertyLambda, double newValue)
         {
@@ -181,6 +200,7 @@ namespace MinimalisticWPF
         {
             Machine.Interrupt(IsUnsafeStoped);
         }
+
         public TransitionBoard<T> SetParams(Action<TransitionParams> modifyParams)
         {
             var temp = new TransitionParams();

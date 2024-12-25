@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MinimalisticWPF.Animator;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,7 +20,7 @@ namespace MinimalisticWPF.StructuralDesign.Animator
         /// <summary>
         /// Starting transitions
         /// </summary>
-        public void Start();
+        public void Start(object? target = null);
         /// <summary>
         /// Terminating a transition
         /// </summary>

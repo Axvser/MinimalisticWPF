@@ -5,7 +5,7 @@ using System.Windows.Media;
 using System.Collections.Concurrent;
 using MinimalisticWPF.StructuralDesign.Animator;
 
-namespace MinimalisticWPF
+namespace MinimalisticWPF.Animator
 {
     public sealed class StateMachine
     {
