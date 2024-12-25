@@ -119,5 +119,32 @@ namespace MinimalisticWPF.Animator
         /// 刷新属性时是否采用BeginInvoke
         /// </summary>
         public bool IsBeginInvoke { get; set; } = DefaultIsBeginInvoke;
+
+        public TransitionParams DeepCopy()
+        {
+            var copy = new TransitionParams
+            {
+                Start = this.Start,
+                Update = this.Update,
+                LateUpdate = this.LateUpdate,
+                Completed = this.Completed,
+                StartAsync = this.StartAsync,
+                UpdateAsync = this.UpdateAsync,
+                LateUpdateAsync = this.LateUpdateAsync,
+                CompletedAsync = this.CompletedAsync,
+                IsAutoReverse = this.IsAutoReverse,
+                LoopTime = this.LoopTime,
+                Duration = this.Duration,
+                FrameRate = this.FrameRate,
+                IsQueue = this.IsQueue,
+                IsLast = this.IsLast,
+                IsUnique = this.IsUnique,
+                Acceleration = this.Acceleration,
+                IsUnSafe = this.IsUnSafe,
+                UIPriority = this.UIPriority,
+                IsBeginInvoke = this.IsBeginInvoke
+            };
+            return copy;
+        }
     }
 }

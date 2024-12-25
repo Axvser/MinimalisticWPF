@@ -6,7 +6,7 @@ using MinimalisticWPF.StructuralDesign.Animator;
 
 namespace MinimalisticWPF.Animator
 {
-    public sealed class TransitionBoard<T> : ITransitionMeta, IMergeableTransition, IConvertibleTransitionMeta, IPropertyRecorder<TransitionBoard<T>, T>, IExecutableTransition, ITransitionWithTarget where T : class
+    public sealed class TransitionBoard<T> : ITransitionMeta, IMergeableTransition, IConvertibleTransitionMeta, IPropertyRecorder<TransitionBoard<T>, T>, IExecutableTransition, ITransitionWithTarget, ICompilableTransition where T : class
     {
         private object? _target = null;
         private TransitionParams _params = new();
@@ -224,6 +224,16 @@ namespace MinimalisticWPF.Animator
         {
             TransitionParams = newParams;
             return this;
+        }
+        public IExecutableTransition Compile()
+        {
+            var meta = new TransitionMeta()
+            {
+                Target = this.Target,
+                TransitionParams = this.TransitionParams.DeepCopy(),
+                PropertyState = this.PropertyState.DeepCopy()
+            };
+            return meta;
         }
     }
 }

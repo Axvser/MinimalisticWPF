@@ -90,6 +90,22 @@ namespace MinimalisticWPF.Animator
             }
             return this;
         }
+
+        public State DeepCopy()
+        {
+            var newState = new State
+            {
+                StateName = this.StateName,
+                TransitionParams = this.TransitionParams.DeepCopy(),
+            };
+
+            foreach (var kvp in this.Values)
+            {
+                newState.Values[kvp.Key] = kvp.Value;
+            }
+
+            return newState;
+        }
     }
 
     public class ObjectTempState<T> : IPropertyRecorder<ObjectTempState<T>, T>

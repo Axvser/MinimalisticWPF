@@ -6,7 +6,7 @@ using System.Windows.Media;
 
 namespace MinimalisticWPF.Animator
 {
-    public sealed class TransitionMeta : IMergeableTransition, ITransitionMeta, IConvertibleTransitionMeta, IExecutableTransition, ITransitionWithTarget
+    public sealed class TransitionMeta : IMergeableTransition, ITransitionMeta, IConvertibleTransitionMeta, IExecutableTransition, ITransitionWithTarget, ICompilableTransition
     {
         internal TransitionMeta() { }
         public TransitionMeta(TransitionParams transitionParams, State propertyState)
@@ -74,6 +74,17 @@ namespace MinimalisticWPF.Animator
         public void Stop(bool IsUnsafeStoped = false)
         {
             Machine.Interrupt(IsUnsafeStoped);
+        }
+
+        public IExecutableTransition Compile()
+        {
+            var copy = new TransitionMeta()
+            {
+                Target = this.Target,
+                TransitionParams = this.TransitionParams.DeepCopy(),
+                PropertyState = this.PropertyState.DeepCopy(),
+            };
+            return copy;
         }
     }
 }

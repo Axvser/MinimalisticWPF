@@ -21,7 +21,7 @@ namespace MinimalisticWPF.Animator
         {
             return new TransitionBoard<T>() { Target = target };
         }
-        public static IExecutableTransition Create<T>(ICollection<T> values, object? target = null) where T : class, ITransitionMeta, IMergeableTransition, ITransitionWithTarget, IConvertibleTransitionMeta
+        public static TransitionBoard<T> Create<T>(ICollection<T> values, object? target = null) where T : class, ITransitionMeta
         {
             var meta = new TransitionBoard<T>()
             {
@@ -30,7 +30,7 @@ namespace MinimalisticWPF.Animator
             meta.Merge(values.Select(v => v as ITransitionMeta).ToArray());
             return meta;
         }
-        public static IExecutableTransition Create<T>(ICollection<T> values, TransitionParams transitionParams, object? target = null) where T : class, ITransitionMeta, IMergeableTransition, ITransitionWithTarget, IConvertibleTransitionMeta
+        public static TransitionBoard<T> Create<T>(ICollection<T> values, TransitionParams transitionParams, object? target = null) where T : class, ITransitionMeta
         {
             var meta = new TransitionBoard<T>()
             {
@@ -40,7 +40,30 @@ namespace MinimalisticWPF.Animator
             meta.Merge(values.Select(v => v as ITransitionMeta).ToArray());
             return meta;
         }
-        public static IExecutableTransition Create<T>(ICollection<T> values, Action<TransitionParams> transitionSet, object? target = null) where T : class, ITransitionMeta, IMergeableTransition, ITransitionWithTarget, IConvertibleTransitionMeta
+        public static TransitionBoard<T> Create<T>(ICollection<T> values, Action<TransitionParams> transitionSet, object? target = null) where T : class, ITransitionMeta
+        {
+            var para = new TransitionParams();
+            transitionSet(para);
+            var meta = new TransitionBoard<T>()
+            {
+                Target = target,
+                TransitionParams = para
+            };
+            meta.Merge(values.Select(v => v as ITransitionMeta).ToArray());
+            return meta;
+        }
+
+        public static IExecutableTransition Compile<T>(ICollection<T> values, TransitionParams transitionParams, object? target = null) where T : class, ITransitionMeta
+        {
+            var meta = new TransitionBoard<T>()
+            {
+                Target = target,
+                TransitionParams = transitionParams
+            };
+            meta.Merge(values.Select(v => v as ITransitionMeta).ToArray());
+            return meta;
+        }
+        public static IExecutableTransition Compile<T>(ICollection<T> values, Action<TransitionParams> transitionSet, object? target = null) where T : class, ITransitionMeta
         {
             var para = new TransitionParams();
             transitionSet(para);
