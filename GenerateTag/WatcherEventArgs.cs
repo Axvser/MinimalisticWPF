@@ -6,9 +6,6 @@ using System.Threading.Tasks;
 
 namespace MinimalisticWPF
 {
-    /// <summary>
-    /// 传递属性变动事件中的新值与旧值
-    /// </summary>
     public class WatcherEventArgs : EventArgs
     {
         public WatcherEventArgs(object? oldValue, object? newValue)

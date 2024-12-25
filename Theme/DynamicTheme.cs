@@ -13,12 +13,6 @@ using System.Windows.Media;
 
 namespace MinimalisticWPF
 {
-    /// <summary>
-    /// <para>H ( Heading )    >> 标题文本色</para>
-    /// <para>P ( Paragraph )  >> 段落文本色</para>
-    /// <para>B ( Background ) >> 背景色</para>
-    /// <para>E ( EdgeBrush )  >> 边界涂色</para>
-    /// </summary>
     public enum BrushTags : int
     {
         Default,

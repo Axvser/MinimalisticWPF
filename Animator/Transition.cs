@@ -58,7 +58,7 @@ namespace MinimalisticWPF.Animator
             var meta = new TransitionBoard<T>()
             {
                 Target = target,
-                TransitionParams = transitionParams
+                TransitionParams = transitionParams.DeepCopy()
             };
             meta.Merge(values.Select(v => v as ITransitionMeta).ToArray());
             return meta;

@@ -15,7 +15,9 @@
 
 2024 - 12 - 25 : 
 
-[Animation](#Animation) Updates :
+[Animation](#Animation) Updates ( V2.4.0 ) :
+
+★ Transition.CreateBoardFromType() => Transition.Create()
 
 [ 1 - 1 ] More formal writing
 
@@ -23,8 +25,9 @@
 
 ★ [ 1 - 3 ] If you define multiple animations for the same class, since V2.4.0 you can compose them as a single animation instead of using the UnSafe parameter
 
-[ 1 - 5 ] API updates
+[ 1 - 5 ] new APIs to terminate a transition
 
+★ [ 1 - 6 ] Use Compile () to eliminate possible problems with reference types
 
 ---
 
@@ -129,7 +132,8 @@ A description of the animation parameters is in the Details directory [Transitio
                 .SetProperty(x => x.Background, Brushes.Cyan)
                 .SetProperty(x => x.Opacity, 0.5);
 
-            var transition = Transition.Create([animation1, animation2], param, null);
+            var transition = Transition.Create([animation1, animation2], param, null); 
+            //The last argument indicates that the effect is applied to a specific instance, so if you specify an instance instead of null, you don't need to specify it again when calling Start()
 
             transition.Start(c1);
             transition.Start(c2);
@@ -181,6 +185,39 @@ Transition.Dispose(c1,c2);        // Only transitions of the selected object
 Transition.DisposeSafe(c1,c2);    // Only Safe transitions
 Transition.DisposeUnSafe(c1,c2);  // Only UnSafe transitions
 ```
+
+<h4 style="color:White">[ 1 - 6 ] Compile Transition</h4>
+
+<h5 style="color:white">Compile() outputs a controller that can only be used to start or terminate a transition.Modifying the original data will not affect the controller's transition</h5>
+
+```csharp
+        public void LoadAnimation_Merge()
+        {
+            var param = new TransitionParams()
+            {
+                Duration = 1,
+                IsAutoReverse = true,
+                LoopTime = 1
+            };
+
+            var animation1 = Transition.Create<Grid>()
+                .SetProperty(x => x.Width, 500)
+                .SetProperty(x => x.Height, 300);
+            var animation2 = c1.Transition()
+                .SetProperty(x => x.Background, Brushes.Cyan)
+                .SetProperty(x => x.Opacity, 0.5);
+
+            var transition = Transition.Create([animation1, animation2], param, null);
+            var compiled = Transition.Compile([animation1, animation2], param, null);
+
+            param.LoopTime = 3;
+
+            transition.Start(c1); // LoopTime = 3
+            compiled.Start(c2);   // LoopTime = 1
+        }
+```
+
+Compile() is supported on any instance created with Transition.Create(), as well as on instances created directly with object.Transition()
 
 ---
 
