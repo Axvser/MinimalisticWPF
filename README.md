@@ -426,9 +426,14 @@ Values are set with only the most basic constructors, such as [( 0,0,0,0 )] => [
         [Dark(0)]
         private double _themeOpacity = 1;
 
+        [VMProperty]
         [Light("#1e1e1e")]
-        [Dark(nameof(Brushes.Cyan))]
-        public Brush Brush { get; set; } = new RGB(0, 0, 0).Brush;
+        [Dark(nameof(System.Windows.Media.Brushes.Cyan))] // Special data requires a full namespace
+        public Brush _brush = Brushes.Transparent;
+
+        [Light("#1e1e1e")] // You can also tag values directly to a Property, but all of its accessors must be public
+        [Dark(nameof(System.Windows.Media.Brushes.Cyan))]
+        public Brush Foreground { get; set; } = new RGB(0, 0, 0).Brush;
 ```
 
 <h5 style="color:white">Apply Theme</h5>

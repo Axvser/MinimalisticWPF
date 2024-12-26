@@ -20,7 +20,7 @@ namespace MinimalisticWPF
             DynamicTheme.Awake();
             DynamicTheme.GlobalInstance.Add(source);
         }
-        public static void ApplyTheme(this object source, Type attributeType, TransitionParams param)
+        public static void ApplyTheme(this object source, Type attributeType, TransitionParams? param)
         {
             DynamicTheme.Awake();
             var type = source.GetType();
@@ -28,7 +28,7 @@ namespace MinimalisticWPF
             {
                 if (statedic.TryGetValue(attributeType, out var state))
                 {
-                    source.BeginTransition(state, param);
+                    source.BeginTransition(state, param ?? TransitionParams.Theme);
                 }
             }
         }

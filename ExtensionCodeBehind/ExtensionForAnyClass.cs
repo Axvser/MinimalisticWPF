@@ -21,31 +21,15 @@ namespace MinimalisticWPF
             return tempStoryBoard;
         }
 
-        public static IExecutableTransition BeginTransition<T>(this T source, TransitionBoard<T> transfer) where T : class
+        public static IExecutableTransition BeginTransition<T1, T2>(this T1 source, T2 transfer) where T1 : class where T2 : class, ITransitionMeta
         {
             var result = Animator.Transition.Compile([transfer], transfer.TransitionParams, source);
             result.Start();
             return result;
         }
-        public static IExecutableTransition BeginTransition<T>(this T source, TransitionBoard<T> transfer, Action<TransitionParams> set) where T : class
+        public static IExecutableTransition BeginTransition<T1, T2>(this T1 source, T2 state, Action<TransitionParams> set) where T1 : class where T2 : class, ITransitionMeta
         {
-            var param = new TransitionParams();
-            set.Invoke(param);
-            transfer.TransitionParams = param;
-            var result = Animator.Transition.Compile([transfer], set, source);
-            result.Start();
-            return result;
-        }
-        public static IExecutableTransition BeginTransition<T>(this T source, TransitionBoard<T> transfer, TransitionParams set) where T : class
-        {
-            var result = Animator.Transition.Compile([transfer], set, source);
-            result.Start();
-            return result;
-        }
-
-        public static IExecutableTransition BeginTransition<T>(this T source, State state, Action<TransitionParams> set) where T : class
-        {
-            Animator.Transition.Dispose(source);
+            Animator.Transition.DisposeSafe(source);
             var param = new TransitionParams();
             set.Invoke(param);
             var result = Animator.Transition.Compile([state], param, source);
@@ -53,9 +37,9 @@ namespace MinimalisticWPF
             return result;
 
         }
-        public static IExecutableTransition BeginTransition<T>(this T source, State state, TransitionParams param) where T : class
+        public static IExecutableTransition BeginTransition<T1, T2>(this T1 source, T2 state, TransitionParams param) where T1 : class where T2 : class, ITransitionMeta
         {
-            Animator.Transition.Dispose(source);
+            Animator.Transition.DisposeSafe(source);
             var result = Animator.Transition.Compile([state], param, source);
             result.Start();
             return result;
