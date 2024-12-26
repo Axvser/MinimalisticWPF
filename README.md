@@ -17,7 +17,7 @@
 
 ★ [DynamicTheme](#Theme) Updates ( V2.4.6 ) :
 
-You are now able to fully define the theme appearance in the ViewModel.This part has been optimized by the source generator
+[ 5 - 1 ] You are now able to fully define the theme appearance in the ViewModel.This part has been optimized by the source generator
 
 [Aspect-Oriented Programming](#AOP) Updates ( V2.4.6 ) :
 
@@ -434,6 +434,26 @@ Values are set with only the most basic constructors, such as [( 0,0,0,0 )] => [
         [Light("#1e1e1e")] // You can also tag values directly to a Property, but all of its accessors must be public
         [Dark(nameof(System.Windows.Media.Brushes.Cyan))]
         public Brush Foreground { get; set; } = new RGB(0, 0, 0).Brush;
+```
+
+<h5 style="color:white">Do something before/after the theme changed</h5>
+
+You can mark attributes so that the no-argument function is called before or after the topic switch begins
+
+You can also tell which theme the current instance is on by accessing the [ NowTheme ] property
+
+```csharp
+        [BeforeThemeChanged]
+        private void Start()
+        {
+
+        }
+
+        [AfterThemeChanged]
+        private void End()
+        {
+
+        }
 ```
 
 <h5 style="color:white">Apply Theme</h5>
