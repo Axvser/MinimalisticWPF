@@ -24,18 +24,15 @@ namespace MinimalisticWPF
             }
             return source;
         }
-        public static T ApplyTheme<T>(this T source, Type attributeType, Action<TransitionParams>? paramAction = null) where T : class, IThemeApplied
+        public static T ApplyTheme<T>(this T source, Type attributeType, TransitionParams param) where T : class
         {
             DynamicTheme.Awake();
-            var type = source.GetType();
+            var type = source.GetType();          
             if (DynamicTheme.TransitionSource.TryGetValue(type, out var statedic))
             {
                 if (statedic.TryGetValue(attributeType, out var state))
                 {
-                    source.BeforeThemeChanged();
-                    source.BeginTransition(state, paramAction ?? TransitionParams.Theme);
-                    source.NowTheme = attributeType;
-                    source.AfterThemeChanged();
+                    source.BeginTransition(state, param);         
                 }
             }
             return source;

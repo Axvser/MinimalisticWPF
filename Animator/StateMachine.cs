@@ -280,11 +280,7 @@ namespace MinimalisticWPF.Animator
             }
             else
             {
-                TransitionParams.Start?.Invoke();
-                if (TransitionParams.StartAsync != null)
-                {
-                    await TransitionParams.StartAsync.Invoke();
-                }
+                await TransitionParams.StartInvoke();
             }
 
             animationInterpreter.FrameSequence = preload ?? ComputingFrames(targetState, this);

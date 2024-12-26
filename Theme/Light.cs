@@ -8,7 +8,7 @@ using System.Windows.Media;
 
 namespace MinimalisticWPF
 {
-    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false, Inherited = true)]
     public sealed class Light : Attribute, IThemeAttribute
     {
         public Light(params object?[] param)

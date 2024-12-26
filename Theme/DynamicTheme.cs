@@ -54,20 +54,20 @@ namespace MinimalisticWPF
                 _isloaded = true;
             }
         }
-        public static void Apply(Type attributeType, Action<TransitionParams>? paramAction = null, Brush? windowBack = default)
+        public static void Apply(Type attributeType, TransitionParams? param)
         {
             Awake();
             foreach (var item in GlobalInstance)
             {
+                param ??= TransitionParams.Theme.DeepCopy();
+                param.Completed += () =>
+                {
+                    item.AfterThemeChanged();
+                    item.NowTheme = attributeType;
+                };
                 item.BeforeThemeChanged();
-                item.ApplyTheme(attributeType, paramAction);
-                item.NowTheme = attributeType;
-                item.AfterThemeChanged();
+                item.ApplyTheme(attributeType, param);
             }
-            Application.Current.MainWindow.Transition()
-                .SetProperty(x => x.Background, windowBack ?? Application.Current.MainWindow.Background)
-                .SetParams(paramAction ?? TransitionParams.Theme)
-                .Start();
         }
         private static void KVPGeneration(IEnumerable<Type> classes, IEnumerable<Type> attributes)
         {

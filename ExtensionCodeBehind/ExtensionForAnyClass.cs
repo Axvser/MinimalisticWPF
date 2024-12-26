@@ -40,34 +40,18 @@ namespace MinimalisticWPF
         public static void BeginTransition<T>(this T source, State state, Action<TransitionParams> set) where T : class
         {
             if (state == null) return;
-            var machine = source.FindStateMachine();
-            if (machine == null)
-            {
-                var newMachine = StateMachine.Create(source, state);
-                newMachine.Transition(state.StateName, set);
-            }
-            else
-            {
-                machine.Interrupt();
-                machine.States.Add(state);
-                machine.Transition(state.StateName, set);
-            }
+            var machine = StateMachine.Create(source);
+            machine.Interrupt();
+            machine.States.Add(state);
+            machine.Transition(state.StateName, set);
         }
         public static void BeginTransition<T>(this T source, State state, TransitionParams set) where T : class
         {
             if (state == null) return;
-            var machine = source.FindStateMachine();
-            if (machine == null)
-            {
-                var newMachine = StateMachine.Create(source, state);
-                newMachine.Transition(state.StateName, set);
-            }
-            else
-            {
-                machine.Interrupt();
-                machine.States.Add(state);
-                machine.Transition(state.StateName, set);
-            }
+            var machine = StateMachine.Create(source);
+            machine.Interrupt();
+            machine.States.Add(state);
+            machine.Transition(state.StateName, set);
         }
 
         public static StateMachine? FindStateMachine<T>(this T source) where T : class

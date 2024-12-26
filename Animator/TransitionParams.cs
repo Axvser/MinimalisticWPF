@@ -14,25 +14,20 @@ namespace MinimalisticWPF.Animator
         public static int DefaultFrameRate { get; set; } = 60;
         public static DispatcherPriority DefaultUIPriority { get; set; } = DispatcherPriority.Normal;
         public static bool DefaultIsBeginInvoke { get; set; } = false;
-        public static Action<TransitionParams> Theme { get; set; } = (x) =>
+        public static TransitionParams Theme { get; set; } = new()
         {
-            x.FrameRate = DefaultFrameRate;
-            x.Duration = 0.5;
-        };
-        public static Action<TransitionParams> Hover { get; set; } = (x) =>
-        {
-            x.FrameRate = DefaultFrameRate;
-            x.Duration = 0.2;
+            FrameRate = DefaultFrameRate,
+            Duration = 0.5
         };
 
-        public Action? Start { get; set; }
-        public Action? Update { get; set; }
-        public Action? LateUpdate { get; set; }
-        public Action? Completed { get; set; }
-        public Func<Task>? StartAsync { get; set; }
-        public Func<Task>? UpdateAsync { get; set; }
-        public Func<Task>? LateUpdateAsync { get; set; }
-        public Func<Task>? CompletedAsync { get; set; }
+        public event Action? Start;
+        public event Action? Update;
+        public event Action? LateUpdate;
+        public event Action? Completed;
+        public event Func<Task>? StartAsync;
+        public event Func<Task>? UpdateAsync;
+        public event Func<Task>? LateUpdateAsync;
+        public event Func<Task>? CompletedAsync;
         public bool IsAutoReverse { get; set; } = false;
         public int LoopTime { get; set; } = 0;
         public double Duration { get; set; } = 0;
@@ -70,6 +65,39 @@ namespace MinimalisticWPF.Animator
                 IsBeginInvoke = this.IsBeginInvoke
             };
             return copy;
+        }
+
+        internal async Task StartInvoke()
+        {
+            Start?.Invoke();
+            if (StartAsync != null)
+            {
+                await StartAsync.Invoke();
+            }
+        }
+        internal async Task UpdateInvoke()
+        {
+            Update?.Invoke();
+            if (UpdateAsync != null)
+            {
+                await UpdateAsync.Invoke();
+            }
+        }
+        internal async Task LateUpdateInvoke()
+        {
+            LateUpdate?.Invoke();
+            if (LateUpdateAsync != null)
+            {
+                await LateUpdateAsync.Invoke();
+            }
+        }
+        internal async Task CompletedInvoke()
+        {
+            Completed?.Invoke();
+            if (CompletedAsync != null)
+            {
+                await CompletedAsync.Invoke();
+            }
         }
     }
 }

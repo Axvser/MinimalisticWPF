@@ -90,14 +90,7 @@ namespace MinimalisticWPF.Animator
         {
             if (Application.Current != null)
             {
-                if (TransitionParams.Update != null)
-                {
-                    Application.Current.Dispatcher.Invoke(TransitionParams.Update);
-                }
-                if (TransitionParams.UpdateAsync != null)
-                {
-                    await TransitionParams.UpdateAsync.Invoke();
-                }
+                await Application.Current.Dispatcher.Invoke(TransitionParams.UpdateInvoke);
             }
         }
         private async void FrameUpdate(int i, int j, int k)
@@ -128,14 +121,7 @@ namespace MinimalisticWPF.Animator
         {
             if (Application.Current != null)
             {
-                if (TransitionParams.LateUpdate != null)
-                {
-                    Application.Current.Dispatcher.Invoke(TransitionParams.LateUpdate);
-                }
-                if (TransitionParams.LateUpdateAsync != null)
-                {
-                    await TransitionParams.LateUpdateAsync.Invoke();
-                }
+                await Application.Current.Dispatcher.Invoke(TransitionParams.LateUpdateInvoke);
             }
         }
         private async void WhileEnded()
@@ -153,14 +139,7 @@ namespace MinimalisticWPF.Animator
 
             if (Application.Current != null)
             {
-                if (TransitionParams.Completed != null)
-                {
-                    Application.Current.Dispatcher.Invoke(TransitionParams.Completed);
-                }
-                if (TransitionParams.CompletedAsync != null)
-                {
-                    await TransitionParams.CompletedAsync.Invoke();
-                }
+                await Application.Current.Dispatcher.Invoke(TransitionParams.CompletedInvoke);
             }
             IsRunning = false;
             IsStop = false;
