@@ -1,4 +1,5 @@
 ﻿using MinimalisticWPF.Animator;
+using MinimalisticWPF.StructuralDesign.Animator;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,38 +21,44 @@ namespace MinimalisticWPF
             return tempStoryBoard;
         }
 
-        public static void BeginTransition<T>(this T source, TransitionBoard<T> transfer) where T : class
+        public static IExecutableTransition BeginTransition<T>(this T source, TransitionBoard<T> transfer) where T : class
         {
-            transfer.Start(source);
+            var result = Animator.Transition.Compile([transfer], transfer.TransitionParams, source);
+            result.Start();
+            return result;
         }
-        public static void BeginTransition<T>(this T source, TransitionBoard<T> transfer, Action<TransitionParams> set) where T : class
+        public static IExecutableTransition BeginTransition<T>(this T source, TransitionBoard<T> transfer, Action<TransitionParams> set) where T : class
         {
             var param = new TransitionParams();
             set.Invoke(param);
             transfer.TransitionParams = param;
-            transfer.Start(source);
+            var result = Animator.Transition.Compile([transfer], set, source);
+            result.Start();
+            return result;
         }
-        public static void BeginTransition<T>(this T source, TransitionBoard<T> transfer, TransitionParams set) where T : class
+        public static IExecutableTransition BeginTransition<T>(this T source, TransitionBoard<T> transfer, TransitionParams set) where T : class
         {
-            transfer.TransitionParams = set;
-            transfer.Start(source);
+            var result = Animator.Transition.Compile([transfer], set, source);
+            result.Start();
+            return result;
         }
 
-        public static void BeginTransition<T>(this T source, State state, Action<TransitionParams> set) where T : class
+        public static IExecutableTransition BeginTransition<T>(this T source, State state, Action<TransitionParams> set) where T : class
         {
-            if (state == null) return;
-            var machine = StateMachine.Create(source);
-            machine.Interrupt();
-            machine.States.Add(state);
-            machine.Transition(state.StateName, set);
+            Animator.Transition.Dispose(source);
+            var param = new TransitionParams();
+            set.Invoke(param);
+            var result = Animator.Transition.Compile([state], param, source);
+            result.Start();
+            return result;
+
         }
-        public static void BeginTransition<T>(this T source, State state, TransitionParams set) where T : class
+        public static IExecutableTransition BeginTransition<T>(this T source, State state, TransitionParams param) where T : class
         {
-            if (state == null) return;
-            var machine = StateMachine.Create(source);
-            machine.Interrupt();
-            machine.States.Add(state);
-            machine.Transition(state.StateName, set);
+            Animator.Transition.Dispose(source);
+            var result = Animator.Transition.Compile([state], param, source);
+            result.Start();
+            return result;
         }
 
         public static StateMachine? FindStateMachine<T>(this T source) where T : class

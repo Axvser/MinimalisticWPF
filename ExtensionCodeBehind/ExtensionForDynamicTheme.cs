@@ -15,27 +15,22 @@ namespace MinimalisticWPF
 {
     public static class ExtensionForDynamicTheme
     {
-        public static T ApplyGlobalTheme<T>(this T source) where T : IThemeApplied
+        public static void ApplyGlobalTheme(this object source)
         {
             DynamicTheme.Awake();
-            if (!DynamicTheme.GlobalInstance.Contains(source))
-            {
-                DynamicTheme.GlobalInstance.Add(source);
-            }
-            return source;
+            DynamicTheme.GlobalInstance.Add(source);
         }
-        public static T ApplyTheme<T>(this T source, Type attributeType, TransitionParams param) where T : class
+        public static void ApplyTheme(this object source, Type attributeType, TransitionParams param)
         {
             DynamicTheme.Awake();
-            var type = source.GetType();          
+            var type = source.GetType();
             if (DynamicTheme.TransitionSource.TryGetValue(type, out var statedic))
             {
                 if (statedic.TryGetValue(attributeType, out var state))
                 {
-                    source.BeginTransition(state, param);         
+                    source.BeginTransition(state, param);
                 }
             }
-            return source;
         }
     }
 }

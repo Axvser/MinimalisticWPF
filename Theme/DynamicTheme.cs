@@ -26,7 +26,7 @@ namespace MinimalisticWPF
     public static class DynamicTheme
     {
         public static ConcurrentDictionary<Type, ConcurrentDictionary<Type, State>> TransitionSource { get; internal set; } = new();
-        public static HashSet<IThemeApplied> GlobalInstance { get; internal set; } = new(64);
+        public static HashSet<object> GlobalInstance { get; internal set; } = new(64);
 
         private static bool _isloaded = false;
         public static object? GetThemeValue(Type classType, Type attributeType, string propertyName)
@@ -59,14 +59,22 @@ namespace MinimalisticWPF
             Awake();
             foreach (var item in GlobalInstance)
             {
-                param ??= TransitionParams.Theme.DeepCopy();
-                param.Completed += () =>
+                if(item is IThemeApplied target)
                 {
-                    item.AfterThemeChanged();
-                    item.NowTheme = attributeType;
-                };
-                item.BeforeThemeChanged();
-                item.ApplyTheme(attributeType, param);
+                    param ??= TransitionParams.Theme.DeepCopy();
+                    param.Completed += () =>
+                    {
+                        target.AfterThemeChanged();
+                        target.NowTheme = attributeType;
+                    };
+                    target.BeforeThemeChanged();
+                    item.ApplyTheme(attributeType, param);
+                }
+                else
+                {
+                    param ??= TransitionParams.Theme.DeepCopy();
+                    item.ApplyTheme(attributeType, param);
+                }
             }
         }
         private static void KVPGeneration(IEnumerable<Type> classes, IEnumerable<Type> attributes)

@@ -13,21 +13,15 @@
 
 ## Important Notice
 
-2024 - 12 - 25 : 
+2024 - 12 - 27 : 
 
-[Animation](#Animation) Updates ( V2.4.0 ) :
+★ [DynamicTheme](#Theme) Updates ( V2.4.6 ) :
 
-★ Transition.CreateBoardFromType() => Transition.Create()
+You are now able to fully define the theme appearance in the ViewModel.This part has been optimized by the source generator
 
-[ 1 - 1 ] More formal writing
+[Aspect-Oriented Programming](#AOP) Updates ( V2.4.6 ) :
 
-[ 1 - 2 ] More formal writing
-
-★ [ 1 - 3 ] If you define multiple animations for the same class, since V2.4.0 you can compose them as a single animation instead of using the UnSafe parameter
-
-[ 1 - 5 ] new APIs to terminate a transition
-
-★ [ 1 - 6 ] Use Compile () to eliminate possible problems with reference types
+The handling of namespaces to which property types belong in dynamic proxies has been optimized
 
 ---
 
@@ -419,47 +413,29 @@ public partial class MyPage
 }
 ```
 
-<h5 style="color:white">Defining state values</h5>
+<h5 style="color:white">Marking Field / Property</h5>
+
+[ Brush | double | CornerRadius | Thickness ] are supported.
+
+Values are set with only the most basic constructors, such as [( 0,0,0,0 )] => [
+( new Thickness(0,0,0,0) )]
 
 ```csharp
-        [Dark(nameof(Brushes.Tomato))]
+        [VMProperty] // the property in viewmodel will be generated automiclly
+        [Light(1)]
+        [Dark(0)]
+        private double _themeOpacity = 1;
+
         [Light("#1e1e1e")]
-        public Brush Color
-        {
-            get => txt.Foreground;
-            set => txt.Foreground = value;
-        }
-
-        [Dark(6)]
-        [Light(16,1,2,0)]
-        public CornerRadius CornerRadius
-        {
-            get => bor.CornerRadius;
-            set => bor.CornerRadius = value;
-        }
-
-        [Dark(0.0)]
-        [Light(1.0)]
-        public double ThemeOpacity
-        {
-            get => Opacity;
-            set => Opacity = value;
-        }
-
-        [Dark(1,1,1,1)]
-        [Light(5)]
-        public Thickness ThemeThickness
-        {
-            get => bor.BorderThickness;
-            set => bor.BorderThickness = value;
-        }
+        [Dark(nameof(Brushes.Cyan))]
+        public Brush Brush { get; set; } = new RGB(0, 0, 0).Brush;
 ```
 
 <h5 style="color:white">Apply Theme</h5>
 
 ```csharp
-   this.ApplyTheme(typeof(WhenLight)); // Started by the instance itself
-   DynamicTheme.Apply(typeof(WhenLight), windowBack: Brushes.White); // Global usage
+   this.ApplyTheme(typeof(WhenLight),default); // Started by the instance itself
+   DynamicTheme.Apply(typeof(WhenLight),default); // Global usage
 ```
 
 <h4 style="color:White">[ 5 - 2 ] BrushTags</h4>You can use tag when marking a theme value to the Brush
@@ -483,22 +459,12 @@ By default, the library provides two color packages for light and dark themes an
 
 <h4 style="color:White">[ 5 - 4 ] Theme Customization</h4>
 
-<h5 style="color:white">To create your own theme, you need to include the following factors</h5>
-
-<p style="color:wheat">1. Attribute & IThemeAttribute</p>
-
-Declare an attribute that implements a given interface. This attribute can be used just like [Light] / [Dark]
+Make your attribute implement the [ IThemeAttribute ] interface so that it can be used just like [ Light ] / [ Dark ]
 
 |Property|Description|
 |-------|---------|
-|Parameters|The actual parameters that the custom topic class receives when initialized|
+|Parameters|The actual parameters that the custom theme class receives when initialized|
 |Value|For example, you can pass a BrushTag for an attribute. If the Tag is passed, the attribute describes Brush, and you can return the value of Brush based on the Tag. If the Tag is not passed, the attribute does not describe Brush and you can return null|
-
-<p style="color:wheat">2. IThemeBrushes</p>
-
-Declare a class that implements a given interface to get a color based on a Tag
-
-This is often combined with the [ Value ] in the [ IThemeAttribute ] interface, meaning that a custom theme corresponds to a custom color pack
 
 ---
 
