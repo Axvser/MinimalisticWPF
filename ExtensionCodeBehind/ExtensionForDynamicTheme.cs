@@ -1,4 +1,5 @@
 ﻿using MinimalisticWPF.Animator;
+using MinimalisticWPF.StructuralDesign.Theme;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -14,7 +15,7 @@ namespace MinimalisticWPF
 {
     public static class ExtensionForDynamicTheme
     {
-        public static T ApplyGlobalTheme<T>(this T source) where T : class
+        public static T ApplyGlobalTheme<T>(this T source) where T : IThemeApplied
         {
             DynamicTheme.Awake();
             if (!DynamicTheme.GlobalInstance.Contains(source))
@@ -23,7 +24,7 @@ namespace MinimalisticWPF
             }
             return source;
         }
-        public static T ApplyTheme<T>(this T source, Type attributeType, Action<TransitionParams>? paramAction = null) where T : class
+        public static T ApplyTheme<T>(this T source, Type attributeType, Action<TransitionParams>? paramAction = null) where T : class, IThemeApplied
         {
             DynamicTheme.Awake();
             var type = source.GetType();
@@ -31,7 +32,10 @@ namespace MinimalisticWPF
             {
                 if (statedic.TryGetValue(attributeType, out var state))
                 {
+                    source.BeforeThemeChanged();
                     source.BeginTransition(state, paramAction ?? TransitionParams.Theme);
+                    source.NowTheme = attributeType;
+                    source.AfterThemeChanged();
                 }
             }
             return source;

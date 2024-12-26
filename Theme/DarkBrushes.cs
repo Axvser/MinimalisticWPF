@@ -7,7 +7,7 @@ using System.Windows.Media;
 
 namespace MinimalisticWPF
 {
-    public sealed class DarkBrushes : IThemeBrushes
+    public sealed class DarkBrushes
     {
         internal DarkBrushes() { }
         public static DarkBrushes Selector { get; } = new DarkBrushes();

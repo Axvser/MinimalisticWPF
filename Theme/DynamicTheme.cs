@@ -1,4 +1,5 @@
 ﻿using MinimalisticWPF.Animator;
+using MinimalisticWPF.StructuralDesign.Theme;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -24,10 +25,24 @@ namespace MinimalisticWPF
 
     public static class DynamicTheme
     {
-        internal static ConcurrentDictionary<Type, ConcurrentDictionary<Type, State>> TransitionSource { get; set; } = new();
-        internal static HashSet<object> GlobalInstance { get; set; } = new(64);
+        public static ConcurrentDictionary<Type, ConcurrentDictionary<Type, State>> TransitionSource { get; internal set; } = new();
+        public static HashSet<IThemeApplied> GlobalInstance { get; internal set; } = new(64);
 
         private static bool _isloaded = false;
+        public static object? GetThemeValue(Type classType, Type attributeType, string propertyName)
+        {
+            if (TransitionSource.TryGetValue(classType, out var statesKVP))
+            {
+                if (statesKVP.TryGetValue(attributeType, out var state))
+                {
+                    if (state.Values.TryGetValue(propertyName, out var value))
+                    {
+                        return value;
+                    }
+                }
+            }
+            return null;
+        }
         public static void Awake()
         {
             if (!_isloaded)
@@ -35,8 +50,7 @@ namespace MinimalisticWPF
                 var Assemblies = AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.GetTypes());
                 var classAssemblies = Assemblies.Where(t => t.GetCustomAttribute(typeof(ThemeAttribute), true) != null);
                 var attributeAssemblies = Assemblies.Where(t => typeof(IThemeAttribute).IsAssignableFrom(t) && typeof(Attribute).IsAssignableFrom(t) && !t.IsAbstract);
-                var themebrushesAssemblies = Assemblies.Where(t => typeof(IThemeBrushes).IsAssignableFrom(t) && !t.IsAbstract);
-                KVPGeneration(classAssemblies, attributeAssemblies, themebrushesAssemblies);
+                KVPGeneration(classAssemblies, attributeAssemblies);
                 _isloaded = true;
             }
         }
@@ -45,14 +59,17 @@ namespace MinimalisticWPF
             Awake();
             foreach (var item in GlobalInstance)
             {
+                item.BeforeThemeChanged();
                 item.ApplyTheme(attributeType, paramAction);
+                item.NowTheme = attributeType;
+                item.AfterThemeChanged();
             }
             Application.Current.MainWindow.Transition()
                 .SetProperty(x => x.Background, windowBack ?? Application.Current.MainWindow.Background)
                 .SetParams(paramAction ?? TransitionParams.Theme)
                 .Start();
         }
-        private static void KVPGeneration(IEnumerable<Type> classes, IEnumerable<Type> attributes, IEnumerable<Type> brushselectors)
+        private static void KVPGeneration(IEnumerable<Type> classes, IEnumerable<Type> attributes)
         {
             foreach (var cs in classes)
             {

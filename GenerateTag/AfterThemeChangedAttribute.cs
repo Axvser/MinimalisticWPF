@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 namespace MinimalisticWPF
 {
     /// <summary>
-    /// [ Source Generator ] Functions are allowed to be part of the constructor in ViewModel
+    /// [ Source Generator ] Declaring this feature for a no-argument constructor allows the no-argument function to be called after the theme changed
     /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-    public class VMInitializationAttribute : Attribute
+    public class AfterThemeChangedAttribute : Attribute
     {
-        public VMInitializationAttribute() { }
+        public AfterThemeChangedAttribute() { }
     }
 }

@@ -7,7 +7,7 @@ using System.Windows.Media;
 
 namespace MinimalisticWPF
 {
-    public sealed class LightBrushes : IThemeBrushes
+    public sealed class LightBrushes
     {
         internal LightBrushes() { }
         public static LightBrushes Selector { get; } = new LightBrushes();
