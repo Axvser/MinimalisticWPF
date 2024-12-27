@@ -59,13 +59,13 @@ namespace MinimalisticWPF
             Awake();
             foreach (var item in GlobalInstance)
             {
-                if(item is IThemeApplied target)
+                if (item is IThemeApplied target)
                 {
                     param ??= TransitionParams.Theme.DeepCopy();
                     param.Completed += () =>
                     {
-                        target.AfterThemeChanged();
                         target.NowTheme = attributeType;
+                        target.AfterThemeChanged();
                     };
                     target.BeforeThemeChanged();
                     item.ApplyTheme(attributeType, param);

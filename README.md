@@ -1,9 +1,14 @@
 ﻿# MinimalisticWPF
 
-<h3 style="color:Violet">What can this project do for you ?</h3>
-<p style="color:White">（1）Backend, simple, flexible animation implementation</p>
-<p style="color:White">（2）Easy design pattern implementation</p>
-<p style="color:White">（3）Other small components that speed up WPF development</p>
+[Document](#Document) 
+
+## What can this project do for you ?
+
+（1）Backend, simple, flexible animation implementation
+
+（2）Easy design pattern implementation
+
+（3）Other small components that speed up WPF development
 
 [github √](https://github.com/Axvser/MinimalisticWPF) 
 
@@ -26,6 +31,10 @@ The handling of namespaces to which property types belong in dynamic proxies has
 Updates ( V2.4.7 ) :
 
 Fixed an accident in the auto-implementation interface section
+
+Updates ( V2.4.8 ) :
+
+Adjusted the timing of [AfterThemeChanged ()] call so that the update of [NowTheme] occurs at an earlier time
 
 ---
 
