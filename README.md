@@ -23,6 +23,10 @@
 
 The handling of namespaces to which property types belong in dynamic proxies has been optimized
 
+Updates ( V2.4.7 ) :
+
+Fixed an accident in the auto-implementation interface section
+
 ---
 
 ## Document 
