@@ -405,7 +405,8 @@ Pool.StopAutoDispose(typeof(Unit));
 
 ```csharp
 var unit = Pool.Fetch(typeof(Unit)) as Unit;
-unit.PoolDispose();
+Pool.ForceDispose(unit);
+// Pool.ForceDispose(typeof(Unit));
 ```
 
 It is common to have one thread per class to intermittently reclaim objects, which can lead to too many threads, and you won't see this message if there are optimizations in future versions

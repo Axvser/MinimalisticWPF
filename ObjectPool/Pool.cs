@@ -199,6 +199,12 @@ namespace MinimalisticWPF
                 return false;
             }
         }
+        /// <summary>
+        /// Begins to monitor the specified type for recyclable instances at a certain frequency and recycle them
+        /// <para>⚠ Note that this method creates a separate thread for the type</para>
+        /// </summary>
+        /// <param name="type">Types that should be reclaimed automatically</param>
+        /// <param name="scanspan">The time interval of the scan operation</param>
         public static void RunAutoDispose(Type type, int scanspan)
         {
             InitializeSource();
@@ -244,10 +250,16 @@ namespace MinimalisticWPF
                 Tokens.TryRemove(type, out _);
             }
         }
+        /// <summary>
+        /// Check how many resources are still available in the current object pool
+        /// </summary>
         public static int GetPoolSemaphore(this Type source)
         {
             return (Source.TryGetValue(source, out var pool) ? pool.Count : -1) + (Dispose.TryGetValue(source, out var disc) ? disc.Count : -1);
         }
+        /// <summary>
+        /// Objects are forcibly reclaimed regardless of the [PoolDisposeCondition] configuration
+        /// </summary>
         public static int ForceDispose(params object[] sources)
         {
             var count = 0;
@@ -266,6 +278,9 @@ namespace MinimalisticWPF
             }
             return count;
         }
+        /// <summary>
+        /// Forcibly reclaim objects of the specified type regardless of the [PoolDisposeCondition] configuration
+        /// </summary>
         public static int ForceDispose(params Type[] types)
         {
             var count = 0;
