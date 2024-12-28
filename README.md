@@ -504,11 +504,19 @@ Take text color as an example - how to modify the text color change effect on mo
 - Light themes default to black and turn red when hovered over
 - Dark themes default to white and turn blue when hovered over
 
+Using
+
+```csharp
+using MinimalisticWPF;
+using System.Windows.Media;
+using MinimalisticWPF.Animator;
+```
+
 ViewModel
 
 ```csharp
     [Theme]
-    public partial class ButtonViewModel
+    public partial class ButtonVM
     {
         [VMInitialization]
         private void SetDefaultTheme()
