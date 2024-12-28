@@ -31,6 +31,7 @@ namespace MinimalisticWPF
         private static bool _isloaded = false;
         public static object? GetThemeValue(Type classType, Type attributeType, string propertyName)
         {
+            Awake();
             if (TransitionSource.TryGetValue(classType, out var statesKVP))
             {
                 if (statesKVP.TryGetValue(attributeType, out var state))
@@ -62,9 +63,14 @@ namespace MinimalisticWPF
                 if (item is IThemeApplied target)
                 {
                     param ??= TransitionParams.Theme.DeepCopy();
+                    param.Start += () =>
+                    {
+                        target.IsThemeChanging = true;
+                    };
                     param.Completed += () =>
                     {
                         target.NowTheme = attributeType;
+                        target.IsThemeChanging = false;
                         target.AfterThemeChanged();
                     };
                     target.BeforeThemeChanged();
