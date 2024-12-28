@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 namespace MinimalisticWPF
 {
     /// <summary>
-    /// [ Source Generator ] Declaring this feature for a no-argument constructor allows the no-argument function to be called after the theme changed
+    /// [ Source Generator ] Generate a number of constructors based on the difference in the parameter list.The logic inside this method will be executed inside the constructor.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-    public class AfterThemeChangedAttribute : Attribute
+    public class ConstructorAttribute : Attribute
     {
-        public AfterThemeChangedAttribute() { }
+        public ConstructorAttribute() { }
     }
 }
