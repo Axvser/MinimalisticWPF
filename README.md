@@ -18,23 +18,14 @@
 
 ## Important Notice
 
-2024 - 12 - 27 : 
+2024 - 12 - 28 : 
 
-★ [DynamicTheme](#Theme) Updates ( V2.4.6 ) :
+★ [DynamicTheme](#Theme) Updates ( V2.4.9 ) :
+- The auto-generated item includes a new [ IsThemeChanging ] property that you can access to see if the theme switch animation is currently loading
+- [ 5 - 5 ] A code sample has been added, which will demonstrate for you how to achieve theme switching in the Mvvm design pattern with this project and dynamically modify the hover effects of controls under different themes.
 
-[ 5 - 1 ] You are now able to fully define the theme appearance in the ViewModel.This part has been optimized by the source generator
-
-[Aspect-Oriented Programming](#AOP) Updates ( V2.4.6 ) :
-
-The handling of namespaces to which property types belong in dynamic proxies has been optimized
-
-Updates ( V2.4.7 ) :
-
-Fixed an accident in the auto-implementation interface section
-
-Updates ( V2.4.8 ) :
-
-Adjusted the timing of [AfterThemeChanged ()] call so that the update of [NowTheme] occurs at an earlier time
+★ MinimalisticWPF.Controls ( Preview )
+- A Nuget package named [ MinimalisticWPf.Controls ] is slated for the future, through which a variety of commonly used Controls will be implemented entirely by utilizing the MinimalisticWPF. 
 
 ---
 
@@ -477,7 +468,9 @@ You can also tell which theme the current instance is on by accessing the [ NowT
    DynamicTheme.Apply(typeof(WhenLight),default); // Global usage
 ```
 
-<h4 style="color:White">[ 5 - 2 ] BrushTags</h4>You can use tag when marking a theme value to the Brush
+### [ 5 - 2 ] BrushTags
+
+You can use tag when marking a theme value to the Brush
 
 ```csharp
         [Light(BrushTags.H1)]
@@ -487,7 +480,7 @@ You can also tell which theme the current instance is on by accessing the [ NowT
 
 BrushTags makes uniform names for key parts under different topics
 
-<h4 style="color:White">[ 5 - 3 ] Change the default theme color</h4>
+### [ 5 - 3 ] Change the default theme color
 
 By default, the library provides two color packages for light and dark themes and an RGB struct that you can use to apply RGBA transformations to Brush, such as making the opacity half of its original value
 
@@ -496,7 +489,7 @@ By default, the library provides two color packages for light and dark themes an
      DarkBrushes.H1 = DarkBrushes.H1.ToRGB().Scale(1, 0.5).Brush;
 ```
 
-<h4 style="color:White">[ 5 - 4 ] Theme Customization</h4>
+### [ 5 - 4 ] Theme Customization
 
 Make your attribute implement the [ IThemeAttribute ] interface so that it can be used just like [ Light ] / [ Dark ]
 
@@ -504,6 +497,81 @@ Make your attribute implement the [ IThemeAttribute ] interface so that it can b
 |-------|---------|
 |Parameters|The actual parameters that the custom theme class receives when initialized|
 |Value|For example, you can pass a BrushTag for an attribute. If the Tag is passed, the attribute describes Brush, and you can return the value of Brush based on the Tag. If the Tag is not passed, the attribute does not describe Brush and you can return null|
+
+### [ 5 - 5 ] Code Practices
+
+Take text color as an example - how to modify the text color change effect on mouseover under different themes
+- Light themes default to black and turn red when hovered over
+- Dark themes default to white and turn blue when hovered over
+
+ViewModel
+
+```csharp
+    [Theme]
+    public partial class ButtonViewModel
+    {
+        [VMInitialization]
+        private void SetDefaultTheme()
+        {
+            NowTheme = typeof(Dark);
+        }
+        // When initialized, set to a dark theme
+
+        [VMProperty]
+        [Dark("White")]
+        [Light("Black")]
+        private Brush _textBrush = Brushes.White;        
+
+        private bool _isHover = false;
+        public virtual bool IsHover
+        {
+            get => _isHover;
+            set
+            {
+                if (_isHover != value)
+                {
+                    _isHover = value;
+                    if (!IsThemeChanging) // Based on the current state, start the animation
+                    {
+                        this.BeginTransition(value ? Selected : NoSelected,TransitionParams.Theme);
+                    }
+                }
+            }
+        }
+
+
+        public virtual TransitionBoard<ButtonVM> Selected { get; protected set; } = Transition.Create<ButtonVM>()
+            .SetProperty(x => x.TextBrush, Brushes.Red);
+        // Describes the animation that should be performed when the control is selected
+
+        public virtual TransitionBoard<ButtonVM> NoSelected { get; protected set; } = Transition.Create<ButtonVM>()
+            .SetProperty(x => x.TextBrush, Brushes.White);
+        // Describes the animation that needs to be loaded when the mouse leaves the control
+
+        [BeforeThemeChanged]
+        public virtual void StopHoverAnimation()
+        {
+            Transition.DisposeSafe(this);
+        }
+        // Usually, we need to stop the animation in progress before changing the theme
+
+        [AfterThemeChanged]
+        public virtual void ContinueHoverAnimation()
+        {
+            if (NowTheme != null)
+            {
+                Selected.SetProperty(x => x.TextBrush, NowTheme == typeof(Dark) ? Brushes.Blue : Brushes.Red);
+                NoSelected.SetProperty(x => x.TextBrush, (Brush)(DynamicTheme.GetThemeValue(typeof(ButtonVM), NowTheme, nameof(TextBrush)) ?? TextBrush));
+            }
+            // This branch is critical because it gives you the freedom to decide how the control should animate under different themes
+
+            this.BeginTransition(_isHover ? Selected : NoSelected, TransitionParams.Theme);
+            // Don't forget to synchronize with the current state
+        }
+    }
+```
+
+The main point of this example is to dynamically change the animation effect during the Theme change cycle by using SetProperty().
 
 ---
 
