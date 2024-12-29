@@ -14,15 +14,6 @@ using System.Windows.Media;
 
 namespace MinimalisticWPF
 {
-    public enum BrushTags : int
-    {
-        Default,
-        H1, H2, H3, H4, H5,
-        P1, P2, P3, P4, P5,
-        B1, B2, B3, B4, B5,
-        E1, E2, E3, E4, E5,
-    }
-
     public static class DynamicTheme
     {
         public static ConcurrentDictionary<Type, ConcurrentDictionary<Type, State>> TransitionSource { get; internal set; } = new();
@@ -49,7 +40,7 @@ namespace MinimalisticWPF
             if (!_isloaded)
             {
                 var Assemblies = AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.GetTypes());
-                var classAssemblies = Assemblies.Where(t => t.GetCustomAttribute(typeof(ThemeAttribute), true) != null);
+                var classAssemblies = Assemblies.Where(t => t.GetCustomAttribute(typeof(DynamicThemeAttribute), true) != null);
                 var attributeAssemblies = Assemblies.Where(t => typeof(IThemeAttribute).IsAssignableFrom(t) && typeof(Attribute).IsAssignableFrom(t) && !t.IsAbstract);
                 KVPGeneration(classAssemblies, attributeAssemblies);
                 _isloaded = true;
@@ -69,11 +60,12 @@ namespace MinimalisticWPF
                     };
                     param.Completed += () =>
                     {
-                        target.NowTheme = attributeType;
+                        var old = target.CurrentTheme;
+                        target.CurrentTheme = attributeType;
                         target.IsThemeChanging = false;
-                        target.AfterThemeChanged();
+                        target.OnThemeChanged(old, attributeType);
                     };
-                    target.BeforeThemeChanged();
+                    target.OnThemeChanging(target.CurrentTheme, attributeType);
                     item.ApplyTheme(attributeType, param);
                 }
                 else
@@ -113,21 +105,21 @@ namespace MinimalisticWPF
                             {
                                 (true, false, false, false, false, false) => () =>
                                 {
-                                    var value = Convert.ToDouble(info.Context.Parameters?.FirstOrDefault() ?? 0);
+                                    var value = Convert.ToDouble(info.Context.Parameters.FirstOrDefault() ?? 0);
                                     state.AddProperty(info.PropertyInfo.Name, value);
                                     return 1;
                                 }
                                 ,
                                 (false, true, false, false, false, false) => () =>
                                 {
-                                    var value = info.Context.Value ?? info.Context.Parameters?.FirstOrDefault()?.ToString()?.ToBrush() ?? Brushes.Transparent;
+                                    var value = info.Context.Parameters.FirstOrDefault()?.ToString()?.ToBrush() ?? Brushes.Transparent;
                                     state.AddProperty(info.PropertyInfo.Name, value);
                                     return 2;
                                 }
                                 ,
                                 (false, false, true, false, false, false) => () =>
                                 {
-                                    var value = Transform.Parse(info.Context.Parameters?.FirstOrDefault()?.ToString() ?? Transform.Identity.ToString());
+                                    var value = Transform.Parse(info.Context.Parameters.FirstOrDefault()?.ToString() ?? Transform.Identity.ToString());
                                     state.AddProperty(info.PropertyInfo.Name, value);
                                     return 3;
                                 }

@@ -9,8 +9,8 @@ namespace MinimalisticWPF.StructuralDesign.Theme
     public interface IThemeApplied
     {
         public bool IsThemeChanging { get; set; }
-        public Type? NowTheme { get; set; }
-        public void BeforeThemeChanged();
-        public void AfterThemeChanged();
+        public Type? CurrentTheme { get; set; }
+        public void OnThemeChanging(Type? oldTheme, Type newTheme);
+        public void OnThemeChanged(Type? oldTheme, Type newTheme);
     }
 }

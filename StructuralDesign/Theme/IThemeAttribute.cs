@@ -9,12 +9,8 @@ namespace MinimalisticWPF.StructuralDesign.Theme
     public interface IThemeAttribute
     {
         /// <summary>
-        /// Arguments to construct new values. It's no longer limited to Brush.
+        /// Arguments to construct new value.
         /// </summary>
-        object?[]? Parameters { get; }
-        /// <summary>
-        /// The theme is usually about Brush, and Value is the value that the context should get for Brush, or if it's empty, it represents something else, and a new value needs to be constructed using a number of arguments
-        /// </summary>
-        object? Value { get; }
+        object?[] Parameters { get; }
     }
 }

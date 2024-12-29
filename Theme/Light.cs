@@ -15,17 +15,7 @@ namespace MinimalisticWPF
         {
             Parameters = param;
         }
-        public Light(BrushTags noselected)
-        {
-            BrushPackage = noselected;
-            ispackagebrush = true;
-        }
 
-        private bool ispackagebrush = false;
-
-        internal BrushTags BrushPackage { get; set; }
-
-        public object?[]? Parameters { get; set; }
-        public object? Value => ispackagebrush ? LightBrushes.Selector.Select(BrushPackage) : null;
+        public object?[] Parameters { get; set; }
     }
 }

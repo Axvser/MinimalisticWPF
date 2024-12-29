@@ -20,12 +20,80 @@
 
 2024 - 12 - 28 : 
 
-★ [DynamicTheme](#Theme) Updates ( V2.4.9 ) :
-- The auto-generated item includes a new [ IsThemeChanging ] property that you can access to see if the theme switch animation is currently loading
-- [ 5 - 5 ] A code sample has been added, which will demonstrate for you how to achieve theme switching in the Mvvm design pattern with this project and dynamically modify the hover effects of controls under different themes.
+⚠ Breaking Update ( V2.5.1 )
 
-★ MinimalisticWPF.Controls ( Preview )
-- A Nuget package named [ MinimalisticWPf.Controls ] is slated for the future, through which a variety of commonly used Controls will be implemented entirely by utilizing the MinimalisticWPF. 
+Optimize source generation for [Mvvm](#Mvvm) & [Dynamic Theme](#Theme)
+- [VMPropertyAttribute] => [ObservableAttribute]
+- [VMInitializationAttribute] => [ConstructorAttribute] 
+- [VMWatcherAttribute] => partial void Function(newValue,oldValue)
+- [After/BeforeThemeChangedAttribute] => public partial void Function(newTheme,oldTheme)
+- [ThemeAttribute] => [DynamicThemeAttribute]
+
+★ The following example demonstrates the use of V2.5.x
+
+```csharp
+    [AspectOriented]
+    [DynamicTheme]
+    public partial class ButtonVM
+    {
+        [Constructor]
+        private void SetDefaultTheme()// [no-argument constructor] When initialized, set to dark theme
+        {
+            CurrentTheme = typeof(Dark);
+        }      
+
+        [Constructor]
+        private void SetDefaultTheme(Type themeType)// [constructor with a Type argument] When initialized, set to custom theme
+        {
+            CurrentTheme = themeType;
+        }
+        [Constructor]
+        private void LoadThemeAnimation(Type themeType)// Methods with the same parameters are executed in the same constructor
+        {
+            
+        }
+
+        [Observable] // Automatic property generation
+        [Dark("White")]
+        [Light("Black")]
+        private Brush _textBrush = Brushes.White;
+        partial void OnTextBrushChanging(Brush oldValue, Brush newValue)
+        {
+            
+        }
+        partial void OnTextBrushChanged(Brush oldValue, Brush newValue)
+        {
+            
+        }
+
+        [Observable(SetterValidations.Custom)] // Use custom logic [ BorderBrushIntercepting ] to verify that the property can be updated
+        [Dark("White")]
+        [Light("Black")]
+        private Brush _borderBrush = Brushes.White;
+        private partial bool BorderBrushIntercepting(Brush oldValue, Brush newValue)
+        {
+            throw new NotImplementedException(); // Returning true will cancel the update
+        }
+        partial void OnBorderBrushChanging(Brush oldValue, Brush newValue)
+        {
+            
+        }
+        partial void OnBorderBrushChanged(Brush oldValue, Brush newValue)
+        {
+            
+        }
+
+        public partial void OnThemeChanging(Type? oldTheme, Type newTheme)// [DynamicTheme] allows you to do something before theme changed
+        {
+            var state = IsThemeChanging; // Whether the theme switch animation is loading
+            var current = CurrentTheme;
+        }
+        public partial void OnThemeChanged(Type? oldTheme, Type newTheme)// [DynamicTheme] allows you to do something after theme changed
+        {
+            
+        }
+    }
+```
 
 ---
 
@@ -221,45 +289,57 @@ Compile() is supported on any instance created with Transition.Create(), as well
 
 ## Mvvm
 
-<h4 style="color:White">[ 2 - 1 ] Automatically generate ViewModel for a partial class</h4>
-<p style="font-size:14px;color:wheat">[ VMProperty ] → Automatically generating properties</p>
-<p style="font-size:14px;color:wheat">[ VMWatcher ] → Ability to listen for property values to change</p>
-<p style="font-size:14px;color:wheat">[ VMInitialization ] → Adds extra logic to the no-argument constructor</p>
+### [ 2 - 1 ] Automatically generate ViewModel for a partial class
 
 ```csharp
     internal partial class Class1
     {
-        [VMProperty]
-        private int _id = -1;
-
-        [VMWatcher]
-        private void OnIdChanged(WatcherEventArgs e)
+        [Observable]
+        private Brush _textBrush = Brushes.White;
+        partial void OnTextBrushChanging(Brush oldValue, Brush newValue)
         {
-            MessageBox.Show($"oldId{e.OldValue}\nnewId{e.NewValue}");
+            
+        }
+        partial void OnTextBrushChanged(Brush oldValue, Brush newValue)
+        {
+            
         }
 
-        [VMInitialization]
-        private void UseDefaultId()
+        [Observable(SetterValidations.Custom)]
+        private Brush _borderBrush = Brushes.White;
+        private partial bool BorderBrushIntercepting(Brush oldValue, Brush newValue)
         {
-           _id = 2024;
+            throw new NotImplementedException(); // Returning true will cancel the update
+        }
+        partial void OnBorderBrushChanging(Brush oldValue, Brush newValue)
+        {
+            
+        }
+        partial void OnBorderBrushChanged(Brush oldValue, Brush newValue)
+        {
+            
         }
     }
 ```
 
-<h4 style="color:White">[ 2 - 2 ] Declaration of multiple constructors</h4>
-
-For example, you need a constructor with an int argument
+### [ 2 - 2 ] Declaration of multiple constructors
 
 ```csharp
-        [VMInitialization]
-        private void WhenInitialized()
+        [Constructor]
+        private void SetDefaultTheme()// [no-argument constructor] When initialized, set to dark theme
         {
+            
+        }      
 
+        [Constructor]
+        private void SetDefaultTheme(Type themeType)// [constructor with a Type argument] When initialized, set to custom theme
+        {
+            
         }
-        [VMInitialization]
-        private void WhenInitialized2(int newValue)
+        [Constructor]
+        private void LoadThemeAnimation(Type themeType)// Methods with the same parameters are executed in the same constructor
         {
-
+            
         }
 ```
 
@@ -270,14 +350,13 @@ The source generator analyzes the parameter list and generates different constru
 
       public Class1 ()
       {
-         this.ApplyGlobalTheme();
-         WhenInitialized();
+         SetDefaultTheme();
       }
 
-      public Class1 (int newValue)
+      public Class1 (Type themeType)
       {
-         this.ApplyGlobalTheme();
-         WhenInitialized2(newValue);
+         SetDefaultTheme(themeType);
+         LoadThemeAnimation(themeType);
       }
 ```
 
@@ -287,7 +366,7 @@ You can define multiple methods with the same parameter list, and they will all 
 
 ## AOP
 
-<h4 style="color:White">[ 3 - 1 ] Make class aspect-oriented</h4>Note properties/methods that must be public
+### [ 3 - 1 ] Make class aspect-oriented
 
 ```csharp
     [AspectOriented]
@@ -302,9 +381,12 @@ You can define multiple methods with the same parameter list, and they will all 
     }
 ```
 
-<h4 style="color:White">[ 3 - 2 ] Make an interception/coverage</h4>
-<p style="font-size:14px">You can execute custom logic before or after calling an operation, or you can override the original execution logic</p>
-<p style="font-size:14px;color:wheat">Proxy.Set（ Name , Before , Original , After ）</p>
+### [ 3 - 2 ] Make an interception/coverage
+- You can execute custom logic before or after calling an operation [ param1 & param3 ]
+- you can override the original execution logic [ param2 ]
+- [ para ] refers to the value passed in for this method call
+- [ last ] represents the return value of the previous step
+- If you don't need to return a value when defining an event, you can simply return null
 
 ```csharp
             var c1 = new Class1();
@@ -324,13 +406,8 @@ You can define multiple methods with the same parameter list, and they will all 
 
             c1.Proxy.Action();
             var a = c1.Proxy.Property;
+            // Members are accessed through Proxy
 ```
-
-<h4 style="color:White">[ 3 - 3 ] Other details</h4>
-<p style="font-size:14px">1. [ para ] refers to the value passed in for this method call</p>
-<p style="font-size:14px">2. [ last ] represents the return value of the previous step</p>
-<p style="font-size:14px">3. A null value is passed to indicate no interception/overwriting</p>
-<p style="font-size:14px">4. If you don't need to return a value when defining an event, you can simply return null</p>
 
 ---
 
@@ -406,19 +483,19 @@ It is common to have one thread per class to intermittently reclaim objects, whi
 
 ## Theme
 
-<h4 style="color:White">[ 5 - 1 ] Marking Theme Properties</h4>
+### [ 5 - 1 ] Marking Theme Properties
 
-<h5 style="color:white">Marking Class</h5>
+(1) Marking Class
 
 ```csharp
-[Theme]
+[DynamicTheme]
 public partial class MyPage
 {
     // The constructor is automatically generated by the source generator
 }
 ```
 
-<h5 style="color:white">Marking Field / Property</h5>
+(2) Marking Field / Property
 
 [ Brush | double | CornerRadius | Thickness ] are supported.
 
@@ -426,38 +503,28 @@ Values are set with only the most basic constructors, such as [( 0,0,0,0 )] => [
 ( new Thickness(0,0,0,0) )]
 
 ```csharp
-        [VMProperty] // the property in viewmodel will be generated automiclly
+        [Observable]
         [Light(1)]
         [Dark(0)]
-        private double _themeOpacity = 1;
+        private double _opacity = 1;
 
-        [VMProperty]
+        [Observable]
         [Light("#1e1e1e")]
         [Dark(nameof(System.Windows.Media.Brushes.Cyan))] // Special data requires a full namespace
         public Brush _brush = Brushes.Transparent;
-
-        [Light("#1e1e1e")] // You can also tag values directly to a Property, but all of its accessors must be public
-        [Dark(nameof(System.Windows.Media.Brushes.Cyan))]
-        public Brush Foreground { get; set; } = new RGB(0, 0, 0).Brush;
 ```
 
-<h5 style="color:white">Do something before/after the theme changed</h5>
-
-You can mark attributes so that the no-argument function is called before or after the topic switch begins
-
-You can also tell which theme the current instance is on by accessing the [ NowTheme ] property
+Do something before/after the theme changed
 
 ```csharp
-        [BeforeThemeChanged]
-        private void Start()
+        public partial void OnThemeChanging(Type? oldTheme, Type newTheme)// [DynamicTheme] allows you to do something before theme changed
         {
-
+            var state = IsThemeChanging; // Whether the theme switch animation is loading
+            var current = CurrentTheme;
         }
-
-        [AfterThemeChanged]
-        private void End()
+        public partial void OnThemeChanged(Type? oldTheme, Type newTheme)// [DynamicTheme] allows you to do something after theme changed
         {
-
+            
         }
 ```
 
@@ -468,37 +535,15 @@ You can also tell which theme the current instance is on by accessing the [ NowT
    DynamicTheme.Apply(typeof(WhenLight),default); // Global usage
 ```
 
-### [ 5 - 2 ] BrushTags
-
-You can use tag when marking a theme value to the Brush
-
-```csharp
-        [Light(BrushTags.H1)]
-        [Dark(BrushTags.H1)]
-        public Brush BrushValue { get; set; } = Brushes.Transparent;
-```
-
-BrushTags makes uniform names for key parts under different topics
-
-### [ 5 - 3 ] Change the default theme color
-
-By default, the library provides two color packages for light and dark themes and an RGB struct that you can use to apply RGBA transformations to Brush, such as making the opacity half of its original value
-
-```csharp
-     LightBrushes.H1 = LightBrushes.H1.ToRGB().Scale(1, 0.5).Brush;
-     DarkBrushes.H1 = DarkBrushes.H1.ToRGB().Scale(1, 0.5).Brush;
-```
-
-### [ 5 - 4 ] Theme Customization
+### [ 5 - 2 ] Theme Customization
 
 Make your attribute implement the [ IThemeAttribute ] interface so that it can be used just like [ Light ] / [ Dark ]
 
 |Property|Description|
 |-------|---------|
 |Parameters|The actual parameters that the custom theme class receives when initialized|
-|Value|For example, you can pass a BrushTag for an attribute. If the Tag is passed, the attribute describes Brush, and you can return the value of Brush based on the Tag. If the Tag is not passed, the attribute does not describe Brush and you can return null|
 
-### [ 5 - 5 ] Code Practices
+### [ 5 - 3 ] Code Practices
 
 Take text color as an example - how to modify the text color change effect on mouseover under different themes
 - Light themes default to black and turn red when hovered over
@@ -515,20 +560,20 @@ using MinimalisticWPF.Animator;
 ViewModel
 
 ```csharp
-    [Theme]
+    [DynamicTheme]
     public partial class ButtonVM
     {
-        [VMInitialization]
+        [Constructor]
         private void SetDefaultTheme()
         {
-            NowTheme = typeof(Dark);
+            CurrentTheme = typeof(Dark);
         }
         // When initialized, set to a dark theme
 
-        [VMProperty]
+        [Observable]
         [Dark("White")]
         [Light("Black")]
-        private Brush _textBrush = Brushes.White;        
+        private Brush _textBrush = Brushes.White;
 
         private bool _isHover = false;
         public virtual bool IsHover
@@ -541,12 +586,11 @@ ViewModel
                     _isHover = value;
                     if (!IsThemeChanging) // Based on the current state, start the animation
                     {
-                        this.BeginTransition(value ? Selected : NoSelected,TransitionParams.Theme);
+                        this.BeginTransition(value ? Selected : NoSelected, TransitionParams.Theme);
                     }
                 }
             }
         }
-
 
         public virtual TransitionBoard<ButtonVM> Selected { get; protected set; } = Transition.Create<ButtonVM>()
             .SetProperty(x => x.TextBrush, Brushes.Red);
@@ -556,20 +600,16 @@ ViewModel
             .SetProperty(x => x.TextBrush, Brushes.White);
         // Describes the animation that needs to be loaded when the mouse leaves the control
 
-        [BeforeThemeChanged]
-        public virtual void StopHoverAnimation()
+        public partial void OnThemeChanging(Type? oldTheme, Type newTheme)
         {
             Transition.DisposeSafe(this);
         }
-        // Usually, we need to stop the animation in progress before changing the theme
-
-        [AfterThemeChanged]
-        public virtual void ContinueHoverAnimation()
+        public partial void OnThemeChanged(Type? oldTheme, Type newTheme)
         {
-            if (NowTheme != null)
+            if (CurrentTheme != null)
             {
-                Selected.SetProperty(x => x.TextBrush, NowTheme == typeof(Dark) ? Brushes.Blue : Brushes.Red);
-                NoSelected.SetProperty(x => x.TextBrush, (Brush)(DynamicTheme.GetThemeValue(typeof(ButtonVM), NowTheme, nameof(TextBrush)) ?? TextBrush));
+                Selected.SetProperty(x => x.TextBrush, newTheme == typeof(Dark) ? Brushes.Blue : Brushes.Red);
+                NoSelected.SetProperty(x => x.TextBrush, (Brush)(DynamicTheme.GetThemeValue(typeof(ButtonVM), newTheme, nameof(TextBrush)) ?? TextBrush));
             }
             // This branch is critical because it gives you the freedom to decide how the control should animate under different themes
 
