@@ -18,7 +18,7 @@
 
 ## Important Notice
 
-2024 - 12 - 28 : 
+2024 - 12 - 29 : 
 
 ⚠ Breaking Update ( V2.5.1 )
 
