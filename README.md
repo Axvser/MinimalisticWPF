@@ -18,82 +18,22 @@
 
 ## Important Notice
 
-2024 - 12 - 29 : 
+2024 - 12 - 30 : 
 
-⚠ Breaking Update ( V2.5.1 )
+Incremental Update ( V2.5.5 )
 
-Optimize source generation for [Mvvm](#Mvvm) & [Dynamic Theme](#Theme)
-- [VMPropertyAttribute] => [ObservableAttribute]
-- [VMInitializationAttribute] => [ConstructorAttribute] 
-- [VMWatcherAttribute] => partial void Function(newValue,oldValue)
-- [After/BeforeThemeChangedAttribute] => public partial void Function(newTheme,oldTheme)
-- [ThemeAttribute] => [DynamicThemeAttribute]
-
-★ The following example demonstrates the use of V2.5.x
+(1) More options for [ Observable ] 
+- [ CanOverride ] Virtual support ( Make the automatically generated observable attributes virtual. )
+- [ CanHover ] Hover control → [DynamicTheme](#Theme) [ 5 - 3 ]
+- [ Cascades ] Cascade control ( Share updates of one property with other properties )
 
 ```csharp
-    [AspectOriented]
-    [DynamicTheme]
-    public partial class ButtonVM
-    {
-        [Constructor]
-        private void SetDefaultTheme()// [no-argument constructor] When initialized, set to dark theme
-        {
-            CurrentTheme = typeof(Dark);
-        }      
-
-        [Constructor]
-        private void SetDefaultTheme(Type themeType)// [constructor with a Type argument] When initialized, set to custom theme
-        {
-            CurrentTheme = themeType;
-        }
-        [Constructor]
-        private void LoadThemeAnimation(Type themeType)// Methods with the same parameters are executed in the same constructor
-        {
-            
-        }
-
-        [Observable] // Automatic property generation
-        [Dark("White")]
-        [Light("Black")]
-        private Brush _textBrush = Brushes.White;
-        partial void OnTextBrushChanging(Brush oldValue, Brush newValue)
-        {
-            
-        }
-        partial void OnTextBrushChanged(Brush oldValue, Brush newValue)
-        {
-            
-        }
-
-        [Observable(SetterValidations.Custom)] // Use custom logic [ BorderBrushIntercepting ] to verify that the property can be updated
-        [Dark("White")]
-        [Light("Black")]
-        private Brush _borderBrush = Brushes.White;
-        private partial bool BorderBrushIntercepting(Brush oldValue, Brush newValue)
-        {
-            throw new NotImplementedException(); // Returning true will cancel the update
-        }
-        partial void OnBorderBrushChanging(Brush oldValue, Brush newValue)
-        {
-            
-        }
-        partial void OnBorderBrushChanged(Brush oldValue, Brush newValue)
-        {
-            
-        }
-
-        public partial void OnThemeChanging(Type? oldTheme, Type newTheme)// [DynamicTheme] allows you to do something before theme changed
-        {
-            var state = IsThemeChanging; // Whether the theme switch animation is loading
-            var current = CurrentTheme;
-        }
-        public partial void OnThemeChanged(Type? oldTheme, Type newTheme)// [DynamicTheme] allows you to do something after theme changed
-        {
-            
-        }
-    }
+        [Observable(SetterValidation: SetterValidations.Compare, CanOverride: true, CanHover: true, Cascades: [nameof(_textBrush)])]
 ```
+
+(2) Design details
+
+The source code generator now supports the writing style of defining multiple partials for the same class. Therefore, when you use this project to build view models, you can define business data and style data in different partials respectively. This operation enables you to implement user controls almost entirely in C# while still maintaining the decoupling of front-end and back-end logic. This is different from the traditional C# + XAML front-end and back-end separation, but instead takes advantage of the features of partial.
 
 ---
 
@@ -545,9 +485,9 @@ Make your attribute implement the [ IThemeAttribute ] interface so that it can b
 
 ### [ 5 - 3 ] Code Practices
 
-Take text color as an example - how to modify the text color change effect on mouseover under different themes
-- Light themes default to black and turn red when hovered over
-- Dark themes default to white and turn blue when hovered over
+Take text-color as an example. Let's implement the following effect
+- Light themes default to "#1e1e1e" and turn "Cyan" when hovered
+- Dark themes default to "White" and turn "Violet" when hovered
 
 Using
 
@@ -560,46 +500,97 @@ using MinimalisticWPF.Animator;
 ViewModel
 
 ```csharp
+/* In this example, 
+ * I showed you how to carefully and clearly control the hover and non-hover effect of text color under different themes
+ * Using multiple [ partial class ButtonVM ] allows you to decouple the visual aspects of your view model design
+ */
+namespace WpfApp3
+{
     [DynamicTheme]
     public partial class ButtonVM
     {
+        /* Predefine control animations
+         * Next, we use partial methods to dynamically change the animation in some key parts, 
+         * so that we can differentiate the animation effect of the control under different themes
+         */
+        public virtual TransitionBoard<ButtonVM> Selected { get; protected set; } = Transition.Create<ButtonVM>()
+            .SetProperty(x => x.TextBrush, Brushes.Cyan);
+        public virtual TransitionBoard<ButtonVM> NoSelected { get; protected set; } = Transition.Create<ButtonVM>()
+            .SetProperty(x => x.TextBrush, "#1e1e1e".ToBrush());
+
+        /* For [Hover/NoHover] properties, they are automatically generated and usually have an empty initial value, 
+         * so we need to initialize them with a value
+         */
         [Constructor]
-        private void SetDefaultTheme()
+        private void SetDefualtHover()
         {
+            /* When we initialize the Selected animation, 
+             * the default theme is dark and the hover turns Cyan
+             */
             CurrentTheme = typeof(Dark);
+
+            // TextBrush - Dark - Hover/NoHover
+            DarkHoveredTextBrush = Brushes.Cyan;
+            DarkNoHoveredTextBrush = Brushes.White;
+
+            // TextBrush - Light - Hover/NoHover
+            LightHoveredTextBrush = Brushes.Violet;
+            LightNoHoveredTextBrush = "#1e1e1e".ToBrush();
         }
-        // When initialized, set to a dark theme
 
-        [Observable]
+        /* Suppose the text color needs to change on hover
+         * Assume that the text color changes differently when hovering under different themes
+         */
+        [Observable(CanHover: true)] // [CanHover] is necessary
         [Dark("White")]
-        [Light("Black")]
+        [Light("#1e1e1e")] // Any custom attributes that implement the IThemeAttribute interface can be used like Dark/Light
         private Brush _textBrush = Brushes.White;
-
-        private bool _isHover = false;
-        public virtual bool IsHover
+        partial void OnDarkHoveredTextBrushChanged(Brush oldValue, Brush newValue)
         {
-            get => _isHover;
-            set
+            if (CurrentTheme == typeof(Dark))
             {
-                if (_isHover != value)
-                {
-                    _isHover = value;
-                    if (!IsThemeChanging) // Based on the current state, start the animation
-                    {
-                        this.BeginTransition(value ? Selected : NoSelected, TransitionParams.Theme);
-                    }
-                }
+                Selected.SetProperty(control => control.TextBrush, newValue);
+            }
+        }
+        partial void OnDarkNoHoveredTextBrushChanged(Brush oldValue, Brush newValue)
+        {
+            if (CurrentTheme == typeof(Dark))
+            {
+                NoSelected.SetProperty(control => control.TextBrush, newValue);
+            }
+        }
+        partial void OnLightHoveredTextBrushChanged(Brush oldValue, Brush newValue)
+        {
+            if (CurrentTheme == typeof(Light))
+            {
+                Selected.SetProperty(control => control.TextBrush, newValue);
+            }
+        }
+        partial void OnLightNoHoveredTextBrushChanged(Brush oldValue, Brush newValue)
+        {
+            if (CurrentTheme == typeof(Light))
+            {
+                Selected.SetProperty(control => control.TextBrush, newValue);
             }
         }
 
-        public virtual TransitionBoard<ButtonVM> Selected { get; protected set; } = Transition.Create<ButtonVM>()
-            .SetProperty(x => x.TextBrush, Brushes.Red);
-        // Describes the animation that should be performed when the control is selected
+        /* Start the animation at the right time
+         * For example, don't load a hover animation during a theme switch
+         */
+        [Observable]
+        private bool _isHover = false;
+        partial void OnIsHoverChanged(bool oldValue, bool newValue)
+        {
+            if (!IsThemeChanging) // An automatically generated property that can be read to help you determine if you are currently changing the theme
+            {
+                this.BeginTransition(newValue ? Selected : NoSelected, TransitionParams.Theme);
+            }
+        }
 
-        public virtual TransitionBoard<ButtonVM> NoSelected { get; protected set; } = Transition.Create<ButtonVM>()
-            .SetProperty(x => x.TextBrush, Brushes.White);
-        // Describes the animation that needs to be loaded when the mouse leaves the control
-
+        /* Before and after the theme is switched, 
+         * we can change the Selected/NoSelected animation 
+         * so that the control can have different hover animations under different themes
+         */
         public partial void OnThemeChanging(Type? oldTheme, Type newTheme)
         {
             Transition.DisposeSafe(this);
@@ -608,15 +599,14 @@ ViewModel
         {
             if (CurrentTheme != null)
             {
-                Selected.SetProperty(x => x.TextBrush, newTheme == typeof(Dark) ? Brushes.Blue : Brushes.Red);
-                NoSelected.SetProperty(x => x.TextBrush, (Brush)(DynamicTheme.GetThemeValue(typeof(ButtonVM), newTheme, nameof(TextBrush)) ?? TextBrush));
+                NoSelected.SetProperty(x => x.TextBrush, newTheme == typeof(Dark) ? DarkNoHoveredTextBrush : LightNoHoveredTextBrush);
+                Selected.SetProperty(x => x.TextBrush, newTheme == typeof(Dark) ? DarkHoveredTextBrush : LightHoveredTextBrush);
             }
-            // This branch is critical because it gives you the freedom to decide how the control should animate under different themes
-
-            this.BeginTransition(_isHover ? Selected : NoSelected, TransitionParams.Theme);
-            // Don't forget to synchronize with the current state
+            this.BeginTransition(IsHover ? Selected : NoSelected, TransitionParams.Theme);
         }
     }
+}
+
 ```
 
 The main point of this example is to dynamically change the animation effect during the Theme change cycle by using SetProperty().
