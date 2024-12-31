@@ -19,6 +19,11 @@ namespace MinimalisticWPF.Animator
             FrameRate = DefaultFrameRate,
             Duration = 0.5
         };
+        public static TransitionParams Hover { get; set; } = new()
+        {
+            FrameRate = DefaultFrameRate,
+            Duration = 0.3
+        };
 
         public event Action? Start;
         public event Action? Update;

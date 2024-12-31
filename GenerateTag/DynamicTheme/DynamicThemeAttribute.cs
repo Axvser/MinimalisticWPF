@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 namespace MinimalisticWPF
 {
     /// <summary>
-    /// [ Source Generator ] This Attribute allows the class to participate in the global dynamic theme switching
+    /// [ Source Generator ] allows the class to participate in the global dynamic theme switching
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = false)]
     public class DynamicThemeAttribute : Attribute
     {
         public DynamicThemeAttribute() { }

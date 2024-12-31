@@ -5,9 +5,9 @@ using System.Text;
 namespace MinimalisticWPF
 {
     /// <summary>
-    /// [ Source Generator ] This Attribute enables the class to support aspect-oriented programming based on dynamic proxy
+    /// [ Source Generator ] enables the target to support aspect-oriented programming based on dynamic proxy
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public class AspectOrientedAttribute : Attribute
     {
         public AspectOrientedAttribute() { }

@@ -18,22 +18,26 @@
 
 ## Important Notice
 
-2024 - 12 - 30 : 
+2025 - 1 - 1 :
 
-Incremental Update ( V2.5.5 )
+Update (V2.5.8) 
 
-(1) More options for [ Observable ] 
-- [ CanOverride ] Virtual support ( Make the automatically generated observable attributes virtual. )
-- [ CanHover ] Hover control → [DynamicTheme](#Theme) [ 5 - 3 ]
-- [ Cascades ] Cascade control ( Share updates of one property with other properties )
+(1) Classes no longer need to declare the Theme attribute, as this is analyzed by the source generator and added automatically. 
 
-```csharp
-        [Observable(SetterValidation: SetterValidations.Compare, CanOverride: true, CanHover: true, Cascades: [nameof(_textBrush)])]
-```
+(2) The AOP feature is no longer applied to classes but is used separately for each unit that requires aspect-oriented programming.
 
-(2) Design details
+(3) Optimize the source generation operation when CanHover is set to true. The automatically generated NoHovered property will retain its initial value. If a Theme is involved, it will be set to the target value under the specified theme.
+- [ HoveredTransition & NoHoveredTransition ] are used to dynamically describe the hover animation effect
 
-The source code generator now supports the writing style of defining multiple partials for the same class. Therefore, when you use this project to build view models, you can define business data and style data in different partials respectively. This operation enables you to implement user controls almost entirely in C# while still maintaining the decoupling of front-end and back-end logic. This is different from the traditional C# + XAML front-end and back-end separation, but instead takes advantage of the features of partial.
+(4) Add two globally shared animation parameters
+- TransitionParams.Theme
+- TransitionParams.Hover
+
+★ Code Practices In [Aspect-Oriented Programming](#AOP)[ 3 - 1 ] Has Been Changed
+
+★ Code Practices In [Dynamic Theme](#Theme)[ 5 - 3 ] Has Been Changed
+
+( In fact, until now, the project has not entered a real stable phase, there have been a lot of breaking updates, so many thanks to all the friends who keep updating, I will do my best to keep improving it )
 
 ---
 
@@ -42,10 +46,10 @@ The source code generator now supports the writing style of defining multiple pa
 Feature Directory
 - Core
   - [Animation](#Animation)
-  - [Mvvm](#Mvvm)
-  - [Aspect-Oriented Programming](#AOP)
+  - [Mvvm](#Mvvm) [ source generator √ ]
+  - [Aspect-Oriented Programming](#AOP) [ source generator √ ]
   - [Object Pool](#ObjectPool)
-  - [Dynamic Theme](#Theme)
+  - [Dynamic Theme](#Theme) [ source generator √ ]
 - Other
   - [Xml / Json Operation](#Xml&Json)
   - [Folder Creation](#folder)
@@ -307,13 +311,20 @@ You can define multiple methods with the same parameter list, and they will all 
 ## AOP
 
 ### [ 3 - 1 ] Make class aspect-oriented
+- public Property/Method
+- [ Observable & AspectOriented ] Field
 
 ```csharp
-    [AspectOriented]
     internal partial class Class1
     {
-        public string Property { get; set; }
+        [Observable]
+        [AspectOriented]
+        private int _id = 0;
 
+        [AspectOriented]
+        public string Property { get; set; } = string.Empty;
+
+        [AspectOriented]
         public void Action()
         {
 
@@ -481,15 +492,15 @@ Make your attribute implement the [ IThemeAttribute ] interface so that it can b
 
 |Property|Description|
 |-------|---------|
-|Parameters|The actual parameters that the custom theme class receives when initialized|
+|Parameters|These parameters will be used to dynamically construct values for a given theme|
 
 ### [ 5 - 3 ] Code Practices
 
 Take text-color as an example. Let's implement the following effect
-- Light themes default to "#1e1e1e" and turn "Cyan" when hovered
-- Dark themes default to "White" and turn "Violet" when hovered
+- Light themes default to "Black" and turn "Violet" when hovered
+- Dark themes default to "White" and turn "Cyan" when hovered
 
-Using
+(1) Using
 
 ```csharp
 using MinimalisticWPF;
@@ -497,100 +508,69 @@ using System.Windows.Media;
 using MinimalisticWPF.Animator;
 ```
 
-ViewModel
+(2) ViewModel
+
+Theoretically, you can use multiple partial classes to build your view model, but there is one point to note: only one partial class of the same type can use the source code generation provided by this project. Usually, it is helpful for front-end and back-end separation to place business data in one partial class and animation effects in another. 
+
+The front-end and back-end separation in this project is not reflected in [ C# + XAML ] but in [ C# + C# +... + XAML ].
 
 ```csharp
-/* In this example, 
- * I showed you how to carefully and clearly control the hover and non-hover effect of text color under different themes
- * Using multiple [ partial class ButtonVM ] allows you to decouple the visual aspects of your view model design
- */
-namespace WpfApp3
-{
-    [DynamicTheme]
-    public partial class ButtonVM
+    public partial class ButtonViewModel
     {
-        /* Predefine control animations
-         * Next, we use partial methods to dynamically change the animation in some key parts, 
-         * so that we can differentiate the animation effect of the control under different themes
-         */
-        public virtual TransitionBoard<ButtonVM> Selected { get; protected set; } = Transition.Create<ButtonVM>()
-            .SetProperty(x => x.TextBrush, Brushes.Cyan);
-        public virtual TransitionBoard<ButtonVM> NoSelected { get; protected set; } = Transition.Create<ButtonVM>()
-            .SetProperty(x => x.TextBrush, "#1e1e1e".ToBrush());
-
-        /* For [Hover/NoHover] properties, they are automatically generated and usually have an empty initial value, 
-         * so we need to initialize them with a value
-         */
         [Constructor]
         private void SetDefualtHover()
         {
-            /* When we initialize the Selected animation, 
-             * the default theme is dark and the hover turns Cyan
-             */
             CurrentTheme = typeof(Dark);
-
-            // TextBrush - Dark - Hover/NoHover
             DarkHoveredTextBrush = Brushes.Cyan;
             DarkNoHoveredTextBrush = Brushes.White;
 
-            // TextBrush - Light - Hover/NoHover
             LightHoveredTextBrush = Brushes.Violet;
-            LightNoHoveredTextBrush = "#1e1e1e".ToBrush();
+            LightNoHoveredTextBrush = Brushes.Black;
         }
 
-        /* Suppose the text color needs to change on hover
-         * Assume that the text color changes differently when hovering under different themes
-         */
-        [Observable(CanHover: true)] // [CanHover] is necessary
+        [Observable(CanHover: true)]
         [Dark("White")]
-        [Light("#1e1e1e")] // Any custom attributes that implement the IThemeAttribute interface can be used like Dark/Light
+        [Light("#1e1e1e")]
         private Brush _textBrush = Brushes.White;
         partial void OnDarkHoveredTextBrushChanged(Brush oldValue, Brush newValue)
         {
             if (CurrentTheme == typeof(Dark))
             {
-                Selected.SetProperty(control => control.TextBrush, newValue);
+                HoveredTransition.SetProperty(control => control.TextBrush, newValue);
             }
         }
         partial void OnDarkNoHoveredTextBrushChanged(Brush oldValue, Brush newValue)
         {
             if (CurrentTheme == typeof(Dark))
             {
-                NoSelected.SetProperty(control => control.TextBrush, newValue);
+                NoHoveredTransition.SetProperty(control => control.TextBrush, newValue);
             }
         }
         partial void OnLightHoveredTextBrushChanged(Brush oldValue, Brush newValue)
         {
             if (CurrentTheme == typeof(Light))
             {
-                Selected.SetProperty(control => control.TextBrush, newValue);
+                HoveredTransition.SetProperty(control => control.TextBrush, newValue);
             }
         }
         partial void OnLightNoHoveredTextBrushChanged(Brush oldValue, Brush newValue)
         {
             if (CurrentTheme == typeof(Light))
             {
-                Selected.SetProperty(control => control.TextBrush, newValue);
+                NoHoveredTransition.SetProperty(control => control.TextBrush, newValue);
             }
         }
 
-        /* Start the animation at the right time
-         * For example, don't load a hover animation during a theme switch
-         */
         [Observable]
         private bool _isHover = false;
         partial void OnIsHoverChanged(bool oldValue, bool newValue)
         {
-            if (!IsThemeChanging) // An automatically generated property that can be read to help you determine if you are currently changing the theme
+            if (!IsThemeChanging)
             {
-                this.BeginTransition(newValue ? Selected : NoSelected, TransitionParams.Theme);
+                this.BeginTransition(newValue ? HoveredTransition : NoHoveredTransition, TransitionParams.Theme);
             }
         }
 
-        /* Before and after the theme is switched, 
-         * we can change the Selected/NoSelected animation 
-         * so that the control can have different hover animations under different themes
-         */
         public partial void OnThemeChanging(Type? oldTheme, Type newTheme)
         {
             Transition.DisposeSafe(this);
@@ -599,14 +579,12 @@ namespace WpfApp3
         {
             if (CurrentTheme != null)
             {
-                NoSelected.SetProperty(x => x.TextBrush, newTheme == typeof(Dark) ? DarkNoHoveredTextBrush : LightNoHoveredTextBrush);
-                Selected.SetProperty(x => x.TextBrush, newTheme == typeof(Dark) ? DarkHoveredTextBrush : LightHoveredTextBrush);
+                NoHoveredTransition.SetProperty(x => x.TextBrush, newTheme == typeof(Dark) ? DarkNoHoveredTextBrush : LightNoHoveredTextBrush);
+                HoveredTransition.SetProperty(x => x.TextBrush, newTheme == typeof(Dark) ? DarkHoveredTextBrush : LightHoveredTextBrush);
             }
-            this.BeginTransition(IsHover ? Selected : NoSelected, TransitionParams.Theme);
+            this.BeginTransition(IsHover ? HoveredTransition : NoHoveredTransition, TransitionParams.Theme);
         }
     }
-}
-
 ```
 
 The main point of this example is to dynamically change the animation effect during the Theme change cycle by using SetProperty().
