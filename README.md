@@ -37,6 +37,10 @@ Update (V2.5.8)
 
 ★ Code Practices In [Dynamic Theme](#Theme)[ 5 - 3 ] Has Been Changed
 
+Update (V2.5.9) 
+
+When the source is generated, add an additional MinimalisticWPF reference
+
 ( In fact, until now, the project has not entered a real stable phase, there have been a lot of breaking updates, so many thanks to all the friends who keep updating, I will do my best to keep improving it )
 
 ---
