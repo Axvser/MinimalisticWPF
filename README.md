@@ -20,28 +20,9 @@
 
 2025 - 1 - 1 :
 
-Update (V2.5.8) 
+Update (V2.6.0) 
 
-(1) Classes no longer need to declare the Theme attribute, as this is analyzed by the source generator and added automatically. 
-
-(2) The AOP feature is no longer applied to classes but is used separately for each unit that requires aspect-oriented programming.
-
-(3) Optimize the source generation operation when CanHover is set to true. The automatically generated NoHovered property will retain its initial value. If a Theme is involved, it will be set to the target value under the specified theme.
-- [ HoveredTransition & NoHoveredTransition ] are used to dynamically describe the hover animation effect
-
-(4) Add two globally shared animation parameters
-- TransitionParams.Theme
-- TransitionParams.Hover
-
-★ Code Practices In [Aspect-Oriented Programming](#AOP)[ 3 - 1 ] Has Been Changed
-
-★ Code Practices In [Dynamic Theme](#Theme)[ 5 - 3 ] Has Been Changed
-
-Update (V2.5.9) 
-
-When the source is generated, add an additional MinimalisticWPF reference
-
-( In fact, until now, the project has not entered a real stable phase, there have been a lot of breaking updates, so many thanks to all the friends who keep updating, I will do my best to keep improving it )
+Fix known issues in the source generation process
 
 ---
 

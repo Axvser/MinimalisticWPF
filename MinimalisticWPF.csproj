@@ -19,12 +19,12 @@
 		<IncludeSymbols>False</IncludeSymbols>
 		<Description>It simplifies the process of visual effect realization, and provides special functions for MVVM / AOP / ObjectPool / DynamicTheme. Strictly speaking, this is a comprehensive project for personal learning purposes, and ultimately it should greatly improve the MVVM / AOP / …… programming experience by using source generators</Description>
 		<RepositoryType>git</RepositoryType>
-		<Version>2.5.9</Version>
+		<Version>2.6.0</Version>
 		<Authors>Axvser</Authors>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="MinimalisticWPF.Generator" Version="1.5.9" />
+		<PackageReference Include="MinimalisticWPF.Generator" Version="1.6.3" />
 	</ItemGroup>
 
 	<ItemGroup>
