@@ -20,7 +20,7 @@
 
 2025 - 1 - 1 :
 
-Update ( V2.6.1 - Beta) 
+Updates ( V2.6.1 - Beta) At [Dynamic Theme](#Theme) [ 5 - 3 ]
 
 This is a test version that allows you to configure [DataContextConfig] for controls to automatically generate dependency properties with the help of source generators. Additionally, much of the previous logic for handling mouse hover events on controls no longer needs to be manually implemented through partial methods; it has been embedded in the property setters. Of course, you can still add additional logic by implementing partial methods.
 
@@ -532,9 +532,7 @@ Make your attribute implement the [ IThemeAttribute ] interface so that it can b
 
 ### [ 5 - 3 ] Code Practices
 
-Take text-color as an example. Let's implement the following effect
-- Light themes default to "Black" and turn "Violet" when hovered
-- Dark themes default to "White" and turn "Cyan" when hovered
+Starting from version 2.6.1, the library enables you to implement theme switching, control hover effects, and more with less code.
 
 (1) Using
 
@@ -551,61 +549,24 @@ Theoretically, you can use multiple partial classes to build your view model, bu
 The front-end and back-end separation in this project is not reflected in [ C# + XAML ] but in [ C# + C# +... + XAML ].
 
 ```csharp
-    public partial class ButtonViewModel
+    public partial class WindowViewModel
     {
         [Constructor]
         private void SetDefualtHover()
         {
             CurrentTheme = typeof(Dark);
-            DarkHoveredTextBrush = Brushes.Cyan;
-            DarkNoHoveredTextBrush = Brushes.White;
 
-            LightHoveredTextBrush = Brushes.Violet;
-            LightNoHoveredTextBrush = Brushes.Black;
+            HoveredTransition.SetParams(TransitionParams.Hover);
+            NoHoveredTransition.SetParams(TransitionParams.Hover);
         }
 
         [Observable(CanHover: true)]
         [Dark("White")]
         [Light("#1e1e1e")]
         private Brush _textBrush = Brushes.White;
-        partial void OnDarkHoveredTextBrushChanged(Brush oldValue, Brush newValue)
-        {
-            if (CurrentTheme == typeof(Dark))
-            {
-                HoveredTransition.SetProperty(control => control.TextBrush, newValue);
-            }
-        }
-        partial void OnDarkNoHoveredTextBrushChanged(Brush oldValue, Brush newValue)
-        {
-            if (CurrentTheme == typeof(Dark))
-            {
-                NoHoveredTransition.SetProperty(control => control.TextBrush, newValue);
-            }
-        }
-        partial void OnLightHoveredTextBrushChanged(Brush oldValue, Brush newValue)
-        {
-            if (CurrentTheme == typeof(Light))
-            {
-                HoveredTransition.SetProperty(control => control.TextBrush, newValue);
-            }
-        }
-        partial void OnLightNoHoveredTextBrushChanged(Brush oldValue, Brush newValue)
-        {
-            if (CurrentTheme == typeof(Light))
-            {
-                NoHoveredTransition.SetProperty(control => control.TextBrush, newValue);
-            }
-        }
 
-        [Observable]
-        private bool _isHover = false;
-        partial void OnIsHoverChanged(bool oldValue, bool newValue)
-        {
-            if (!IsThemeChanging)
-            {
-                this.BeginTransition(newValue ? HoveredTransition : NoHoveredTransition, TransitionParams.Theme);
-            }
-        }
+        [Observable(CanHover: true)]
+        private Brush _borderBrush = Brushes.White;
 
         public partial void OnThemeChanging(Type? oldTheme, Type newTheme)
         {
@@ -613,17 +574,38 @@ The front-end and back-end separation in this project is not reflected in [ C# +
         }
         public partial void OnThemeChanged(Type? oldTheme, Type newTheme)
         {
-            if (CurrentTheme != null)
-            {
-                NoHoveredTransition.SetProperty(x => x.TextBrush, newTheme == typeof(Dark) ? DarkNoHoveredTextBrush : LightNoHoveredTextBrush);
-                HoveredTransition.SetProperty(x => x.TextBrush, newTheme == typeof(Dark) ? DarkHoveredTextBrush : LightHoveredTextBrush);
-            }
-            this.BeginTransition(IsHover ? HoveredTransition : NoHoveredTransition, TransitionParams.Theme);
+            UpdateTransitionBoard();
         }
     }
 ```
 
-The main point of this example is to dynamically change the animation effect during the Theme change cycle by using SetProperty().
+(3) Style
+
+Suppose we use the ViewModel for a Window
+- "WindowViewModel" is the name of ViewModel
+- "Wpf3" is the namespace of ViewModel ( Optional )
+
+```csharp
+    [DataContextConfig(nameof(WindowViewModel),nameof(WpfApp3))]
+    public partial class MainWindow : Window
+```
+
+The source generator will automatically generate these dependency properties for controlling the hover effect
+- Just set the property value to achieve the function
+
+```xml
+        <Style TargetType="local:MainWindow" x:Key="WindowWithTheme">
+            <!--Dark-->
+            <Setter Property="DarkHoveredTextBrush" Value="Cyan"/>
+            <Setter Property="DarkNoHoveredTextBrush" Value="#1e1e1e"/>
+            <!--Light-->
+            <Setter Property="LightHoveredTextBrush" Value="Violet"/>
+            <Setter Property="LightNoHoveredTextBrush" Value="White"/>
+            <!--NoTheme-->
+            <Setter Property="HoveredBorderBrush" Value="Red"/>
+            <Setter Property="NoHoveredBorderBrush" Value="Lime"/>
+        </Style>
+```
 
 ---
 
