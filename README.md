@@ -20,9 +20,60 @@
 
 2025 - 1 - 1 :
 
-Update (V2.6.0) 
+Update ( V2.6.1 - Beta) 
 
-Fix known issues in the source generation process
+This is a test version that allows you to configure [DataContextConfig] for controls to automatically generate dependency properties with the help of source generators. Additionally, much of the previous logic for handling mouse hover events on controls no longer needs to be manually implemented through partial methods; it has been embedded in the property setters. Of course, you can still add additional logic by implementing partial methods.
+
+(1) Assume that the actual type of DataContext used by Window is WindowViewModel
+- param1 : name of viewmodel type
+- param2 : namespace of viewmodel ( Optional )
+
+```csharp
+    [DataContextConfig(nameof(WindowViewModel))]
+    public partial class MainWindow : Window
+```
+
+(2) WindowViewModel
+
+```csharp
+    public partial class WindowViewModel
+    {
+        [Constructor]
+        private void SetDefualtHover()
+        {
+            CurrentTheme = typeof(Dark);
+
+            HoveredTransition.SetParams(TransitionParams.Hover);
+            NoHoveredTransition.SetParams(TransitionParams.Hover);
+        }
+
+        [Observable(CanHover: true)]
+        [Dark("White")]
+        [Light("#1e1e1e")]
+        private Brush _textBrush = Brushes.White;
+
+        public partial void OnThemeChanging(Type? oldTheme, Type newTheme)
+        {
+            Transition.DisposeSafe(this);
+        }
+        public partial void OnThemeChanged(Type? oldTheme, Type newTheme)
+        {
+            UpdateTransitionBoard();
+        }
+```
+
+(3) Once generated, you can style the Window to control the hover effect under different themes
+
+```xml
+        <Style TargetType="local:MainWindow" x:Key="WindowWithTheme">
+            <!--Dark-->
+            <Setter Property="DarkHoveredTextBrush" Value="Cyan"/>
+            <Setter Property="DarkNoHoveredTextBrush" Value="#1e1e1e"/>
+            <!--Light-->
+            <Setter Property="LightHoveredTextBrush" Value="Violet"/>
+            <Setter Property="LightNoHoveredTextBrush" Value="White"/>
+        </Style>
+```
 
 ---
 
