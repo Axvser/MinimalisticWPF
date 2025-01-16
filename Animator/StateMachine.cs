@@ -294,7 +294,7 @@ namespace MinimalisticWPF.Animator
                 CurrentState = stateName;
                 Interpreter = animationInterpreter;
             }
-            var task = Task.Run(() => { animationInterpreter.Start(); });
+            await animationInterpreter.Start();
         }
         internal StateMachine(object viewModel, params State[] states)
         {

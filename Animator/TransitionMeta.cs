@@ -64,12 +64,13 @@ namespace MinimalisticWPF.Animator
             };
             return result;
         }
-        public void Start(object? target = null)
+        public Task Start(object? target = null)
         {
             Target = target ?? Target;
             if (Target == null) throw new ArgumentNullException(nameof(target), "The metadata is missing the target instance for this transition effect");
             PropertyState.StateName = Transition.TempName + Machine.States.BoardSuffix;
             Target.BeginTransition(ToState(), TransitionParams);
+            return Task.CompletedTask;
         }
         public void Stop(bool IsUnsafeStoped = false)
         {

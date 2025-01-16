@@ -20,7 +20,7 @@ namespace MinimalisticWPF.StructuralDesign.Animator
         /// <summary>
         /// Starting transitions
         /// </summary>
-        public void Start(object? target = null);
+        public Task Start(object? target = null);
         /// <summary>
         /// Terminating a transition
         /// </summary>

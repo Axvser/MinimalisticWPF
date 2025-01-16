@@ -23,7 +23,7 @@ namespace MinimalisticWPF.Animator
         private int LoopDepth { get; set; } = 0;
         private int FrameDepth { get; set; } = 0;
 
-        public void Start(object? target = null)
+        public async Task Start(object? target = null)
         {
             if (IsStop || IsRunning) { WhileEnded(); return; }
             IsRunning = true;
@@ -44,7 +44,7 @@ namespace MinimalisticWPF.Animator
                         }
                     }
                     FrameEnd();
-                    Thread.Sleep(TransitionParams.Acceleration == 0 ? DeltaTime : i < accTimes.Count & accTimes.Count > 0 ? accTimes[i] : DeltaTime);
+                    await Task.Delay(TransitionParams.Acceleration == 0 ? DeltaTime : i < accTimes.Count & accTimes.Count > 0 ? accTimes[i] : DeltaTime);
                 }
 
                 if (TransitionParams.IsAutoReverse)
@@ -62,7 +62,7 @@ namespace MinimalisticWPF.Animator
                             }
                         }
                         FrameEnd();
-                        Thread.Sleep(TransitionParams.Acceleration == 0 ? DeltaTime : i < accTimes.Count & accTimes.Count > 0 ? accTimes[i] : DeltaTime);
+                        await Task.Delay(TransitionParams.Acceleration == 0 ? DeltaTime : i < accTimes.Count & accTimes.Count > 0 ? accTimes[i] : DeltaTime);
                     }
                 }
             }

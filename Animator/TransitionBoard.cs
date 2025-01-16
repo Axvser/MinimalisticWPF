@@ -62,7 +62,7 @@ namespace MinimalisticWPF.Animator
             }
         }
         public StateMachine Machine => Target == null ? throw new ArgumentNullException(nameof(Target), "The metadata is missing the target instance for this transition effect") : StateMachine.Create(Target);
-        public void Start(object? target = null)
+        public Task Start(object? target = null)
         {
             if (target == null)
             {
@@ -88,6 +88,7 @@ namespace MinimalisticWPF.Animator
                 Machine.States.Add(PropertyState);
                 Machine.Transition(PropertyState.StateName, TransitionParams, IsPreloaded ? FrameSequence : null);
             }
+            return Task.CompletedTask;
         }
         public void Stop(bool IsUnsafeStoped = false)
         {
