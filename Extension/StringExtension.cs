@@ -57,13 +57,13 @@ namespace MinimalisticWPF.Extension
                 throw new ArgumentException("The length of the capture identifier cannot be zero.");
             }
 
-            List<string> result = new List<string>();
+            List<string> result = [];
 
             string escapedLeft = Regex.Escape(left);
             string escapedRight = Regex.Escape(right);
 
             string pattern = @$"{escapedLeft}(.*?){escapedRight}";
-            Regex regex = new Regex(pattern);
+            Regex regex = new(pattern);
 
             MatchCollection matches = regex.Matches(source);
 
