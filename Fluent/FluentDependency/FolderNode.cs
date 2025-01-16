@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MinimalisticWPF.Extension;
+using System;
 using System.Collections.Generic;
 using System.IO;
 

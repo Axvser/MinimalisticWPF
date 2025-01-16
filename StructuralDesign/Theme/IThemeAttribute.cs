@@ -8,9 +8,6 @@ namespace MinimalisticWPF.StructuralDesign.Theme
 {
     public interface IThemeAttribute
     {
-        /// <summary>
-        /// Arguments to construct new value.
-        /// </summary>
         object?[] Parameters { get; }
     }
 }

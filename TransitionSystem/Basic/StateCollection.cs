@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Concurrent;
 
-namespace MinimalisticWPF.Animator
+namespace MinimalisticWPF.TransitionSystem.Basic
 {
     public sealed class StateCollection : ICollection<State>
     {

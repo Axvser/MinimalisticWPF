@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using MinimalisticWPF.AspectOriented;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using static MinimalisticWPF.ProxyInstance;
 
-namespace MinimalisticWPF
+namespace MinimalisticWPF.Extension
 {
-    public static class ExtensionForProxy
+    public static class ProxyExtension
     {
         public static T CreateProxy<T>(this T target) where T : IProxy
         {
@@ -17,16 +11,16 @@ namespace MinimalisticWPF
             dynamic proxy = DispatchProxy.Create<T, ProxyInstance>() ?? throw new InvalidOperationException();
             proxy._target = target;
             proxy._targetType = type;
-            ProxyIDs.Add(proxy, proxy._localid);
+            ProxyInstance.ProxyIDs.Add(proxy, proxy._localid);
             return proxy;
         }
         public static T SetPropertyGetter<T>(this T source, string propertyName, ProxyHandler? start, ProxyHandler? coverage, ProxyHandler? end) where T : IProxy
         {
-            if (!ProxyIDs.TryGetValue(source, out var id))
+            if (!ProxyInstance.ProxyIDs.TryGetValue(source, out var id))
             {
                 return source;
             }
-            if (ProxyInstances.TryGetValue(id, out var instance))
+            if (ProxyInstance.ProxyInstances.TryGetValue(id, out var instance))
             {
                 var Name = $"get_{propertyName}";
                 if (instance.GetterActions.ContainsKey(Name))
@@ -42,11 +36,11 @@ namespace MinimalisticWPF
         }
         public static T SetPropertySetter<T>(this T source, string propertyName, ProxyHandler? start, ProxyHandler? coverage, ProxyHandler? end) where T : IProxy
         {
-            if (!ProxyIDs.TryGetValue(source, out var id))
+            if (!ProxyInstance.ProxyIDs.TryGetValue(source, out var id))
             {
                 return source;
             }
-            if (ProxyInstances.TryGetValue(id, out var instance))
+            if (ProxyInstance.ProxyInstances.TryGetValue(id, out var instance))
             {
                 var Name = $"set_{propertyName}";
                 if (instance.SetterActions.ContainsKey(Name))
@@ -62,11 +56,11 @@ namespace MinimalisticWPF
         }
         public static T SetMethod<T>(this T source, string methodName, ProxyHandler? start, ProxyHandler? coverage, ProxyHandler? end) where T : IProxy
         {
-            if (!ProxyIDs.TryGetValue(source, out var id))
+            if (!ProxyInstance.ProxyIDs.TryGetValue(source, out var id))
             {
                 return source;
             }
-            if (ProxyInstances.TryGetValue(id, out var instance))
+            if (ProxyInstance.ProxyInstances.TryGetValue(id, out var instance))
             {
                 if (instance.MethodActions.ContainsKey(methodName))
                 {

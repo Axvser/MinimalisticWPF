@@ -1,13 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Xml.Linq;
+﻿using System.Reflection;
 
-namespace MinimalisticWPF
+namespace MinimalisticWPF.AspectOriented
 {
     public delegate object? ProxyHandler(object?[]? args, object? lastResult);
     public class ProxyInstance : DispatchProxy

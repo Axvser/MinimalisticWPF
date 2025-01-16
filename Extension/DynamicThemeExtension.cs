@@ -1,19 +1,9 @@
-﻿using MinimalisticWPF.Animator;
-using MinimalisticWPF.StructuralDesign.Theme;
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics.Metrics;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Media;
+﻿using MinimalisticWPF.Theme;
+using MinimalisticWPF.TransitionSystem;
 
-namespace MinimalisticWPF
+namespace MinimalisticWPF.Extension
 {
-    public static class ExtensionForDynamicTheme
+    public static class DynamicThemeExtension
     {
         public static void ApplyGlobalTheme(this object source)
         {

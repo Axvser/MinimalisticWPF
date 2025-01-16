@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Media;
+﻿using System.Windows.Media;
 
-namespace MinimalisticWPF
+namespace MinimalisticWPF.Extension
 {
-    public static class ExtensionForColor
+    public static class RGBExtension
     {
         public static RGB ToRGB(this Color color)
         {

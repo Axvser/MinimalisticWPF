@@ -1,6 +1,6 @@
 ﻿using MinimalisticWPF.StructuralDesign.Animator;
 
-namespace MinimalisticWPF.Animator
+namespace MinimalisticWPF.TransitionSystem
 {
     public static class Transition
     {
@@ -19,13 +19,13 @@ namespace MinimalisticWPF.Animator
 
         public static TransitionBoard<T> Create<T>(T? target = null) where T : class
         {
-            return new TransitionBoard<T>() { Target = target };
+            return new TransitionBoard<T>() { TransitionApplied = target };
         }
         public static TransitionBoard<T> Create<T>(ICollection<T> values, object? target = null) where T : class, ITransitionMeta
         {
             var meta = new TransitionBoard<T>()
             {
-                Target = target,
+                TransitionApplied = target,
             };
             meta.Merge(values.Select(v => v as ITransitionMeta).ToArray());
             return meta;
@@ -34,7 +34,7 @@ namespace MinimalisticWPF.Animator
         {
             var meta = new TransitionBoard<T>()
             {
-                Target = target,
+                TransitionApplied = target,
                 TransitionParams = transitionParams
             };
             meta.Merge(values.Select(v => v as ITransitionMeta).ToArray());
@@ -46,7 +46,7 @@ namespace MinimalisticWPF.Animator
             transitionSet(para);
             var meta = new TransitionBoard<T>()
             {
-                Target = target,
+                TransitionApplied = target,
                 TransitionParams = para
             };
             meta.Merge(values.Select(v => v as ITransitionMeta).ToArray());
@@ -57,7 +57,7 @@ namespace MinimalisticWPF.Animator
         {
             var meta = new TransitionBoard<T>()
             {
-                Target = target,
+                TransitionApplied = target,
                 TransitionParams = transitionParams.DeepCopy()
             };
             meta.Merge(values.Select(v => v as ITransitionMeta).ToArray());
@@ -69,7 +69,7 @@ namespace MinimalisticWPF.Animator
             transitionSet(para);
             var meta = new TransitionBoard<T>()
             {
-                Target = target,
+                TransitionApplied = target,
                 TransitionParams = para
             };
             meta.Merge(values.Select(v => v as ITransitionMeta).ToArray());
@@ -78,7 +78,7 @@ namespace MinimalisticWPF.Animator
 
         public static void DisposeAll()
         {
-            foreach (var machinedic in StateMachine.MachinePool.Values)
+            foreach (var machinedic in TransitionScheduler.MachinePool.Values)
             {
                 foreach (var machine in machinedic.Values)
                 {
@@ -94,7 +94,7 @@ namespace MinimalisticWPF.Animator
         {
             foreach (var target in targets)
             {
-                var machine = StateMachine.Create(target);
+                var machine = TransitionScheduler.Create(target);
                 machine.Interpreter?.Stop();
                 foreach (var itor in machine.UnSafeInterpreters)
                 {
@@ -106,7 +106,7 @@ namespace MinimalisticWPF.Animator
         {
             foreach (var target in targets)
             {
-                var machine = StateMachine.Create(target);
+                var machine = TransitionScheduler.Create(target);
                 machine.Interpreter?.Stop();
             }
         }
@@ -114,7 +114,7 @@ namespace MinimalisticWPF.Animator
         {
             foreach (var target in targets)
             {
-                var machine = StateMachine.Create(target);
+                var machine = TransitionScheduler.Create(target);
                 foreach (var itor in machine.UnSafeInterpreters)
                 {
                     itor.Stop(true);

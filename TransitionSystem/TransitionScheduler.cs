@@ -4,10 +4,11 @@ using System.Data;
 using System.Windows.Media;
 using System.Collections.Concurrent;
 using MinimalisticWPF.StructuralDesign.Animator;
+using MinimalisticWPF.TransitionSystem.Basic;
 
-namespace MinimalisticWPF.Animator
+namespace MinimalisticWPF.TransitionSystem
 {
-    public sealed class StateMachine
+    public sealed class TransitionScheduler
     {
         public static int MaxFrameRate
         {
@@ -17,17 +18,17 @@ namespace MinimalisticWPF.Animator
                 _maxFR = Math.Clamp(value, 1, int.MaxValue);
             }
         }
-        public static ConcurrentDictionary<Type, ConcurrentDictionary<object, StateMachine>> MachinePool { get; internal set; } = new();
+        public static ConcurrentDictionary<Type, ConcurrentDictionary<object, TransitionScheduler>> MachinePool { get; internal set; } = new();
         public static ConcurrentDictionary<Type, ConcurrentDictionary<string, PropertyInfo>> PropertyInfos { get; internal set; } = new();
         public static ConcurrentDictionary<Type, Tuple<ConcurrentDictionary<string, PropertyInfo>, ConcurrentDictionary<string, PropertyInfo>, ConcurrentDictionary<string, PropertyInfo>, ConcurrentDictionary<string, PropertyInfo>, ConcurrentDictionary<string, PropertyInfo>, ConcurrentDictionary<string, PropertyInfo>, ConcurrentDictionary<string, PropertyInfo>>> SplitedPropertyInfos { get; internal set; } = new();
 
         /// <summary>
-        /// Return an existing StateMachine or create a new one
+        /// Return an existing TransitionScheduler or create a new one
         /// </summary>
         /// <remarks>
-        /// If you do not want to automatically create a new StateMachine, use [ TryGetMachine() ]
+        /// If you do not want to automatically create a new TransitionScheduler, use [ TryGetMachine() ]
         /// </remarks>
-        public static StateMachine Create(object targetObj, params State[] states)
+        public static TransitionScheduler Create(object targetObj, params State[] states)
         {
             var type = targetObj.GetType();
             if (MachinePool.TryGetValue(type, out var machinedictionary))
@@ -42,15 +43,15 @@ namespace MinimalisticWPF.Animator
                 }
                 else
                 {
-                    var newMachine = new StateMachine(targetObj, states);
+                    var newMachine = new TransitionScheduler(targetObj, states);
                     machinedictionary.TryAdd(targetObj, newMachine);
                     return newMachine;
                 }
             }
             else
             {
-                var newMachine = new StateMachine(targetObj, states);
-                var newChildDic = new ConcurrentDictionary<object, StateMachine>();
+                var newMachine = new TransitionScheduler(targetObj, states);
+                var newChildDic = new ConcurrentDictionary<object, TransitionScheduler>();
                 newChildDic.TryAdd(targetObj, newMachine);
                 MachinePool.TryAdd(type, newChildDic);
                 return newMachine;
@@ -60,13 +61,13 @@ namespace MinimalisticWPF.Animator
         /// <summary>
         /// Calculate the sequence of animation frames
         /// </summary>
-        public static List<List<Tuple<PropertyInfo, List<object?>>>>? PreloadFrames(object? Target, State state, TransitionParams par)
+        public static List<List<Tuple<PropertyInfo, List<object?>>>>? PreloadFrames(object? TransitionApplied, State state, TransitionParams par)
         {
-            if (Target == null)
+            if (TransitionApplied == null)
             {
                 return null;
             }
-            var machine = new StateMachine(Target, state)
+            var machine = new TransitionScheduler(TransitionApplied, state)
             {
                 TransitionParams = par
             };
@@ -132,12 +133,12 @@ namespace MinimalisticWPF.Animator
         }
 
         /// <summary>
-        /// Use this method to find the unique StateMachine that the system has for each instance object
+        /// Use this method to find the unique TransitionScheduler that the system has for each instance object
         /// </summary>
         /// <param name="target"></param>
         /// <param name="result"></param>
         /// <returns></returns>
-        public static bool TryGetMachine(object target, out StateMachine? result)
+        public static bool TryGetMachine(object target, out TransitionScheduler? result)
         {
             if (MachinePool.TryGetValue(target.GetType(), out var machinedic))
             {
@@ -151,7 +152,7 @@ namespace MinimalisticWPF.Animator
             return false;
         }
 
-        public object Target { get; internal set; }
+        public object TransitionApplied { get; internal set; }
         public Type Type { get; internal set; }
         public StateCollection States { get; internal set; } = [];
         public double DeltaTime { get => 1000.0 / Math.Clamp(TransitionParams.FrameRate, 1, MaxFrameRate); }
@@ -164,9 +165,9 @@ namespace MinimalisticWPF.Animator
         /// <summary>
         /// Copy a state machine . When you use this method to get a state machine, there is no limit on the number of state machines per instance
         /// </summary>
-        public StateMachine Copy()
+        public TransitionScheduler Copy()
         {
-            var result = new StateMachine(Target);
+            var result = new TransitionScheduler(TransitionApplied);
             foreach (var state in States)
             {
                 result.States.Add(state);
@@ -288,6 +289,8 @@ namespace MinimalisticWPF.Animator
             if (TransitionParams.IsUnSafe)
             {
                 UnSafeInterpreters.Add(animationInterpreter);
+                var _ = Task.Run(() => { animationInterpreter.StartAtNewTask(); });
+                return;
             }
             else
             {
@@ -296,9 +299,9 @@ namespace MinimalisticWPF.Animator
             }
             await animationInterpreter.Start();
         }
-        internal StateMachine(object viewModel, params State[] states)
+        internal TransitionScheduler(object viewModel, params State[] states)
         {
-            Target = viewModel;
+            TransitionApplied = viewModel;
             Type = viewModel.GetType();
             InitializeTypes(Type);
             foreach (var state in states)
@@ -310,23 +313,23 @@ namespace MinimalisticWPF.Animator
         internal bool IsReSet { get; set; } = false;
 
         private static int _maxFR = 240;
-        private static List<List<Tuple<PropertyInfo, List<object?>>>> ComputingFrames(State state, StateMachine machine)
+        private static List<List<Tuple<PropertyInfo, List<object?>>>> ComputingFrames(State state, TransitionScheduler machine)
         {
             List<List<Tuple<PropertyInfo, List<object?>>>> result = new(7);
 
             var count = (int)machine.FrameCount;
             var fc = count == 0 ? 1 : count;
-            result.Add(DoubleComputing(machine.Type, state, machine.Target, fc));
-            result.Add(BrushComputing(machine.Type, state, machine.Target, fc));
-            result.Add(TransformComputing(machine.Type, state, machine.Target, fc));
-            result.Add(PointComputing(machine.Type, state, machine.Target, fc));
-            result.Add(CornerRadiusComputing(machine.Type, state, machine.Target, fc));
-            result.Add(ThicknessComputing(machine.Type, state, machine.Target, fc));
-            result.Add(ILinearInterpolationComputing(machine.Type, state, machine.Target, fc));
+            result.Add(DoubleComputing(machine.Type, state, machine.TransitionApplied, fc));
+            result.Add(BrushComputing(machine.Type, state, machine.TransitionApplied, fc));
+            result.Add(TransformComputing(machine.Type, state, machine.TransitionApplied, fc));
+            result.Add(PointComputing(machine.Type, state, machine.TransitionApplied, fc));
+            result.Add(CornerRadiusComputing(machine.Type, state, machine.TransitionApplied, fc));
+            result.Add(ThicknessComputing(machine.Type, state, machine.TransitionApplied, fc));
+            result.Add(ILinearInterpolationComputing(machine.Type, state, machine.TransitionApplied, fc));
 
             return result;
         }
-        private static List<Tuple<PropertyInfo, List<object?>>> DoubleComputing(Type type, State state, object Target, int FrameCount)
+        private static List<Tuple<PropertyInfo, List<object?>>> DoubleComputing(Type type, State state, object TransitionApplied, int FrameCount)
         {
             List<Tuple<PropertyInfo, List<object?>>> allFrames = new(FrameCount);
             if (SplitedPropertyInfos.TryGetValue(type, out var infodictionary))
@@ -335,7 +338,7 @@ namespace MinimalisticWPF.Animator
                 {
                     if (infodictionary.Item1.TryGetValue(propertyname, out var propertyinfo))
                     {
-                        var currentValue = propertyinfo.GetValue(Target);
+                        var currentValue = propertyinfo.GetValue(TransitionApplied);
                         var newValue = state.Values[propertyname];
                         if (currentValue != newValue)
                         {
@@ -346,7 +349,7 @@ namespace MinimalisticWPF.Animator
             }
             return allFrames;
         }
-        private static List<Tuple<PropertyInfo, List<object?>>> BrushComputing(Type type, State state, object Target, int FrameCount)
+        private static List<Tuple<PropertyInfo, List<object?>>> BrushComputing(Type type, State state, object TransitionApplied, int FrameCount)
         {
             List<Tuple<PropertyInfo, List<object?>>> allFrames = new(FrameCount);
             if (SplitedPropertyInfos.TryGetValue(type, out var infodictionary))
@@ -355,7 +358,7 @@ namespace MinimalisticWPF.Animator
                 {
                     if (infodictionary.Item2.TryGetValue(propertyname, out var propertyinfo))
                     {
-                        var currentValue = propertyinfo.GetValue(Target);
+                        var currentValue = propertyinfo.GetValue(TransitionApplied);
                         var newValue = state.Values[propertyname];
                         if (currentValue != newValue)
                         {
@@ -366,7 +369,7 @@ namespace MinimalisticWPF.Animator
             }
             return allFrames;
         }
-        private static List<Tuple<PropertyInfo, List<object?>>> TransformComputing(Type type, State state, object Target, int FrameCount)
+        private static List<Tuple<PropertyInfo, List<object?>>> TransformComputing(Type type, State state, object TransitionApplied, int FrameCount)
         {
             List<Tuple<PropertyInfo, List<object?>>> allFrames = new(FrameCount);
             if (SplitedPropertyInfos.TryGetValue(type, out var infodictionary))
@@ -375,7 +378,7 @@ namespace MinimalisticWPF.Animator
                 {
                     if (infodictionary.Item3.TryGetValue(propertyname, out var propertyinfo))
                     {
-                        var currentValue = propertyinfo.GetValue(Target);
+                        var currentValue = propertyinfo.GetValue(TransitionApplied);
                         var newValue = state.Values[propertyname];
                         if (currentValue != newValue)
                         {
@@ -386,7 +389,7 @@ namespace MinimalisticWPF.Animator
             }
             return allFrames;
         }
-        private static List<Tuple<PropertyInfo, List<object?>>> PointComputing(Type type, State state, object Target, int FrameCount)
+        private static List<Tuple<PropertyInfo, List<object?>>> PointComputing(Type type, State state, object TransitionApplied, int FrameCount)
         {
             List<Tuple<PropertyInfo, List<object?>>> allFrames = new(FrameCount);
             if (SplitedPropertyInfos.TryGetValue(type, out var infodictionary))
@@ -395,7 +398,7 @@ namespace MinimalisticWPF.Animator
                 {
                     if (infodictionary.Item4.TryGetValue(propertyname, out var propertyinfo))
                     {
-                        var currentValue = propertyinfo.GetValue(Target);
+                        var currentValue = propertyinfo.GetValue(TransitionApplied);
                         var newValue = state.Values[propertyname];
                         if (currentValue != newValue)
                         {
@@ -406,7 +409,7 @@ namespace MinimalisticWPF.Animator
             }
             return allFrames;
         }
-        private static List<Tuple<PropertyInfo, List<object?>>> CornerRadiusComputing(Type type, State state, object Target, int FrameCount)
+        private static List<Tuple<PropertyInfo, List<object?>>> CornerRadiusComputing(Type type, State state, object TransitionApplied, int FrameCount)
         {
             List<Tuple<PropertyInfo, List<object?>>> allFrames = new(FrameCount);
             if (SplitedPropertyInfos.TryGetValue(type, out var infodictionary))
@@ -415,7 +418,7 @@ namespace MinimalisticWPF.Animator
                 {
                     if (infodictionary.Item5.TryGetValue(propertyname, out var propertyinfo))
                     {
-                        var currentValue = propertyinfo.GetValue(Target);
+                        var currentValue = propertyinfo.GetValue(TransitionApplied);
                         var newValue = state.Values[propertyname];
                         if (currentValue != newValue)
                         {
@@ -426,7 +429,7 @@ namespace MinimalisticWPF.Animator
             }
             return allFrames;
         }
-        private static List<Tuple<PropertyInfo, List<object?>>> ThicknessComputing(Type type, State state, object Target, int FrameCount)
+        private static List<Tuple<PropertyInfo, List<object?>>> ThicknessComputing(Type type, State state, object TransitionApplied, int FrameCount)
         {
             List<Tuple<PropertyInfo, List<object?>>> allFrames = new(FrameCount);
             if (SplitedPropertyInfos.TryGetValue(type, out var infodictionary))
@@ -435,7 +438,7 @@ namespace MinimalisticWPF.Animator
                 {
                     if (infodictionary.Item6.TryGetValue(propertyname, out var propertyinfo))
                     {
-                        var currentValue = propertyinfo.GetValue(Target);
+                        var currentValue = propertyinfo.GetValue(TransitionApplied);
                         var newValue = state.Values[propertyname];
                         if (currentValue != newValue)
                         {
@@ -446,7 +449,7 @@ namespace MinimalisticWPF.Animator
             }
             return allFrames;
         }
-        private static List<Tuple<PropertyInfo, List<object?>>> ILinearInterpolationComputing(Type type, State state, object Target, int FrameCount)
+        private static List<Tuple<PropertyInfo, List<object?>>> ILinearInterpolationComputing(Type type, State state, object TransitionApplied, int FrameCount)
         {
             List<Tuple<PropertyInfo, List<object?>>> allFrames = new(FrameCount);
             if (SplitedPropertyInfos.TryGetValue(type, out var infodictionary))
@@ -455,11 +458,11 @@ namespace MinimalisticWPF.Animator
                 {
                     if (infodictionary.Item7.TryGetValue(propertyname, out var propertyinfo))
                     {
-                        var currentValue = (IInterpolable?)propertyinfo.GetValue(Target);
+                        var currentValue = (IInterpolable?)propertyinfo.GetValue(TransitionApplied);
                         var newValue = (IInterpolable?)state.Values[propertyname];
                         if (currentValue != newValue && newValue != null)
                         {
-                            allFrames.Add(Tuple.Create(propertyinfo, newValue.Interpolate(currentValue?.CurrentValue, newValue.CurrentValue, FrameCount)));
+                            allFrames.Add(Tuple.Create(propertyinfo, newValue.Interpolate(currentValue?.Self, newValue.Self, FrameCount)));
                         }
                     }
                 }

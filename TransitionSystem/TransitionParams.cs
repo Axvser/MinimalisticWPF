@@ -1,6 +1,6 @@
 ﻿using System.Windows.Threading;
 
-namespace MinimalisticWPF.Animator
+namespace MinimalisticWPF.TransitionSystem
 {
     public sealed class TransitionParams
     {
@@ -49,25 +49,25 @@ namespace MinimalisticWPF.Animator
         {
             var copy = new TransitionParams
             {
-                Start = this.Start,
-                Update = this.Update,
-                LateUpdate = this.LateUpdate,
-                Completed = this.Completed,
-                StartAsync = this.StartAsync,
-                UpdateAsync = this.UpdateAsync,
-                LateUpdateAsync = this.LateUpdateAsync,
-                CompletedAsync = this.CompletedAsync,
-                IsAutoReverse = this.IsAutoReverse,
-                LoopTime = this.LoopTime,
-                Duration = this.Duration,
-                FrameRate = this.FrameRate,
-                IsQueue = this.IsQueue,
-                IsLast = this.IsLast,
-                IsUnique = this.IsUnique,
-                Acceleration = this.Acceleration,
-                IsUnSafe = this.IsUnSafe,
-                UIPriority = this.UIPriority,
-                IsBeginInvoke = this.IsBeginInvoke
+                Start = Start,
+                Update = Update,
+                LateUpdate = LateUpdate,
+                Completed = Completed,
+                StartAsync = StartAsync,
+                UpdateAsync = UpdateAsync,
+                LateUpdateAsync = LateUpdateAsync,
+                CompletedAsync = CompletedAsync,
+                IsAutoReverse = IsAutoReverse,
+                LoopTime = LoopTime,
+                Duration = Duration,
+                FrameRate = FrameRate,
+                IsQueue = IsQueue,
+                IsLast = IsLast,
+                IsUnique = IsUnique,
+                Acceleration = Acceleration,
+                IsUnSafe = IsUnSafe,
+                UIPriority = UIPriority,
+                IsBeginInvoke = IsBeginInvoke
             };
             return copy;
         }

@@ -2,20 +2,20 @@
 using System.Reflection;
 using System.Windows;
 
-namespace MinimalisticWPF.Animator
+namespace MinimalisticWPF.TransitionSystem
 {
     public sealed class TransitionInterpreter : IExecutableTransition
     {
-        internal TransitionInterpreter(StateMachine machine, TransitionParams transitionParams)
+        internal TransitionInterpreter(TransitionScheduler machine, TransitionParams transitionParams)
         {
-            Machine = machine;
+            TransitionScheduler = machine;
             TransitionParams = transitionParams;
         }
 
         public TransitionParams TransitionParams { get; set; }
         public List<List<Tuple<PropertyInfo, List<object?>>>> FrameSequence { get; set; } = [];
 
-        public StateMachine Machine { get; internal set; }
+        public TransitionScheduler TransitionScheduler { get; internal set; }
         internal int DeltaTime { get; set; } = 0;
 
         private bool IsRunning { get; set; } = false;
@@ -28,11 +28,11 @@ namespace MinimalisticWPF.Animator
             if (IsStop || IsRunning) { WhileEnded(); return; }
             IsRunning = true;
 
-            var accTimes = GetAccDeltaTime((int)Machine.FrameCount);
+            var accTimes = GetAccDeltaTime((int)TransitionScheduler.FrameCount);
 
             for (int x = LoopDepth; TransitionParams.LoopTime == int.MaxValue || x <= TransitionParams.LoopTime; x++, LoopDepth++)
             {
-                for (int i = FrameDepth; i < Machine.FrameCount; i++, FrameDepth++)
+                for (int i = FrameDepth; i < TransitionScheduler.FrameCount; i++, FrameDepth++)
                 {
                     if (EndConditionCheck()) return;
                     FrameStart();
@@ -49,7 +49,7 @@ namespace MinimalisticWPF.Animator
 
                 if (TransitionParams.IsAutoReverse)
                 {
-                    FrameDepth = Machine.FrameCount > 1 ? (int)Machine.FrameCount - 1 : 0;
+                    FrameDepth = TransitionScheduler.FrameCount > 1 ? (int)TransitionScheduler.FrameCount - 1 : 0;
                     for (int i = FrameDepth; i > -1; i--, FrameDepth--)
                     {
                         if (EndConditionCheck()) return;
@@ -76,10 +76,56 @@ namespace MinimalisticWPF.Animator
             LoopDepth = 0;
             FrameDepth = 0;
         }
+        public void StartAtNewTask(object? target = null)
+        {
+            if (IsStop || IsRunning) { WhileEnded(); return; }
+            IsRunning = true;
+
+            var accTimes = GetAccDeltaTime((int)TransitionScheduler.FrameCount);
+
+            for (int x = LoopDepth; TransitionParams.LoopTime == int.MaxValue || x <= TransitionParams.LoopTime; x++, LoopDepth++)
+            {
+                for (int i = FrameDepth; i < TransitionScheduler.FrameCount; i++, FrameDepth++)
+                {
+                    if (EndConditionCheck()) return;
+                    FrameStart();
+                    for (int j = 0; j < FrameSequence.Count; j++)
+                    {
+                        for (int k = 0; k < FrameSequence[j].Count; k++)
+                        {
+                            FrameUpdate(i, j, k);
+                        }
+                    }
+                    FrameEnd();
+                    Thread.Sleep(TransitionParams.Acceleration == 0 ? DeltaTime : i < accTimes.Count & accTimes.Count > 0 ? accTimes[i] : DeltaTime);
+                }
+
+                if (TransitionParams.IsAutoReverse)
+                {
+                    FrameDepth = TransitionScheduler.FrameCount > 1 ? (int)TransitionScheduler.FrameCount - 1 : 0;
+                    for (int i = FrameDepth; i > -1; i--, FrameDepth--)
+                    {
+                        if (EndConditionCheck()) return;
+                        FrameStart();
+                        for (int j = 0; j < FrameSequence.Count; j++)
+                        {
+                            for (int k = 0; k < FrameSequence[j].Count; k++)
+                            {
+                                FrameUpdate(i, j, k);
+                            }
+                        }
+                        FrameEnd();
+                        Thread.Sleep(TransitionParams.Acceleration == 0 ? DeltaTime : i < accTimes.Count & accTimes.Count > 0 ? accTimes[i] : DeltaTime);
+                    }
+                }
+            }
+
+            WhileEnded();
+        }
 
         private bool EndConditionCheck()
         {
-            if (IsStop || Application.Current == null || !TransitionParams.IsUnSafe && (Machine.IsReSet || Machine.Interpreter != this))
+            if (IsStop || Application.Current == null || !TransitionParams.IsUnSafe && (TransitionScheduler.IsReSet || TransitionScheduler.Interpreter != this))
             {
                 WhileEnded();
                 return true;
@@ -103,7 +149,7 @@ namespace MinimalisticWPF.Animator
                     {
                         await Application.Current.Dispatcher.BeginInvoke(TransitionParams.UIPriority, () =>
                         {
-                            FrameSequence[j][k].Item1.SetValue(Machine.Target, FrameSequence[j][k].Item2[i]);
+                            FrameSequence[j][k].Item1.SetValue(TransitionScheduler.TransitionApplied, FrameSequence[j][k].Item2[i]);
                         });
                     }
                     catch { }
@@ -112,7 +158,7 @@ namespace MinimalisticWPF.Animator
                 {
                     Application.Current.Dispatcher.Invoke(TransitionParams.UIPriority, () =>
                     {
-                        FrameSequence[j][k].Item1.SetValue(Machine.Target, FrameSequence[j][k].Item2[i]);
+                        FrameSequence[j][k].Item1.SetValue(TransitionScheduler.TransitionApplied, FrameSequence[j][k].Item2[i]);
                     });
                 }
             }
@@ -128,11 +174,11 @@ namespace MinimalisticWPF.Animator
         {
             if (TransitionParams.IsUnSafe)
             {
-                Machine.UnSafeInterpreters.Remove(this);
+                TransitionScheduler.UnSafeInterpreters.Remove(this);
                 return;
             }
 
-            if (Machine.IsReSet)
+            if (TransitionScheduler.IsReSet)
             {
                 return;
             }
@@ -144,18 +190,18 @@ namespace MinimalisticWPF.Animator
             IsRunning = false;
             IsStop = false;
 
-            if (Machine.Interpreter == this)
+            if (TransitionScheduler.Interpreter == this)
             {
-                Machine.Interpreter = null;
+                TransitionScheduler.Interpreter = null;
                 if (TransitionParams.IsLast)
                 {
-                    Machine.Interpreters.Clear();
+                    TransitionScheduler.Interpreters.Clear();
                 }
-                if (Machine.Interpreters.TryDequeue(out var source))
+                if (TransitionScheduler.Interpreters.TryDequeue(out var source))
                 {
-                    Machine.InterpreterScheduler(source.Item1, source.Item2.TransitionParams, source.Item2.FrameSequence);
+                    TransitionScheduler.InterpreterScheduler(source.Item1, source.Item2.TransitionParams, source.Item2.FrameSequence);
                 }
-                Machine.CurrentState = null;
+                TransitionScheduler.CurrentState = null;
             }
         }
         private List<int> GetAccDeltaTime(int Steps)

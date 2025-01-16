@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Media;
+﻿using System.Windows.Media;
 
 namespace MinimalisticWPF
 {
@@ -30,9 +25,9 @@ namespace MinimalisticWPF
         public int B { get; set; }
         public int A { get; set; }
 
-        public Color Color => Color.FromArgb((byte)A, (byte)R, (byte)G, (byte)B);
-        public SolidColorBrush SolidColorBrush => new(Color);
-        public Brush Brush => SolidColorBrush;
+        public readonly Color Color => Color.FromArgb((byte)A, (byte)R, (byte)G, (byte)B);
+        public readonly SolidColorBrush SolidColorBrush => new(Color);
+        public readonly Brush Brush => SolidColorBrush;
 
         public static RGB FromColor(Color color)
         {
@@ -44,7 +39,7 @@ namespace MinimalisticWPF
             return new RGB(color.R, color.G, color.B, color.A);
         }
 
-        public RGB Scale(double rateR, double rateG, double rateB, double rateA)
+        public readonly RGB Scale(double rateR, double rateG, double rateB, double rateA)
         {
             int newR = Math.Clamp((int)(R * rateR), 0, 255);
             int newG = Math.Clamp((int)(G * rateG), 0, 255);
@@ -52,7 +47,7 @@ namespace MinimalisticWPF
             int newA = Math.Clamp((int)(A * rateA), 0, 255);
             return new RGB(newR, newG, newB, newA);
         }
-        public RGB Scale(double rateRGB, double rateA)
+        public readonly RGB Scale(double rateRGB, double rateA)
         {
             int newR = Math.Clamp((int)(R * rateRGB), 0, 255);
             int newG = Math.Clamp((int)(G * rateRGB), 0, 255);
@@ -60,7 +55,7 @@ namespace MinimalisticWPF
             int newA = Math.Clamp((int)(A * rateA), 0, 255);
             return new RGB(newR, newG, newB, newA);
         }
-        public RGB Scale(double rateRGBA)
+        public readonly RGB Scale(double rateRGBA)
         {
             int newR = Math.Clamp((int)(R * rateRGBA), 0, 255);
             int newG = Math.Clamp((int)(G * rateRGBA), 0, 255);
@@ -69,7 +64,7 @@ namespace MinimalisticWPF
             return new RGB(newR, newG, newB, newA);
         }
 
-        public RGB Delta(int deltaR, int deltaG, int deltaB, int deltaA)
+        public readonly RGB Delta(int deltaR, int deltaG, int deltaB, int deltaA)
         {
             int newR = Math.Clamp((R + deltaR), 0, 255);
             int newG = Math.Clamp((G + deltaG), 0, 255);
@@ -77,7 +72,7 @@ namespace MinimalisticWPF
             int newA = Math.Clamp((A + deltaA), 0, 255);
             return new RGB(newR, newG, newB, newA);
         }
-        public RGB Delta(int deltaRGB, int deltaA)
+        public readonly RGB Delta(int deltaRGB, int deltaA)
         {
             int newR = Math.Clamp((R + deltaRGB), 0, 255);
             int newG = Math.Clamp((G + deltaRGB), 0, 255);
@@ -85,7 +80,7 @@ namespace MinimalisticWPF
             int newA = Math.Clamp((A + deltaA), 0, 255);
             return new RGB(newR, newG, newB, newA);
         }
-        public RGB Delta(int deltaRGBA)
+        public readonly RGB Delta(int deltaRGBA)
         {
             int newR = Math.Clamp((R + deltaRGBA), 0, 255);
             int newG = Math.Clamp((G + deltaRGBA), 0, 255);
@@ -94,24 +89,24 @@ namespace MinimalisticWPF
             return new RGB(newR, newG, newB, newA);
         }
 
-        public RGB SubA(int newValue)
+        public readonly RGB SubA(int newValue)
         {
             return new RGB(R, G, B, Math.Clamp(newValue, 0, 255));
         }
-        public RGB SubR(int newValue)
+        public readonly RGB SubR(int newValue)
         {
             return new RGB(Math.Clamp(newValue, 0, 255), G, B, A);
         }
-        public RGB SubG(int newValue)
+        public readonly RGB SubG(int newValue)
         {
             return new RGB(R, Math.Clamp(newValue, 0, 255), B, A);
         }
-        public RGB SubB(int newValue)
+        public readonly RGB SubB(int newValue)
         {
             return new RGB(R, G, Math.Clamp(newValue, 0, 255), A);
         }
 
-        public override string ToString()
+        public override readonly string ToString()
         {
             return $"RGBA [{R},{G},{B},{A}]";
         }

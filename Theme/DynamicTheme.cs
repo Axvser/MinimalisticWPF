@@ -1,18 +1,13 @@
-﻿using MinimalisticWPF.Animator;
+﻿using MinimalisticWPF.Extension;
 using MinimalisticWPF.StructuralDesign.Theme;
-using System;
+using MinimalisticWPF.TransitionSystem;
+using MinimalisticWPF.TransitionSystem.Basic;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.WebSockets;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Input;
 using System.Windows.Media;
 
-namespace MinimalisticWPF
+namespace MinimalisticWPF.Theme
 {
     public static class DynamicTheme
     {
@@ -79,8 +74,8 @@ namespace MinimalisticWPF
         {
             foreach (var cs in classes)
             {
-                StateMachine.InitializeTypes(cs);
-                if (!StateMachine.SplitedPropertyInfos.TryGetValue(cs, out var group)) break;
+                TransitionScheduler.InitializeTypes(cs);
+                if (!TransitionScheduler.SplitedPropertyInfos.TryGetValue(cs, out var group)) break;
                 var unit = new ConcurrentDictionary<Type, State>();
                 foreach (var attribute in attributes)
                 {

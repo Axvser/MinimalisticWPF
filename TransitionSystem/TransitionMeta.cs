@@ -1,10 +1,9 @@
 ﻿using MinimalisticWPF.StructuralDesign.Animator;
-using System.Net.NetworkInformation;
+using MinimalisticWPF.TransitionSystem.Basic;
+using MinimalisticWPF.Extension;
 using System.Reflection;
-using System.Windows;
-using System.Windows.Media;
 
-namespace MinimalisticWPF.Animator
+namespace MinimalisticWPF.TransitionSystem
 {
     public sealed class TransitionMeta : IMergeableTransition, ITransitionMeta, IConvertibleTransitionMeta, IExecutableTransition, ITransitionWithTarget, ICompilableTransition
     {
@@ -35,11 +34,11 @@ namespace MinimalisticWPF.Animator
             Merge(transitionMetas);
         }
 
-        public object? Target { get; set; }
+        public object? TransitionApplied { get; set; }
         public TransitionParams TransitionParams { get; set; } = new();
         public State PropertyState { get; set; } = new State() { StateName = Transition.TempName };
-        public StateMachine Machine => Target == null ? throw new ArgumentNullException(nameof(Target), "The metadata is missing the target instance for this transition effect") : StateMachine.Create(Target);
-        public List<List<Tuple<PropertyInfo, List<object?>>>> FrameSequence => StateMachine.PreloadFrames(Target, PropertyState, TransitionParams) ?? [];
+        public TransitionScheduler TransitionScheduler => TransitionApplied == null ? throw new ArgumentNullException(nameof(TransitionApplied), "The metadata is missing the target instance for this transition effect") : TransitionScheduler.Create(TransitionApplied);
+        public List<List<Tuple<PropertyInfo, List<object?>>>> FrameSequence => TransitionScheduler.PreloadFrames(TransitionApplied, PropertyState, TransitionParams) ?? [];
         public ITransitionMeta Merge(ICollection<ITransitionMeta> metas)
         {
             var result = IMergeableTransition.MergeMetas(metas);
@@ -59,31 +58,30 @@ namespace MinimalisticWPF.Animator
             var result = new TransitionBoard<T>
             {
                 PropertyState = ToState(),
-                Target = Target,
+                TransitionApplied = TransitionApplied,
                 TransitionParams = TransitionParams,
             };
             return result;
         }
         public Task Start(object? target = null)
         {
-            Target = target ?? Target;
-            if (Target == null) throw new ArgumentNullException(nameof(target), "The metadata is missing the target instance for this transition effect");
-            PropertyState.StateName = Transition.TempName + Machine.States.BoardSuffix;
-            Target.BeginTransition(ToState(), TransitionParams);
+            TransitionApplied = target ?? TransitionApplied;
+            if (TransitionApplied == null) throw new ArgumentNullException(nameof(target), "The metadata is missing the target instance for this transition effect");
+            PropertyState.StateName = Transition.TempName + TransitionScheduler.States.BoardSuffix;
+            TransitionApplied.BeginTransition(ToState(), TransitionParams);
             return Task.CompletedTask;
         }
         public void Stop(bool IsUnsafeStoped = false)
         {
-            Machine.Interrupt(IsUnsafeStoped);
+            TransitionScheduler.Interrupt(IsUnsafeStoped);
         }
-
         public IExecutableTransition Compile()
         {
             var copy = new TransitionMeta()
             {
-                Target = this.Target,
-                TransitionParams = this.TransitionParams.DeepCopy(),
-                PropertyState = this.PropertyState.DeepCopy(),
+                TransitionApplied = TransitionApplied,
+                TransitionParams = TransitionParams.DeepCopy(),
+                PropertyState = PropertyState.DeepCopy(),
             };
             return copy;
         }

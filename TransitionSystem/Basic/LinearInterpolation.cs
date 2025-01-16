@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Media;
 
-namespace MinimalisticWPF.Animator
+namespace MinimalisticWPF.TransitionSystem.Basic
 {
     public static class LinearInterpolation
     {

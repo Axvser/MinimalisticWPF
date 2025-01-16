@@ -3,10 +3,11 @@ using System.Reflection;
 using System.Windows.Media;
 using System.Windows;
 using MinimalisticWPF.StructuralDesign.Animator;
+using MinimalisticWPF.TransitionSystem.Basic;
 
-namespace MinimalisticWPF.Animator
+namespace MinimalisticWPF.TransitionSystem
 {
-    public sealed class TransitionBoard<T> : ITransitionMeta, IMergeableTransition, IConvertibleTransitionMeta, IPropertyRecorder<TransitionBoard<T>, T>, IExecutableTransition, ITransitionWithTarget, ICompilableTransition where T : class
+    public sealed class TransitionBoard<T> : ITransitionMeta, IMergeableTransition, IConvertibleTransitionMeta, IExecutableTransition, ITransitionWithTarget, ICompilableTransition where T : class
     {
         private object? _target = null;
         private TransitionParams _params = new();
@@ -15,20 +16,20 @@ namespace MinimalisticWPF.Animator
 
         internal TransitionBoard() { }
         public bool IsPreloaded { get; internal set; } = false;
+
         public List<List<Tuple<PropertyInfo, List<object?>>>> FrameSequence
         {
             get
             {
                 if (!IsPreloaded)
                 {
-                    _frameSequence = StateMachine.PreloadFrames(Target, PropertyState, TransitionParams) ?? [];
+                    _frameSequence = TransitionScheduler.PreloadFrames(TransitionApplied, PropertyState, TransitionParams) ?? [];
                     return _frameSequence;
                 }
                 return _frameSequence;
             }
         }
-
-        public object? Target
+        public object? TransitionApplied
         {
             get => _target;
             set
@@ -61,18 +62,18 @@ namespace MinimalisticWPF.Animator
                 _propertyState = value;
             }
         }
-        public StateMachine Machine => Target == null ? throw new ArgumentNullException(nameof(Target), "The metadata is missing the target instance for this transition effect") : StateMachine.Create(Target);
+        public TransitionScheduler TransitionScheduler => TransitionApplied == null ? throw new ArgumentNullException(nameof(TransitionApplied), "The metadata is missing the target instance for this transition effect") : TransitionScheduler.Create(TransitionApplied);
         public Task Start(object? target = null)
         {
             if (target == null)
             {
-                if (Target == null)
+                if (TransitionApplied == null)
                 {
                     throw new ArgumentNullException(nameof(target), "The metadata is missing the target instance for this transition effect");
                 }
                 else
                 {
-                    var Machine = StateMachine.Create(Target);
+                    var Machine = TransitionScheduler.Create(TransitionApplied);
                     Machine.Interrupt();
                     PropertyState.StateName = Transition.TempName + Machine.States.BoardSuffix;
                     Machine.States.Add(PropertyState);
@@ -81,8 +82,8 @@ namespace MinimalisticWPF.Animator
             }
             else
             {
-                Target = target;
-                var Machine = StateMachine.Create(target);
+                TransitionApplied = target;
+                var Machine = TransitionScheduler.Create(target);
                 Machine.Interrupt();
                 PropertyState.StateName = Transition.TempName + Machine.States.BoardSuffix;
                 Machine.States.Add(PropertyState);
@@ -92,7 +93,7 @@ namespace MinimalisticWPF.Animator
         }
         public void Stop(bool IsUnsafeStoped = false)
         {
-            Machine.Interrupt(IsUnsafeStoped);
+            TransitionScheduler.Interrupt(IsUnsafeStoped);
         }
         public ITransitionMeta Merge(ICollection<ITransitionMeta> metas)
         {
@@ -108,7 +109,7 @@ namespace MinimalisticWPF.Animator
         {
             TransitionMeta transitionMeta = new(this)
             {
-                Target = Target
+                TransitionApplied = TransitionApplied
             };
             return transitionMeta.ToTransitionBoard<T1>();
         }
@@ -116,10 +117,21 @@ namespace MinimalisticWPF.Animator
         {
             TransitionMeta transitionMeta = new(this)
             {
-                Target = Target
+                TransitionApplied = TransitionApplied
             };
             return transitionMeta;
         }
+        public IExecutableTransition Compile()
+        {
+            var meta = new TransitionMeta()
+            {
+                TransitionApplied = TransitionApplied,
+                TransitionParams = TransitionParams.DeepCopy(),
+                PropertyState = PropertyState.DeepCopy()
+            };
+            return meta;
+        }
+
         public TransitionBoard<T> SetProperty(Expression<Func<T, double>> propertyLambda, double newValue)
         {
             if (propertyLambda.Body is MemberExpression propertyExpr)
@@ -225,16 +237,6 @@ namespace MinimalisticWPF.Animator
         {
             TransitionParams = newParams;
             return this;
-        }
-        public IExecutableTransition Compile()
-        {
-            var meta = new TransitionMeta()
-            {
-                Target = this.Target,
-                TransitionParams = this.TransitionParams.DeepCopy(),
-                PropertyState = this.PropertyState.DeepCopy()
-            };
-            return meta;
         }
     }
 }
