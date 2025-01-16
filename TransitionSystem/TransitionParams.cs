@@ -35,7 +35,6 @@ namespace MinimalisticWPF.TransitionSystem
         public int FrameRate { get; set; } = DefaultFrameRate;
         public bool IsLast { get; set; } = false;
         public double Acceleration { get; set; } = 0;
-        public bool IsUnSafe { get; set; } = false;
         public DispatcherPriority Priority { get; set; } = DefaultPriority;
         public bool IsBeginInvoke { get; set; } = DefaultIsBeginInvoke;
 
@@ -53,7 +52,6 @@ namespace MinimalisticWPF.TransitionSystem
                 FrameRate = FrameRate,
                 IsLast = IsLast,
                 Acceleration = Acceleration,
-                IsUnSafe = IsUnSafe,
                 Priority = Priority,
                 IsBeginInvoke = IsBeginInvoke
             };

@@ -91,9 +91,9 @@ namespace MinimalisticWPF.TransitionSystem
             }
             return Task.CompletedTask;
         }
-        public void Stop(bool IsUnsafeStoped = false)
+        public void Stop()
         {
-            TransitionScheduler.Interrupt(IsUnsafeStoped);
+            TransitionScheduler.Interrupt();
         }
         public ITransitionMeta Merge(ICollection<ITransitionMeta> metas)
         {

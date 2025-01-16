@@ -83,10 +83,6 @@ namespace MinimalisticWPF.TransitionSystem
                 foreach (var machine in machinedic.Values)
                 {
                     machine.Interpreter?.Stop();
-                    foreach (var intor in machine.UnSafeInterpreters)
-                    {
-                        intor.Stop(true);
-                    }
                 }
             }
         }
@@ -96,29 +92,6 @@ namespace MinimalisticWPF.TransitionSystem
             {
                 var machine = TransitionScheduler.CreateOrFind(target);
                 machine.Interpreter?.Stop();
-                foreach (var itor in machine.UnSafeInterpreters)
-                {
-                    itor.Stop(true);
-                }
-            }
-        }
-        public static void DisposeSafe(params object[] targets)
-        {
-            foreach (var target in targets)
-            {
-                var machine = TransitionScheduler.CreateOrFind(target);
-                machine.Interpreter?.Stop();
-            }
-        }
-        public static void DisposeUnSafe(params object[] targets)
-        {
-            foreach (var target in targets)
-            {
-                var machine = TransitionScheduler.CreateOrFind(target);
-                foreach (var itor in machine.UnSafeInterpreters)
-                {
-                    itor.Stop(true);
-                }
             }
         }
     }

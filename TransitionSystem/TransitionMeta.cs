@@ -71,9 +71,9 @@ namespace MinimalisticWPF.TransitionSystem
             TransitionApplied.BeginTransition(ToState(), TransitionParams);
             return Task.CompletedTask;
         }
-        public void Stop(bool IsUnsafeStoped = false)
+        public void Stop()
         {
-            TransitionScheduler.Interrupt(IsUnsafeStoped);
+            TransitionScheduler.Interrupt();
         }
         public IExecutableTransition Compile()
         {

@@ -6,6 +6,6 @@ namespace MinimalisticWPF.StructuralDesign.Animator
     {
         public TransitionScheduler TransitionScheduler { get; }
         public Task Start(object? target = null);
-        public void Stop(bool IsUnsafeStoped = false);
+        public void Stop();
     }
 }

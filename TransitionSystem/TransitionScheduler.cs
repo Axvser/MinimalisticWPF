@@ -132,7 +132,6 @@ namespace MinimalisticWPF.TransitionSystem
         public string? CurrentState { get; internal set; }
         public IExecutableTransition? Interpreter { get; internal set; }
         public ConcurrentQueue<Tuple<string, ITransitionMeta>> Interpreters { get; internal set; } = new();
-        public List<IExecutableTransition> UnSafeInterpreters { get; internal set; } = [];
 
         public TransitionScheduler Copy()
         {
@@ -144,20 +143,13 @@ namespace MinimalisticWPF.TransitionSystem
             return result;
         }
 
-        public void Interrupt(bool IsStopUnsafe = false)
+        public void Interrupt()
         {
             IsReSet = true;
             CurrentState = null;
             Interpreter?.Stop();
             Interpreter = null;
             Interpreters.Clear();
-            if (IsStopUnsafe)
-            {
-                foreach (var item in UnSafeInterpreters)
-                {
-                    item.Stop(true);
-                }
-            }
         }
         public void Transition(string stateName, Action<TransitionParams>? actionSet, List<List<Tuple<PropertyInfo, List<object?>>>>? preload = null)
         {
@@ -165,12 +157,6 @@ namespace MinimalisticWPF.TransitionSystem
 
             TransitionParams temp = new();
             actionSet?.Invoke(temp);
-
-            if (temp.IsUnSafe)
-            {
-                InterpreterScheduler(stateName, temp, preload);
-                return;
-            }
 
             if (Interpreter == null)
             {
@@ -187,12 +173,6 @@ namespace MinimalisticWPF.TransitionSystem
             IsReSet = false;
 
             var temp = param ?? new();
-
-            if (temp.IsUnSafe)
-            {
-                InterpreterScheduler(stateName, temp, preload);
-                return;
-            }
 
             if (Interpreter == null)
             {
@@ -225,18 +205,8 @@ namespace MinimalisticWPF.TransitionSystem
             }
 
             animationInterpreter.FrameSequence = preload ?? ComputingFrames(targetState, this);
-
-            if (TransitionParams.IsUnSafe)
-            {
-                UnSafeInterpreters.Add(animationInterpreter);
-                await Task.Run(() => { animationInterpreter.StartAtNewTask(); });
-                return;
-            }
-            else
-            {
-                CurrentState = stateName;
-                Interpreter = animationInterpreter;
-            }
+            CurrentState = stateName;
+            Interpreter = animationInterpreter;
             await animationInterpreter.Start();
         }
         internal TransitionScheduler(object viewModel, params State[] states)

@@ -69,9 +69,8 @@ namespace MinimalisticWPF.TransitionSystem
 
             WhileEnded();
         }
-        public void Stop(bool IsUnsafeStoped = false)
+        public void Stop()
         {
-            if (TransitionParams.IsUnSafe && !IsUnsafeStoped) return;
             IsStop = IsRunning;
             LoopDepth = 0;
             FrameDepth = 0;
@@ -125,7 +124,7 @@ namespace MinimalisticWPF.TransitionSystem
 
         private bool EndConditionCheck()
         {
-            if (IsStop || Application.Current == null || !TransitionParams.IsUnSafe && (TransitionScheduler.IsReSet || TransitionScheduler.Interpreter != this))
+            if (IsStop || Application.Current == null || (TransitionScheduler.IsReSet || TransitionScheduler.Interpreter != this))
             {
                 WhileEnded();
                 return true;
@@ -166,12 +165,6 @@ namespace MinimalisticWPF.TransitionSystem
         }
         private void WhileEnded()
         {
-            if (TransitionParams.IsUnSafe)
-            {
-                TransitionScheduler.UnSafeInterpreters.Remove(this);
-                return;
-            }
-
             if (TransitionScheduler.IsReSet)
             {
                 return;
