@@ -35,9 +35,9 @@ namespace MinimalisticWPF.Extension
         }
         public static TransitionScheduler? FindTransitionScheduler<T>(this T source) where T : class
         {
-            if (TransitionScheduler.TryGetMachine(source, out var machineA))
+            if (TransitionScheduler.TryGetScheduler(source, out var Scheduler))
             {
-                return machineA;
+                return Scheduler;
             }
             return null;
         }

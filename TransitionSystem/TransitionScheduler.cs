@@ -22,13 +22,7 @@ namespace MinimalisticWPF.TransitionSystem
         public static ConcurrentDictionary<Type, ConcurrentDictionary<string, PropertyInfo>> PropertyInfos { get; internal set; } = new();
         public static ConcurrentDictionary<Type, Tuple<ConcurrentDictionary<string, PropertyInfo>, ConcurrentDictionary<string, PropertyInfo>, ConcurrentDictionary<string, PropertyInfo>, ConcurrentDictionary<string, PropertyInfo>, ConcurrentDictionary<string, PropertyInfo>, ConcurrentDictionary<string, PropertyInfo>, ConcurrentDictionary<string, PropertyInfo>>> SplitedPropertyInfos { get; internal set; } = new();
 
-        /// <summary>
-        /// Return an existing TransitionScheduler or create a new one
-        /// </summary>
-        /// <remarks>
-        /// If you do not want to automatically create a new TransitionScheduler, use [ TryGetMachine() ]
-        /// </remarks>
-        public static TransitionScheduler Create(object targetObj, params State[] states)
+        public static TransitionScheduler CreateOrFind(object targetObj, params State[] states)
         {
             var type = targetObj.GetType();
             if (MachinePool.TryGetValue(type, out var machinedictionary))
@@ -57,10 +51,6 @@ namespace MinimalisticWPF.TransitionSystem
                 return newMachine;
             }
         }
-
-        /// <summary>
-        /// Calculate the sequence of animation frames
-        /// </summary>
         public static List<List<Tuple<PropertyInfo, List<object?>>>>? PreloadFrames(object? TransitionApplied, State state, TransitionParams par)
         {
             if (TransitionApplied == null)
@@ -74,10 +64,6 @@ namespace MinimalisticWPF.TransitionSystem
             var result = ComputingFrames(state, machine);
             return result;
         }
-
-        /// <summary>
-        /// Initialize the type context, which speeds up transition generation
-        /// </summary>
         public static void InitializeTypes(params Type[] types)
         {
             foreach (var type in types)
@@ -111,13 +97,6 @@ namespace MinimalisticWPF.TransitionSystem
             }
         }
 
-        /// <summary>
-        /// If the type context is initialized, the method can quickly find PropertyInfo
-        /// </summary>
-        /// <param name="type"></param>
-        /// <param name="propertyname"></param>
-        /// <param name="result"></param>
-        /// <returns>bool</returns>
         public static bool TryGetPropertyInfo(Type type, string propertyname, out PropertyInfo? result)
         {
             if (PropertyInfos.TryGetValue(type, out var propdic))
@@ -131,14 +110,7 @@ namespace MinimalisticWPF.TransitionSystem
             result = null;
             return false;
         }
-
-        /// <summary>
-        /// Use this method to find the unique TransitionScheduler that the system has for each instance object
-        /// </summary>
-        /// <param name="target"></param>
-        /// <param name="result"></param>
-        /// <returns></returns>
-        public static bool TryGetMachine(object target, out TransitionScheduler? result)
+        public static bool TryGetScheduler(object target, out TransitionScheduler? result)
         {
             if (MachinePool.TryGetValue(target.GetType(), out var machinedic))
             {
@@ -162,9 +134,6 @@ namespace MinimalisticWPF.TransitionSystem
         public ConcurrentQueue<Tuple<string, ITransitionMeta>> Interpreters { get; internal set; } = new();
         public List<IExecutableTransition> UnSafeInterpreters { get; internal set; } = [];
 
-        /// <summary>
-        /// Copy a state machine . When you use this method to get a state machine, there is no limit on the number of state machines per instance
-        /// </summary>
         public TransitionScheduler Copy()
         {
             var result = new TransitionScheduler(TransitionApplied);
@@ -175,10 +144,6 @@ namespace MinimalisticWPF.TransitionSystem
             return result;
         }
 
-        /// <summary>
-        /// Interrupt transition
-        /// </summary>
-        /// <param name="IsStopUnsafe">Whether the unsafe transition is terminated</param>
         public void Interrupt(bool IsStopUnsafe = false)
         {
             IsReSet = true;
@@ -194,10 +159,6 @@ namespace MinimalisticWPF.TransitionSystem
                 }
             }
         }
-
-        /// <summary>
-        /// Scheduling transition behavior
-        /// </summary>
         public void Transition(string stateName, Action<TransitionParams>? actionSet, List<List<Tuple<PropertyInfo, List<object?>>>>? preload = null)
         {
             IsReSet = false;
@@ -218,21 +179,9 @@ namespace MinimalisticWPF.TransitionSystem
             else
             {
                 var targetInterpreter = Interpreters.Where(x => x.Item1 == stateName).ToArray();
-                if (targetInterpreter.Length != 0 && temp.IsUnique)
-                {
-                    return;
-                }
-
                 Interpreters.Enqueue(Tuple.Create<string, ITransitionMeta>(stateName, new TransitionMeta(temp, preload ?? [])));
-                if (!temp.IsQueue)
-                {
-                    Interpreter?.Stop();
-                }
             }
         }
-        /// <summary>
-        /// Scheduling transition behavior
-        /// </summary>
         public void Transition(string stateName, TransitionParams? param, List<List<Tuple<PropertyInfo, List<object?>>>>? preload = null)
         {
             IsReSet = false;
@@ -252,16 +201,7 @@ namespace MinimalisticWPF.TransitionSystem
             else
             {
                 var targetInterpreter = Interpreters.Where(x => x.Item1 == stateName).ToArray();
-                if (targetInterpreter.Length != 0 && temp.IsUnique)
-                {
-                    return;
-                }
-
                 Interpreters.Enqueue(Tuple.Create<string, ITransitionMeta>(stateName, new TransitionMeta(temp, preload ?? [])));
-                if (!temp.IsQueue)
-                {
-                    Interpreter?.Stop();
-                }
             }
         }
 
@@ -281,7 +221,7 @@ namespace MinimalisticWPF.TransitionSystem
             }
             else
             {
-                await TransitionParams.StartInvoke();
+                TransitionParams.StartInvoke();
             }
 
             animationInterpreter.FrameSequence = preload ?? ComputingFrames(targetState, this);
@@ -289,7 +229,7 @@ namespace MinimalisticWPF.TransitionSystem
             if (TransitionParams.IsUnSafe)
             {
                 UnSafeInterpreters.Add(animationInterpreter);
-                var _ = Task.Run(() => { animationInterpreter.StartAtNewTask(); });
+                await Task.Run(() => { animationInterpreter.StartAtNewTask(); });
                 return;
             }
             else

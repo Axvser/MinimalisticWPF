@@ -776,7 +776,7 @@ The source generator will automatically generate these dependency properties for
 | IsUnique          | Whether to add to the queue if a similar transition is already queued (default: do not add)      | true                  |
 | Acceleration      | Acceleration (default: 0)                                                                        | 0                     |
 | IsUnSafe          | Unsafe operation flag indicating unconditional and immediate execution (default: false)          | false                 |
-| UIPriority        | UI update priority                                                                               | DefaultUIPriority     |
+| Priority        | UI update priority                                                                               | DefaultPriority     |
 | IsBeginInvoke     | Whether to use BeginInvoke when updating properties                                              | DefaultIsBeginInvoke  |
 
 ---

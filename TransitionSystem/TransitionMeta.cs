@@ -37,7 +37,7 @@ namespace MinimalisticWPF.TransitionSystem
         public object? TransitionApplied { get; set; }
         public TransitionParams TransitionParams { get; set; } = new();
         public State PropertyState { get; set; } = new State() { StateName = Transition.TempName };
-        public TransitionScheduler TransitionScheduler => TransitionApplied == null ? throw new ArgumentNullException(nameof(TransitionApplied), "The metadata is missing the target instance for this transition effect") : TransitionScheduler.Create(TransitionApplied);
+        public TransitionScheduler TransitionScheduler => TransitionApplied == null ? throw new ArgumentNullException(nameof(TransitionApplied), "The metadata is missing the target instance for this transition effect") : TransitionScheduler.CreateOrFind(TransitionApplied);
         public List<List<Tuple<PropertyInfo, List<object?>>>> FrameSequence => TransitionScheduler.PreloadFrames(TransitionApplied, PropertyState, TransitionParams) ?? [];
         public ITransitionMeta Merge(ICollection<ITransitionMeta> metas)
         {

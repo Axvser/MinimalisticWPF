@@ -62,7 +62,7 @@ namespace MinimalisticWPF.TransitionSystem
                 _propertyState = value;
             }
         }
-        public TransitionScheduler TransitionScheduler => TransitionApplied == null ? throw new ArgumentNullException(nameof(TransitionApplied), "The metadata is missing the target instance for this transition effect") : TransitionScheduler.Create(TransitionApplied);
+        public TransitionScheduler TransitionScheduler => TransitionApplied == null ? throw new ArgumentNullException(nameof(TransitionApplied), "The metadata is missing the target instance for this transition effect") : TransitionScheduler.CreateOrFind(TransitionApplied);
         public Task Start(object? target = null)
         {
             if (target == null)
@@ -73,7 +73,7 @@ namespace MinimalisticWPF.TransitionSystem
                 }
                 else
                 {
-                    var Machine = TransitionScheduler.Create(TransitionApplied);
+                    var Machine = TransitionScheduler.CreateOrFind(TransitionApplied);
                     Machine.Interrupt();
                     PropertyState.StateName = Transition.TempName + Machine.States.BoardSuffix;
                     Machine.States.Add(PropertyState);
@@ -83,7 +83,7 @@ namespace MinimalisticWPF.TransitionSystem
             else
             {
                 TransitionApplied = target;
-                var Machine = TransitionScheduler.Create(target);
+                var Machine = TransitionScheduler.CreateOrFind(target);
                 Machine.Interrupt();
                 PropertyState.StateName = Transition.TempName + Machine.States.BoardSuffix;
                 Machine.States.Add(PropertyState);

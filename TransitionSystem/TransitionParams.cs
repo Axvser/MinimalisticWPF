@@ -12,7 +12,7 @@ namespace MinimalisticWPF.TransitionSystem
         }
 
         public static int DefaultFrameRate { get; set; } = 60;
-        public static DispatcherPriority DefaultUIPriority { get; set; } = DispatcherPriority.Normal;
+        public static DispatcherPriority DefaultPriority { get; set; } = DispatcherPriority.Normal;
         public static bool DefaultIsBeginInvoke { get; set; } = false;
         public static TransitionParams Theme { get; set; } = new()
         {
@@ -29,20 +29,14 @@ namespace MinimalisticWPF.TransitionSystem
         public event Action? Update;
         public event Action? LateUpdate;
         public event Action? Completed;
-        public event Func<Task>? StartAsync;
-        public event Func<Task>? UpdateAsync;
-        public event Func<Task>? LateUpdateAsync;
-        public event Func<Task>? CompletedAsync;
         public bool IsAutoReverse { get; set; } = false;
         public int LoopTime { get; set; } = 0;
         public double Duration { get; set; } = 0;
         public int FrameRate { get; set; } = DefaultFrameRate;
-        public bool IsQueue { get; set; } = false;
         public bool IsLast { get; set; } = false;
-        public bool IsUnique { get; set; } = true;
         public double Acceleration { get; set; } = 0;
         public bool IsUnSafe { get; set; } = false;
-        public DispatcherPriority UIPriority { get; set; } = DefaultUIPriority;
+        public DispatcherPriority Priority { get; set; } = DefaultPriority;
         public bool IsBeginInvoke { get; set; } = DefaultIsBeginInvoke;
 
         public TransitionParams DeepCopy()
@@ -53,56 +47,34 @@ namespace MinimalisticWPF.TransitionSystem
                 Update = Update,
                 LateUpdate = LateUpdate,
                 Completed = Completed,
-                StartAsync = StartAsync,
-                UpdateAsync = UpdateAsync,
-                LateUpdateAsync = LateUpdateAsync,
-                CompletedAsync = CompletedAsync,
                 IsAutoReverse = IsAutoReverse,
                 LoopTime = LoopTime,
                 Duration = Duration,
                 FrameRate = FrameRate,
-                IsQueue = IsQueue,
                 IsLast = IsLast,
-                IsUnique = IsUnique,
                 Acceleration = Acceleration,
                 IsUnSafe = IsUnSafe,
-                UIPriority = UIPriority,
+                Priority = Priority,
                 IsBeginInvoke = IsBeginInvoke
             };
             return copy;
         }
 
-        internal async Task StartInvoke()
+        internal void StartInvoke()
         {
             Start?.Invoke();
-            if (StartAsync != null)
-            {
-                await StartAsync.Invoke();
-            }
         }
-        internal async Task UpdateInvoke()
+        internal void UpdateInvoke()
         {
             Update?.Invoke();
-            if (UpdateAsync != null)
-            {
-                await UpdateAsync.Invoke();
-            }
         }
-        internal async Task LateUpdateInvoke()
+        internal void LateUpdateInvoke()
         {
             LateUpdate?.Invoke();
-            if (LateUpdateAsync != null)
-            {
-                await LateUpdateAsync.Invoke();
-            }
         }
-        internal async Task CompletedInvoke()
+        internal void CompletedInvoke()
         {
             Completed?.Invoke();
-            if (CompletedAsync != null)
-            {
-                await CompletedAsync.Invoke();
-            }
         }
     }
 }

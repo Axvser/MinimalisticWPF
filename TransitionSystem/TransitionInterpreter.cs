@@ -76,7 +76,7 @@ namespace MinimalisticWPF.TransitionSystem
             LoopDepth = 0;
             FrameDepth = 0;
         }
-        public void StartAtNewTask(object? target = null)
+        public void StartAtNewTask()
         {
             if (IsStop || IsRunning) { WhileEnded(); return; }
             IsRunning = true;
@@ -132,12 +132,9 @@ namespace MinimalisticWPF.TransitionSystem
             }
             return false;
         }
-        private async void FrameStart()
+        private void FrameStart()
         {
-            if (Application.Current != null)
-            {
-                await Application.Current.Dispatcher.Invoke(TransitionParams.UpdateInvoke);
-            }
+            TransitionParams.UpdateInvoke();
         }
         private async void FrameUpdate(int i, int j, int k)
         {
@@ -147,7 +144,7 @@ namespace MinimalisticWPF.TransitionSystem
                 {
                     try
                     {
-                        await Application.Current.Dispatcher.BeginInvoke(TransitionParams.UIPriority, () =>
+                        await Application.Current.Dispatcher.BeginInvoke(TransitionParams.Priority, () =>
                         {
                             FrameSequence[j][k].Item1.SetValue(TransitionScheduler.TransitionApplied, FrameSequence[j][k].Item2[i]);
                         });
@@ -156,21 +153,18 @@ namespace MinimalisticWPF.TransitionSystem
                 }
                 else
                 {
-                    Application.Current.Dispatcher.Invoke(TransitionParams.UIPriority, () =>
+                    Application.Current.Dispatcher.Invoke(TransitionParams.Priority, () =>
                     {
                         FrameSequence[j][k].Item1.SetValue(TransitionScheduler.TransitionApplied, FrameSequence[j][k].Item2[i]);
                     });
                 }
             }
         }
-        private async void FrameEnd()
+        private void FrameEnd()
         {
-            if (Application.Current != null)
-            {
-                await Application.Current.Dispatcher.Invoke(TransitionParams.LateUpdateInvoke);
-            }
+            TransitionParams.LateUpdateInvoke();
         }
-        private async void WhileEnded()
+        private void WhileEnded()
         {
             if (TransitionParams.IsUnSafe)
             {
@@ -183,10 +177,8 @@ namespace MinimalisticWPF.TransitionSystem
                 return;
             }
 
-            if (Application.Current != null)
-            {
-                await Application.Current.Dispatcher.Invoke(TransitionParams.CompletedInvoke);
-            }
+            TransitionParams.CompletedInvoke();
+
             IsRunning = false;
             IsStop = false;
 

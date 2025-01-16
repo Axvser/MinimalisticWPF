@@ -94,7 +94,7 @@ namespace MinimalisticWPF.TransitionSystem
         {
             foreach (var target in targets)
             {
-                var machine = TransitionScheduler.Create(target);
+                var machine = TransitionScheduler.CreateOrFind(target);
                 machine.Interpreter?.Stop();
                 foreach (var itor in machine.UnSafeInterpreters)
                 {
@@ -106,7 +106,7 @@ namespace MinimalisticWPF.TransitionSystem
         {
             foreach (var target in targets)
             {
-                var machine = TransitionScheduler.Create(target);
+                var machine = TransitionScheduler.CreateOrFind(target);
                 machine.Interpreter?.Stop();
             }
         }
@@ -114,7 +114,7 @@ namespace MinimalisticWPF.TransitionSystem
         {
             foreach (var target in targets)
             {
-                var machine = TransitionScheduler.Create(target);
+                var machine = TransitionScheduler.CreateOrFind(target);
                 foreach (var itor in machine.UnSafeInterpreters)
                 {
                     itor.Stop(true);

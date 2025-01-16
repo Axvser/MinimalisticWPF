@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace MinimalisticWPF
+﻿namespace MinimalisticWPF
 {
     /// <summary>
     /// [ Source Generator ] allows the class to participate in the global dynamic theme switching
