@@ -5,7 +5,7 @@
 
 ## What can this project do for you ?
 
-- （1）use C# entirely to create [ Transition ] effects
+- （1）use C# entirely to create [ Transition ] effects → [ TransitionParams ](#TransitionParams)
 
 - （2）Make your [ ViewModel ] support aspect-oriented programming, theme switching, object pooling, and hover effects
 
@@ -178,8 +178,6 @@ A description of the animation parameters is in the Details directory [Transitio
 ```csharp
 Transition.DisposeAll();          // All transitions
 Transition.Dispose(c1,c2);        // Only transitions of the selected object
-Transition.DisposeSafe(c1,c2);    // Only Safe transitions
-Transition.DisposeUnSafe(c1,c2);  // Only UnSafe transitions
 ```
 
 <h4 style="color:White">[ 1 - 6 ] Compile Transition</h4>
@@ -563,6 +561,28 @@ The source generator will automatically generate these dependency properties for
 
 ---
 
+## FluentStringValidator
+
+```csharp
+        static void Main(string[] args)
+        {
+            var validator = new FluentStringValidator()
+                .StartWith("Hello")
+                .EndWith("World")
+                .MinLength(10)
+                .MaxLength(20)
+                .Include("beautiful")
+                .Exclude("bad")
+                .Regex(@"^[A-Za-z\s]+$");
+
+            string testString1 = "Hello beautiful World";
+            string testString2 = "Hello bad World";
+
+            Console.WriteLine($"Test String 1: {testString1} - Valid: {validator.Validate(testString1)}");
+            Console.WriteLine($"Test String 2: {testString2} - Valid: {validator.Validate(testString2)}");
+        }
+```
+
 ## Xml&Json
 
 ### (1)  deserialization
@@ -637,7 +657,7 @@ The source generator will automatically generate these dependency properties for
 
 ## stringMatcher
 
-### (1) Regular
+### Regular
 
 ```csharp
    string sourceA = "[1]wkhdkjhk[a][F3]https:awijdioj.mp3fwafw";
@@ -646,31 +666,6 @@ The source generator will automatically generate these dependency properties for
    var resultA = sourceA.CaptureBetween("https:", ".mp3");
 
    var resultB = sourceB.CaptureLike("https://", "com");
-```
-
-### (2) Fuzzy Match
-
-```csharp
-   string template = "abcdefg";
-
-   string sourceA = "abc";
-   List<string> sourceB = new List<string>()
-   {
-       "abcdegf",
-       "cbdgafe"
-   };
-
-   var similarity1 = sourceA.LevenshteinDistance(template)
-   //Returns the shortest edit distance
-
-   var similarity2 = sourceA.JaroWinklerDistance(template)
-   //Returns approximation
-
-   var result3 = template.BestMatch(sourceB, 3);
-   //Edit the result with a minimum distance of less than 3
-
-   var result4 = template.BestMatch(sourceB, 0.5);
-   //The result with the approximation degree greater than 0.5 and the largest
 ```
 
 ---
@@ -713,10 +708,10 @@ The source generator will automatically generate these dependency properties for
 
 | Property Name     | Description                                                                                      | Default Value         |
 |-------------------|--------------------------------------------------------------------------------------------------|-----------------------|
-| Start             | Action to execute before transition starts                                                       | null                  |
-| Update            | Action to execute at the start of each frame                                                     | null                  |
-| LateUpdate        | Action to execute at the end of each frame                                                       | null                  |
-| Completed         | Action to execute after animation completes                                                      | null                  |
+| Start             | event that execute before transition starts                                                       | null                  |
+| Update            | event that execute at the start of each frame                                                     | null                  |
+| LateUpdate        | event that execute at the end of each frame                                                       | null                  |
+| Completed         | event that execute after animation completes                                                      | null                  |
 | IsAutoReverse     | Whether to automatically reverse                                                                 | false                 |
 | LoopTime          | Number of loops                                                                                  | 0                     |
 | Duration          | Duration of the transition (unit: s)                                                             | 0                     |
@@ -726,25 +721,3 @@ The source generator will automatically generate these dependency properties for
 | IsBeginInvoke     | Whether to use BeginInvoke when updating properties                                              | DefaultIsBeginInvoke  |
 
 ---
-
-## UnsafeTransition
-
-If an animation is set to Unsafe, it will normally execute on its own without being interrupted by other animations
-
-In some cases, you can use this feature to create animations like building blocks
-
-Of course, the Transition class provides methods to terminate such transitions
-
----
-
-## Generator
-
-(1) Only for partial classes
-
-(2) Contains at least one of the AOP, Theme, and VMProperty attributes for the source generator to work
-
-(3) The source generator has built the constructors
-
-(4) You'll need to regenerate after installing the project or if the content changes
-
-(5) If regenerating does not make the source generator work, you need to restart the editor, and if this still does not work, you need to check for the [.NET Compliler Platform SDK] and [Visual Basic Roslyn] components.
