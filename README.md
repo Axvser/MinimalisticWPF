@@ -23,7 +23,7 @@
 
 2025 - 1 - 16 :
 
-Update ( V2.6.5 )
+Update ( V2.6.6 )
 
 - (1) Remove unnecessary transition parameters, especially deprecating Unsafe
 - (2) Instead of creating threads for each animation, we now use [ async Task ] to reduce pressure on the thread pool
@@ -656,8 +656,6 @@ The source generator will automatically generate these dependency properties for
 ---
 
 ## stringMatcher
-
-### Regular
 
 ```csharp
    string sourceA = "[1]wkhdkjhk[a][F3]https:awijdioj.mp3fwafw";

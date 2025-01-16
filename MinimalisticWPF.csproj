@@ -24,7 +24,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="MinimalisticWPF.Generator" Version="1.7.9" />
+		<PackageReference Include="MinimalisticWPF.Generator" Version="1.8.2" />
 	</ItemGroup>
 
 	<ItemGroup>
