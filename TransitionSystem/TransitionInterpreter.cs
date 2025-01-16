@@ -178,10 +178,6 @@ namespace MinimalisticWPF.TransitionSystem
             if (TransitionScheduler.Interpreter == this)
             {
                 TransitionScheduler.Interpreter = null;
-                if (TransitionParams.IsLast)
-                {
-                    TransitionScheduler.Interpreters.Clear();
-                }
                 if (TransitionScheduler.Interpreters.TryDequeue(out var source))
                 {
                     TransitionScheduler.InterpreterScheduler(source.Item1, source.Item2.TransitionParams, source.Item2.FrameSequence);

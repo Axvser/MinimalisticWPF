@@ -1,14 +1,17 @@
 ﻿# MinimalisticWPF
+###### Use C# to get everything done ~
 
 [Document](#Document) 
 
 ## What can this project do for you ?
 
-（1）Backend, simple, flexible animation implementation
+- （1）use C# entirely to create [ Transition ] effects
 
-（2）Easy design pattern implementation
+- （2）Make your [ ViewModel ] support aspect-oriented programming, theme switching, object pooling, and hover effects
 
-（3）Other small components that speed up WPF development
+- （3）Generate simple [ DependentProperties ] for your control based on DataContext
+
+- （4）Other small components are used to speed up WPF project building, such as [ FluentStringValidator ]
 
 [github √](https://github.com/Axvser/MinimalisticWPF) 
 
@@ -18,62 +21,13 @@
 
 ## Important Notice
 
-2025 - 1 - 1 :
+2025 - 1 - 16 :
 
-Updates ( V2.6.1 - Beta) At [Dynamic Theme](#Theme) [ 5 - 3 ]
+Update ( V2.6.5 )
 
-This is a test version that allows you to configure [DataContextConfig] for controls to automatically generate dependency properties with the help of source generators. Additionally, much of the previous logic for handling mouse hover events on controls no longer needs to be manually implemented through partial methods; it has been embedded in the property setters. Of course, you can still add additional logic by implementing partial methods.
-
-(1) Assume that the actual type of DataContext used by Window is WindowViewModel
-- param1 : name of viewmodel type
-- param2 : namespace of viewmodel ( Optional )
-
-```csharp
-    [DataContextConfig(nameof(WindowViewModel))]
-    public partial class MainWindow : Window
-```
-
-(2) WindowViewModel
-
-```csharp
-    public partial class WindowViewModel
-    {
-        [Constructor]
-        private void SetDefualtHover()
-        {
-            CurrentTheme = typeof(Dark);
-
-            HoveredTransition.SetParams(TransitionParams.Hover);
-            NoHoveredTransition.SetParams(TransitionParams.Hover);
-        }
-
-        [Observable(CanHover: true)]
-        [Dark("White")]
-        [Light("#1e1e1e")]
-        private Brush _textBrush = Brushes.White;
-
-        public partial void OnThemeChanging(Type? oldTheme, Type newTheme)
-        {
-            Transition.DisposeSafe(this);
-        }
-        public partial void OnThemeChanged(Type? oldTheme, Type newTheme)
-        {
-            UpdateTransitionBoard();
-        }
-```
-
-(3) Once generated, you can style the Window to control the hover effect under different themes
-
-```xml
-        <Style TargetType="local:MainWindow" x:Key="WindowWithTheme">
-            <!--Dark-->
-            <Setter Property="DarkHoveredTextBrush" Value="Cyan"/>
-            <Setter Property="DarkNoHoveredTextBrush" Value="#1e1e1e"/>
-            <!--Light-->
-            <Setter Property="LightHoveredTextBrush" Value="Violet"/>
-            <Setter Property="LightNoHoveredTextBrush" Value="White"/>
-        </Style>
-```
+- (1) Remove unnecessary transition parameters, especially deprecating Unsafe
+- (2) Instead of creating threads for each animation, we now use [ async Task ] to reduce pressure on the thread pool
+- (3) [Object Pool](#ObjectPool) now support source generation
 
 ---
 
@@ -81,25 +35,21 @@ This is a test version that allows you to configure [DataContextConfig] for cont
 
 Feature Directory
 - Core
-  - [Animation](#Animation)
+  - [Transition](#Transition)
   - [Mvvm](#Mvvm) [ source generator √ ]
   - [Aspect-Oriented Programming](#AOP) [ source generator √ ]
-  - [Object Pool](#ObjectPool)
+  - [Object Pool](#ObjectPool) [ source generator √ ]
   - [Dynamic Theme](#Theme) [ source generator √ ]
 - Other
+  - [FluentStringValidator](#StringValidator)
   - [Xml / Json Operation](#Xml&Json)
   - [Folder Creation](#folder)
   - [string Convertor](#stringConvertor)
   - [string Matcher](#stringMatcher)
   - [RGB Convertor](#RGB)
-
-Details
-- [TransitionParams](#TransitionParams)
-- [Unsafe Transition](#UnsafeTransition)
-- [Roslyn](#Generator)
 ---
 
-## Animation
+## Transition
 
 <h4 style="color:white">Take the following two controls as examples to demonstrate some animation operations</h4>
 
@@ -400,71 +350,75 @@ You can define multiple methods with the same parameter list, and they will all 
 
 ## ObjectPool
 
-<h4 style="color:White">[ 4 - 1 ] Use attributes to configure a class</h4>
+### [ 4 - 1 ] Describe a ViewModel with a timer
 
+- (1) When Time reaches the threshold, this instance will be released
+  - CanRelease()
+- (2) When an instance is reused or released, relevant attributes need to be modified to reasonably control the effect
+  - OnReusing()
+  - OnReused()
+  - OnReleasing()
+  - OnReleased()
 ```csharp
-  [Pool(5, 10)] //The initial number of units is 5. If resources are insufficient, the system automatically expands to a maximum of 10 units
-  public class Unit
-  {
-      public static int count = 1;
+using MinimalisticWPF;
 
-      public Unit() { Value = count; count++; }
-
-      public int Value { get; set; } = 1;
-
-      [PoolFetch] //Triggered when the object is removed from the pool
-      public void WhileFetch()
-      {
-          MessageBox.Show($"Fetch {Value}");
-      }
-
-      [PoolDispose] //Triggered when the object pool is automatically reclaimed
-      public void WhileDispose()
-      {
-          MessageBox.Show($"Dispose {Value}");
-      }
-
-      [PoolDisposeCondition] //If the return value is true, the resource can be reclaimed automatically
-      public bool CanDisposed()
-      {
-          return Value % 2 == 0 ? true : false;
-      }
-  }
-```
-
-<h4 style="color:White">[ 4 - 2 ] Use object pool to manage instances</h4>
-
-(1) Get Instance
-
-```csharp
-var unit = Pool.Fetch(typeof(Unit)) as Unit;
-if (Pool.TryFetch(typeof(Unit), out var result))
+namespace WpfApp5
 {
-    var unit = result as Unit;
+    internal partial class Class1
+    {
+        private bool cantimeadd = true;
+
+        [Observable(CanInvokeRelease: true, SetterValidation: SetterValidations.Custom)]
+        private int time = 0;
+        private partial bool TimeIntercepting(int oldValue, int newValue)
+        {
+            return oldValue != newValue && cantimeadd;
+        }
+
+        [Observable]
+        private double opacity = 1;
+
+        public partial void OnReusing()
+        {
+            Time = 0;
+            Opacity = 1;
+        }
+        public partial void OnReused()
+        {
+            cantimeadd = true;
+        }
+
+        public partial bool CanRelease()
+        {
+            return Time > 1000;
+        }
+
+        public partial void OnReleasing()
+        {
+            cantimeadd = false;
+        }
+        public partial void OnReleased()
+        {
+            Time = 0;
+            Opacity = 0;
+        }
+    }
 }
 ```
 
-(2) Start Auto Dispose
+### [ 4 - 2 ] Get ViewModel from the object pool and use it for datacontext
+
+- (1) Generally, the object pool in this project only takes and never lets go, and the release and reuse logic is included in the ViewModel
+
+- (2) When resources are insufficient, the library will attempt to build a new instance based on the parameters received by Dequeue
 
 ```csharp
-Pool.RunAutoDispose(typeof(Unit), 5000);
+        public MainWindow()
+        {
+            InitializeComponent();
+            DataContext = Pool.Dequeue(typeof(Class1));
+        }
 ```
-
-(3) End Auto Dispose
-
-```csharp
-Pool.StopAutoDispose(typeof(Unit));
-```
-
-(4) Force resource release
-
-```csharp
-var unit = Pool.Fetch(typeof(Unit)) as Unit;
-Pool.ForceDispose(unit);
-// Pool.ForceDispose(typeof(Unit));
-```
-
-It is common to have one thread per class to intermittently reclaim objects, which can lead to too many threads, and you won't see this message if there are optimizations in future versions
 
 ---
 
@@ -763,20 +717,12 @@ The source generator will automatically generate these dependency properties for
 | Update            | Action to execute at the start of each frame                                                     | null                  |
 | LateUpdate        | Action to execute at the end of each frame                                                       | null                  |
 | Completed         | Action to execute after animation completes                                                      | null                  |
-| StartAsync        | Asynchronous action to execute before transition starts                                          | null                  |
-| UpdateAsync       | Asynchronous action to execute at the start of each frame                                        | null                  |
-| LateUpdateAsync   | Asynchronous action to execute at the end of each frame                                          | null                  |
-| CompletedAsync    | Asynchronous action to execute after animation completes                                         | null                  |
 | IsAutoReverse     | Whether to automatically reverse                                                                 | false                 |
 | LoopTime          | Number of loops                                                                                  | 0                     |
 | Duration          | Duration of the transition (unit: s)                                                             | 0                     |
 | FrameRate         | Transition frame rate (default: 60)                                                              | DefaultFrameRate (60) |
-| IsQueue           | Whether to queue execution (default: not queued)                                                 | false                 |
-| IsLast            | Whether to clear other queued transitions after completion (default: do not clear)               | false                 |
-| IsUnique          | Whether to add to the queue if a similar transition is already queued (default: do not add)      | true                  |
 | Acceleration      | Acceleration (default: 0)                                                                        | 0                     |
-| IsUnSafe          | Unsafe operation flag indicating unconditional and immediate execution (default: false)          | false                 |
-| Priority        | UI update priority                                                                               | DefaultPriority     |
+| Priority          | UI update priority                                                                               | DefaultPriority     |
 | IsBeginInvoke     | Whether to use BeginInvoke when updating properties                                              | DefaultIsBeginInvoke  |
 
 ---

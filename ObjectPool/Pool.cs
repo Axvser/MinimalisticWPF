@@ -1,6 +1,5 @@
 ﻿using MinimalisticWPF.StructuralDesign.Pool;
 using System.Collections.Concurrent;
-using System.Reflection;
 
 namespace MinimalisticWPF.ObjectPool
 {
@@ -26,6 +25,8 @@ namespace MinimalisticWPF.ObjectPool
         }
         public static object Dequeue(Type type, params object?[] parameters)
         {
+            if (!typeof(IPoolApplied).IsAssignableFrom(type)) throw new ArgumentException($"{type.Name} is not a IPoolApplied");
+
             if (Source.TryGetValue(type, out var queue))
             {
                 if (queue.TryPeek(out var fake) && fake is IPoolApplied methods)

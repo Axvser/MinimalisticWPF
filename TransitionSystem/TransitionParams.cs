@@ -33,7 +33,6 @@ namespace MinimalisticWPF.TransitionSystem
         public int LoopTime { get; set; } = 0;
         public double Duration { get; set; } = 0;
         public int FrameRate { get; set; } = DefaultFrameRate;
-        public bool IsLast { get; set; } = false;
         public double Acceleration { get; set; } = 0;
         public DispatcherPriority Priority { get; set; } = DefaultPriority;
         public bool IsBeginInvoke { get; set; } = DefaultIsBeginInvoke;
@@ -50,7 +49,6 @@ namespace MinimalisticWPF.TransitionSystem
                 LoopTime = LoopTime,
                 Duration = Duration,
                 FrameRate = FrameRate,
-                IsLast = IsLast,
                 Acceleration = Acceleration,
                 Priority = Priority,
                 IsBeginInvoke = IsBeginInvoke
