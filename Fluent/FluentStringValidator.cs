@@ -4,52 +4,38 @@ namespace MinimalisticWPF.Fluent
 {
     public class FluentStringValidator()
     {
-        private HashSet<string> _validationStart = [];
-        private HashSet<string> _validationEnd = [];
+        private string? _start = null;
+        private string? _end = null;
         private HashSet<string> _containsSubstrings = [];
         private HashSet<string> _excludeSubstrings = [];
-        private HashSet<Regex> _regexPattern = [];
+        private Regex? _regexPattern = null;
         private List<Tuple<int, string>> _range = [];
-        private int? _minLength;
-        private int? _maxLength;
-        private int? _fixLength;
+        private int? _minLength = null;
+        private int? _maxLength = null;
+        private int? _fixLength = null;
 
-        public FluentStringValidator StartWith(params string[] values)
+        public FluentStringValidator StartWith(string value)
         {
-            foreach (var value in values)
+            if (!string.IsNullOrEmpty(value))
             {
-                if (!string.IsNullOrEmpty(value))
-                {
-                    _validationStart.Add(value);
-                }
+                _start = value;
             }
             return this;
         }
-        public FluentStringValidator EndWith(params string[] values)
+        public FluentStringValidator EndWith(string value)
         {
-            foreach (var value in values)
+            if (!string.IsNullOrEmpty(value))
             {
-                if (!string.IsNullOrEmpty(value))
-                {
-                    _validationEnd.Add(value);
-                }
+                _end = value;
             }
             return this;
         }
-        public FluentStringValidator MinLength(int length)
+        public FluentStringValidator VarLength(int min, int max)
         {
-            if (length > -1)
+            if (max >= min)
             {
-                _minLength = length;
-                _fixLength = null;
-            }
-            return this;
-        }
-        public FluentStringValidator MaxLength(int length)
-        {
-            if (length > -1)
-            {
-                _maxLength = length;
+                _minLength = min;
+                _maxLength = max;
                 _fixLength = null;
             }
             return this;
@@ -88,15 +74,22 @@ namespace MinimalisticWPF.Fluent
             _range.Add(Tuple.Create(start, value));
             return this;
         }
-        public FluentStringValidator Regex(params string[] patterns)
+        public FluentStringValidator Regex(string pattern)
         {
-            foreach (var pattern in patterns)
+            if (!string.IsNullOrEmpty(pattern))
             {
-                if (!string.IsNullOrEmpty(pattern))
-                {
-                    _regexPattern.Add(new Regex(pattern));
-                }
+                _regexPattern = new Regex(pattern);
             }
+            return this;
+        }
+        public FluentStringValidator OnlyNumbers()
+        {
+            _regexPattern = new Regex(@"^\d+$");
+            return this;
+        }
+        public FluentStringValidator OnlyLetters()
+        {
+            _regexPattern = new Regex(@"^[a-zA-Z]+$");
             return this;
         }
 
@@ -105,24 +98,24 @@ namespace MinimalisticWPF.Fluent
             if (input == null)
                 return false;
 
-            if (_validationStart.Count != 0 && !_validationStart.Any(v => input.StartsWith(v)))
+            if (_start != null && !input.StartsWith(_start))
                 return false;
-            if (_validationEnd.Count != 0 && !_validationEnd.Any(v => input.EndsWith(v)))
+            if (_end != null && !input.EndsWith(_end))
                 return false;
-            if (_regexPattern.Count != 0 && !_regexPattern.Any(v => v.IsMatch(input)))
+
+            if (_regexPattern != null && !_regexPattern.IsMatch(input))
                 return false;
             if (_range.Count != 0 && _range.Any(v => input.Substring(v.Item1, v.Item2.Length) != v.Item2))
                 return false;
+
             if (_containsSubstrings.Count != 0 && _containsSubstrings.Any(s => !input.Contains(s)))
                 return false;
             if (_excludeSubstrings.Count != 0 && _excludeSubstrings.Any(s => input.Contains(s)))
                 return false;
 
-            if (_minLength.HasValue && input.Length < _minLength.Value)
+            if ((_minLength != null && _maxLength != null) && (input.Length < _minLength || input.Length > _maxLength))
                 return false;
-            if (_maxLength.HasValue && input.Length > _maxLength.Value)
-                return false;
-            if (_fixLength.HasValue && input.Length != _fixLength.Value)
+            if (_fixLength != null && input.Length != _fixLength)
                 return false;
 
             return true;

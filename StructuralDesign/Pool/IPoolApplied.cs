@@ -8,10 +8,10 @@ namespace MinimalisticWPF.StructuralDesign.Pool
 {
     public interface IPoolApplied
     {
-        public void OnReusing();
-        public void OnReused();
-        public bool CanRelease();
-        public void OnReleasing();
-        public void OnReleased();
+        public void RunReusing();
+        public void RunReused();
+        public bool RunCanRelease();
+        public void RunReleasing();
+        public void RunReleased();
     }
 }

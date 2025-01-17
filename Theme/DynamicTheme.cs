@@ -58,9 +58,9 @@ namespace MinimalisticWPF.Theme
                         var old = target.CurrentTheme;
                         target.CurrentTheme = attributeType;
                         target.IsThemeChanging = false;
-                        target.OnThemeChanged(old, attributeType);
+                        target.RunThemeChanged(old, attributeType);
                     };
-                    target.OnThemeChanging(target.CurrentTheme, attributeType);
+                    target.RunThemeChanging(target.CurrentTheme, attributeType);
                     item.ApplyTheme(attributeType, param);
                 }
                 else
