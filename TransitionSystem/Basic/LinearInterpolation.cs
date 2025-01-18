@@ -27,6 +27,7 @@ namespace MinimalisticWPF.TransitionSystem.Basic
                 var t = (double)(i + 1) / steps;
                 result.Add(d1 + t * delta);
             }
+            if (steps > 1) result[0] = start;
             result[steps - 1] = end;
 
             return result;
@@ -55,6 +56,7 @@ namespace MinimalisticWPF.TransitionSystem.Basic
                 var a = (byte)(color1.Value.A + t * (color2.Value.A - color1.Value.A));
                 result.Add(new SolidColorBrush(Color.FromArgb(a, r, g, b)));
             }
+            if (steps > 1) result[0] = start;
             result[steps - 1] = end;
 
             return result;
@@ -87,7 +89,8 @@ namespace MinimalisticWPF.TransitionSystem.Basic
                 var transform = Transform.Parse(interpolatedMatrixStr);
                 result.Add(transform);
             }
-            result[steps-1] = end;
+            if (steps > 1) result[0] = start;
+            result[steps - 1] = end;
 
             return result;
         }
@@ -111,6 +114,7 @@ namespace MinimalisticWPF.TransitionSystem.Basic
                 var y = point1.Y + t * (point2.Y - point1.Y);
                 result.Add(new Point(x, y));
             }
+            if (steps > 1) result[0] = start;
             result[steps - 1] = end;
 
             return result;
@@ -137,6 +141,7 @@ namespace MinimalisticWPF.TransitionSystem.Basic
                 var bottom = thickness1.Bottom + t * (thickness2.Bottom - thickness1.Bottom);
                 result.Add(new Thickness(left, top, right, bottom));
             }
+            if (steps > 1) result[0] = start;
             result[steps - 1] = end;
 
             return result;
@@ -163,6 +168,7 @@ namespace MinimalisticWPF.TransitionSystem.Basic
                 var bottomRight = radius1.BottomRight + t * (radius2.BottomRight - radius1.BottomRight);
                 result.Add(new CornerRadius(topLeft, topRight, bottomRight, bottomLeft));
             }
+            if (steps > 1) result[0] = start;
             result[steps - 1] = end;
 
             return result;

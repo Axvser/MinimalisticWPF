@@ -228,7 +228,7 @@ namespace MinimalisticWPF.TransitionSystem
             List<List<Tuple<PropertyInfo, List<object?>>>> result = new(7);
 
             var count = (int)machine.FrameCount;
-            var fc = count == 0 ? 1 : count;
+            var fc = count >= 2 ? count : 2;
             result.Add(DoubleComputing(machine.Type, state, machine.TransitionApplied, fc));
             result.Add(BrushComputing(machine.Type, state, machine.TransitionApplied, fc));
             result.Add(TransformComputing(machine.Type, state, machine.TransitionApplied, fc));

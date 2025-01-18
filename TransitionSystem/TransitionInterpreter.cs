@@ -10,6 +10,8 @@ namespace MinimalisticWPF.TransitionSystem
         {
             TransitionScheduler = machine;
             TransitionParams = transitionParams;
+            var newCount = (int)machine.FrameCount;
+            FrameCount = newCount >= 2 ? newCount : 2;
         }
 
         public TransitionParams TransitionParams { get; set; }
@@ -21,18 +23,23 @@ namespace MinimalisticWPF.TransitionSystem
         private bool IsRunning { get; set; } = false;
         private bool IsStop { get; set; } = false;
         private int LoopDepth { get; set; } = 0;
-        private int FrameDepth { get; set; } = 0;
+        private int FrameCount { get; set; } = 1;
 
         public async Task Start(object? target = null)
         {
             if (IsStop || IsRunning) { WhileEnded(); return; }
             IsRunning = true;
 
-            var accTimes = GetAccDeltaTime((int)TransitionScheduler.FrameCount);
+            var accTimes = GetAccDeltaTime(FrameCount);
 
             for (int x = LoopDepth; TransitionParams.LoopTime == int.MaxValue || x <= TransitionParams.LoopTime; x++, LoopDepth++)
             {
-                for (int i = FrameDepth; i < TransitionScheduler.FrameCount; i++, FrameDepth++)
+                if (!TransitionParams.IsAutoReverse && x > 0)
+                {
+                    Reset();
+                }
+
+                for (int i = 0; i < FrameCount; i++)
                 {
                     if (EndConditionCheck()) return;
                     FrameStart();
@@ -49,8 +56,7 @@ namespace MinimalisticWPF.TransitionSystem
 
                 if (TransitionParams.IsAutoReverse)
                 {
-                    FrameDepth = TransitionScheduler.FrameCount > 1 ? (int)TransitionScheduler.FrameCount - 1 : 0;
-                    for (int i = FrameDepth; i > -1; i--, FrameDepth--)
+                    for (int i = FrameCount - 1; i > -1; i--)
                     {
                         if (EndConditionCheck()) return;
                         FrameStart();
@@ -73,55 +79,18 @@ namespace MinimalisticWPF.TransitionSystem
         {
             IsStop = IsRunning;
             LoopDepth = 0;
-            FrameDepth = 0;
         }
-        public void StartAtNewTask()
+
+        private void Reset()
         {
-            if (IsStop || IsRunning) { WhileEnded(); return; }
-            IsRunning = true;
-
-            var accTimes = GetAccDeltaTime((int)TransitionScheduler.FrameCount);
-
-            for (int x = LoopDepth; TransitionParams.LoopTime == int.MaxValue || x <= TransitionParams.LoopTime; x++, LoopDepth++)
+            for (int j = 0; j < FrameSequence.Count; j++)
             {
-                for (int i = FrameDepth; i < TransitionScheduler.FrameCount; i++, FrameDepth++)
+                for (int k = 0; k < FrameSequence[j].Count; k++)
                 {
-                    if (EndConditionCheck()) return;
-                    FrameStart();
-                    for (int j = 0; j < FrameSequence.Count; j++)
-                    {
-                        for (int k = 0; k < FrameSequence[j].Count; k++)
-                        {
-                            FrameUpdate(i, j, k);
-                        }
-                    }
-                    FrameEnd();
-                    Thread.Sleep(TransitionParams.Acceleration == 0 ? DeltaTime : i < accTimes.Count & accTimes.Count > 0 ? accTimes[i] : DeltaTime);
-                }
-
-                if (TransitionParams.IsAutoReverse)
-                {
-                    FrameDepth = TransitionScheduler.FrameCount > 1 ? (int)TransitionScheduler.FrameCount - 1 : 0;
-                    for (int i = FrameDepth; i > -1; i--, FrameDepth--)
-                    {
-                        if (EndConditionCheck()) return;
-                        FrameStart();
-                        for (int j = 0; j < FrameSequence.Count; j++)
-                        {
-                            for (int k = 0; k < FrameSequence[j].Count; k++)
-                            {
-                                FrameUpdate(i, j, k);
-                            }
-                        }
-                        FrameEnd();
-                        Thread.Sleep(TransitionParams.Acceleration == 0 ? DeltaTime : i < accTimes.Count & accTimes.Count > 0 ? accTimes[i] : DeltaTime);
-                    }
+                    FrameUpdate(0, j, k);
                 }
             }
-
-            WhileEnded();
         }
-
         private bool EndConditionCheck()
         {
             if (IsStop || Application.Current == null || (TransitionScheduler.IsReSet || TransitionScheduler.Interpreter != this))

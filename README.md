@@ -21,29 +21,12 @@
 
 ## Important Notice
 
-2025 - 1 - 16 :
+2025 - 1 - 18 :
 
-Update ( V2.6.6 )
+updates in V2.7.0
+- (1) Optimize the calculation of the first and last frames to make it more accurate
+- (2) When you use the [ LoopTime ] parameter without enabling [ IsAutoReverse ], the new version recognizes and loads transitions from the start point to the end point
 
-- (1) Remove unnecessary transition parameters, especially deprecating Unsafe
-- (2) Instead of creating threads for each animation, we now use [ async Task ] to reduce pressure on the thread pool
-- (3) [Object Pool](#ObjectPool) now support source generation
-
-2025 - 1 - 17 :
-
-Update ( V2.6.8 )
-
-(1) Normally the source generator will automatically implement the necessary interfaces, which in the old version you had to explicitly implement in the ViewModel because they were partial methods with modifiers, which is addressed in the new version.
-- Theme/Pool → [ partial void ] → Optional
-- Pool       → [ CanRelease() ] → Necessary
-```csharp
-        private partial bool CanRelease()
-        {
-            return true;
-        }
-```
-
-(2) Fixed a failed trigger for object pool life cycle function
 
 ---
 
