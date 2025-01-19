@@ -6,8 +6,8 @@ namespace MinimalisticWPF.ObjectPool
 {
     public static class Pool
     {
-        public static ConcurrentDictionary<Type, HashSet<object>> Source { get; internal set; } = new();
-        public static ConcurrentDictionary<Type, HashSet<object>> Dispose { get; internal set; } = new();
+        internal static ConcurrentDictionary<Type, HashSet<object>> Source { get; set; } = new();
+        internal static ConcurrentDictionary<Type, HashSet<object>> Dispose { get; set; } = new();
         public static void Release(object instance)
         {
             if (instance is IPoolApplied methods)
@@ -67,6 +67,28 @@ namespace MinimalisticWPF.ObjectPool
                 }
             }
             throw new NotImplementedException("Suspected failure to add key-value pairs to Pool");
+        }
+        public static void Record(object instance)
+        {
+            if (instance is IPoolApplied)
+            {
+                var type = instance.GetType();
+                BuildPool(type);
+                var c1 = Source.TryGetValue(type, out var sourceSet);
+                var c2 = Dispose.TryGetValue(type, out var disposeSet);
+                if (c1 && c2)
+                {
+                    if (sourceSet?.Contains(instance) == false && disposeSet?.Contains(instance) == false)
+                    {
+                        sourceSet.Add(instance);
+                    }
+                    else
+                    {
+                        disposeSet?.Remove(instance);
+                        sourceSet?.Add(instance);
+                    }
+                }
+            }
         }
         private static void BuildPool(Type type)
         {

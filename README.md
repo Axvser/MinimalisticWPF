@@ -21,12 +21,83 @@
 
 ## Important Notice
 
-2025 - 1 - 18 :
+2025 - 1 - 19 :
 
-updates in V2.7.0
-- (1) Optimize the calculation of the first and last frames to make it more accurate
-- (2) When you use the [ LoopTime ] parameter without enabling [ IsAutoReverse ], the new version recognizes and loads transitions from the start point to the end point
+updates in V2.7.5
 
+(1) Dependency Properties
+- [ Observable ] provides new optional parameters that will allow you to more easily create some dependent properties
+```csharp
+    public partial class Class1
+    {
+        [Observable(CanDependency:true)]
+        private int id = (int)0; // This conversion is sometimes necessary because the original assignment statement is completely preserved when generating dependent attributes
+
+        [Observable(CanDependency:true)]
+        private Brush fill = Brushes.White;
+    }
+```
+- Dependent properties generated in this way only pass changes one-way to properties of the same name in the ViewModel, because we want to keep the ViewModel sealed and allow the developer to use Style to assign initial values
+- There are partial callback functions that you can use to achieve custom effects
+```csharp
+    [DataContextConfig(nameof(Class1))] // Related dependent properties will be automatically generated after this item is configured
+    public partial class MainWindow : Window
+    {
+        public MainWindow()
+        {
+            InitializeComponent();
+        }
+
+        partial void OnIdChanged(int oldValue, int newValue) // CallBack
+        {
+            
+        }
+
+        partial void OnFillChanged(Brush oldValue, Brush newValue)
+        {
+            
+        }
+    }
+```
+
+(2) ObjectPool
+- New Attribute ( Invalid for ViewModel )
+```csharp
+    [ObjectPool]
+    internal partial class Class2
+    {
+        private partial bool CanRelease() // necessary
+        {
+            return true;
+        }
+
+        partial void OnReleasing() // optional
+        {
+            
+        }
+        partial void OnReleased() // optional
+        {
+            
+        }
+        partial void OnReusing() // optional
+        {
+            
+        }
+        partial void OnReused() // optional
+        {
+            
+        }
+    }
+```
+- When you initialize
+```csharp
+Pool.Record(this);
+```
+- Use pool
+```csharp
+Pool.Release(this);
+Pool.Reuse(typeof(class));
+```
 
 ---
 
@@ -350,96 +421,88 @@ You can define multiple methods with the same parameter list, and they will all 
 
 ## ObjectPool
 
-### [ 4 - 1 ] Describe a ViewModel with a timer
-
-- (1) When Time reaches the threshold, this instance will be released
+- (1) Required
   - CanRelease()
-- (2) When an instance is reused or released, relevant attributes need to be modified to reasonably control the effect
+- (2) Optional
   - OnReusing()
   - OnReused()
   - OnReleasing()
   - OnReleased()
 ```csharp
 using MinimalisticWPF;
+using MinimalisticWPF.ObjectPool;
 
-namespace WpfApp5
+namespace TestForMWpf
 {
-    internal partial class Class1
+    [ObjectPool]
+    internal partial class Class2
     {
-        private bool cantimeadd = true;
-
-        [Observable(CanInvokeRelease: true, SetterValidation: SetterValidations.Custom)]
-        private int time = 0;
-        private partial bool TimeIntercepting(int oldValue, int newValue)
+        public Class2()
         {
-            return oldValue != newValue && cantimeadd;
+            Pool.Record(this);
         }
 
-        [Observable]
-        private double opacity = 1;
+        private double _counter = 0;
+        public double Counter
+        {
+            get => _counter;
+            set
+            {
+                _counter = value;
+                if (CanRelease())
+                {
+                    Pool.Release(this);
+                }
+            }
+        }
 
-        partial void OnReusing()
+        private bool _isfinished = false;
+        public bool IsFinished
         {
-            Time = 0;
-            Opacity = 1;
+            get => _isfinished;
+            set
+            {
+                _isfinished = value;
+                if (CanRelease())
+                {
+                    Pool.Release(this);
+                }
+            }
         }
-        partial void OnReused()
-        {
-            cantimeadd = true;
-        }
+
+        public double Opacity { get; set; } = 1;
 
         private partial bool CanRelease()
         {
-            return Time > 1000;
+            return Counter > 100 && IsFinished;
         }
 
         partial void OnReleasing()
         {
-            cantimeadd = false;
+
         }
         partial void OnReleased()
         {
-            Time = 0;
+            _counter = 0;
+            _isfinished = false;
             Opacity = 0;
         }
+        partial void OnReusing()
+        {
+
+        }
+        partial void OnReused()
+        {
+            Opacity = 1;
+        }
     }
 }
+
 ```
 
-### [ 4 - 2 ] Get ViewModel from the object pool and use it for datacontext
-
-- (1) Generally, the object pool in this project only takes and never lets go, and the release and reuse logic is included in the ViewModel
-
-- (2) When resources are insufficient, the library will attempt to build a new instance based on the parameters received by Dequeue
-
+- (3) If you need to use objects, always use the object pool method instead of new ()
 ```csharp
-using MinimalisticWPF;
-using MinimalisticWPF.ObjectPool;
-using System.Windows;
-using System.Windows.Media;
-
-namespace WpfApp1
-{
-    [DataContextConfig(nameof(Class1), "WpfApp1")]
-    public partial class MainWindow : Window
-    {
-        public MainWindow()
-        {
-            InitializeComponent();
-            var context = Pool.Reuse(typeof(Class1));
-            DataContext = context;
-        }
-
-        protected override void OnSourceInitialized(EventArgs e)
-        {
-            base.OnSourceInitialized(e);
-
-            ((Class1)DataContext).BorderBrush = Brushes.Violet;
-
-            Pool.Reuse(typeof(Class1));
-        }
-    }
-}
+Pool.Reuse(typeof(Class2));
 ```
 
 ---
