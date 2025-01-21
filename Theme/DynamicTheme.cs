@@ -30,6 +30,17 @@ namespace MinimalisticWPF.Theme
             }
             return null;
         }
+        public static void SetThemeValue(Type classType, Type attributeType, string propertyName, object? newValue)
+        {
+            Awake();
+            if (TransitionSource.TryGetValue(classType, out var statesKVP))
+            {
+                if (statesKVP.TryGetValue(attributeType, out var state))
+                {
+                    state.AddProperty(propertyName, newValue);
+                }
+            }
+        }
         public static void Awake()
         {
             if (!_isloaded)
