@@ -21,83 +21,13 @@
 
 ## Important Notice
 
-2025 - 1 - 19 :
+2025 - 1 - 21 : ( V2.8.0 )
 
-updates in V2.7.5
+Fixed known critical bugs in previous versions
+- (1) Failure to set the initial value of the Hover property will cause abnormal hovering effects
+- (2) DynamicTheme stores properties and states under different themes cannot be updated in time
 
-(1) Dependency Properties
-- [ Observable ] provides new optional parameters that will allow you to more easily create some dependent properties
-```csharp
-    public partial class Class1
-    {
-        [Observable(CanDependency:true)]
-        private int id = (int)0; // This conversion is sometimes necessary because the original assignment statement is completely preserved when generating dependent attributes
-
-        [Observable(CanDependency:true)]
-        private Brush fill = Brushes.White;
-    }
-```
-- Dependent properties generated in this way only pass changes one-way to properties of the same name in the ViewModel, because we want to keep the ViewModel sealed and allow the developer to use Style to assign initial values
-- There are partial callback functions that you can use to achieve custom effects
-```csharp
-    [DataContextConfig(nameof(Class1))] // Related dependent properties will be automatically generated after this item is configured
-    public partial class MainWindow : Window
-    {
-        public MainWindow()
-        {
-            InitializeComponent();
-        }
-
-        partial void OnIdChanged(int oldValue, int newValue) // CallBack
-        {
-            
-        }
-
-        partial void OnFillChanged(Brush oldValue, Brush newValue)
-        {
-            
-        }
-    }
-```
-
-(2) ObjectPool
-- New Attribute ( Invalid for ViewModel )
-```csharp
-    [ObjectPool]
-    internal partial class Class2
-    {
-        private partial bool CanRelease() // necessary
-        {
-            return true;
-        }
-
-        partial void OnReleasing() // optional
-        {
-            
-        }
-        partial void OnReleased() // optional
-        {
-            
-        }
-        partial void OnReusing() // optional
-        {
-            
-        }
-        partial void OnReused() // optional
-        {
-            
-        }
-    }
-```
-- When you initialize
-```csharp
-Pool.Record(this);
-```
-- Use pool
-```csharp
-Pool.Release(this);
-Pool.Reuse(typeof(class));
-```
+[ This is an important update because all previous versions have the above two issues ]
 
 ---
 
