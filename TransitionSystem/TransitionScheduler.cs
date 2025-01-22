@@ -22,7 +22,7 @@ namespace MinimalisticWPF.TransitionSystem
         public static ConcurrentDictionary<Type, ConcurrentDictionary<string, PropertyInfo>> PropertyInfos { get; internal set; } = new();
         public static ConcurrentDictionary<Type, Tuple<ConcurrentDictionary<string, PropertyInfo>, ConcurrentDictionary<string, PropertyInfo>, ConcurrentDictionary<string, PropertyInfo>, ConcurrentDictionary<string, PropertyInfo>, ConcurrentDictionary<string, PropertyInfo>, ConcurrentDictionary<string, PropertyInfo>, ConcurrentDictionary<string, PropertyInfo>>> SplitedPropertyInfos { get; internal set; } = new();
 
-        public static TransitionScheduler CreateOrFind(object targetObj, params State[] states)
+        public static TransitionScheduler CreateUniqueUnit(object targetObj, params State[] states)
         {
             var type = targetObj.GetType();
             if (MachinePool.TryGetValue(type, out var machinedictionary))
@@ -50,6 +50,10 @@ namespace MinimalisticWPF.TransitionSystem
                 MachinePool.TryAdd(type, newChildDic);
                 return newMachine;
             }
+        }
+        public static TransitionScheduler CreateIndependentUnit(object targetObj, params State[] states)
+        {
+            return new TransitionScheduler(targetObj, states);
         }
         public static List<List<Tuple<PropertyInfo, List<object?>>>>? PreloadFrames(object? TransitionApplied, State state, TransitionParams par)
         {

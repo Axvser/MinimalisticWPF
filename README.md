@@ -29,6 +29,22 @@ Fixed known critical bugs in previous versions
 
 [ This is an important update because all previous versions have the above two issues ]
 
+2025 - 1 - 22 : ( V2.8.2 )
+
+The new version will also generate corresponding dependency properties for fields that meet the following characteristics
+- Name _> ThemeName + PropertyName
+
+```csharp
+[Observable(CanHover:false ,CanDependency:true)]
+[Dark]
+[Light]
+private Brush foreground = Brushes.White;
+```
+
+Generation
+- 1 _> DarkForeground
+- 2 _> LightForeground
+
 ---
 
 ## Document 

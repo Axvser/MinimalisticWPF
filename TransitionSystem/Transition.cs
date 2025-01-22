@@ -90,7 +90,7 @@ namespace MinimalisticWPF.TransitionSystem
         {
             foreach (var target in targets)
             {
-                var machine = TransitionScheduler.CreateOrFind(target);
+                var machine = TransitionScheduler.CreateUniqueUnit(target);
                 machine.Interpreter?.Stop();
             }
         }
