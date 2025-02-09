@@ -16,24 +16,25 @@ Practice →
 ## Features
 - Core
   - [Ⅰ Transition](#Transition)
-    - [Quick]
-    - [Reusable]
-    - [Shared]
-    - [Isolation]
-    - [Compile]
+    - [Quick](#Quick)
+    - [Reusable](#Reusable)
+    - [Shared](#Shared)
+    - [Isolation](#Isolation)
+    - [Compile](#Compile)
+    - [TransitionParams](#TransitionParams)
   - [Ⅱ ViewModel](#ViewModel)
-    - [Field]
-    - [Constructor]
-    - [Hover]
-    - [Theme]
+    - [Field](#Field)
+    - [Constructor](#Constructor)
+    - [Hover](#Hover)
+    - [Theme](#Theme)
     - [Dependency Properties](#Dependency)
   - [Ⅲ Aspect-Oriented Programming](#AOP)
   - [Ⅳ ObjectPool](#ObjectPool)
 - Other
-  - [StringValidator]
-  - [RGB]
-  - [Custom Theme]
-  - [Custom Interpolable Property]
+  - [StringValidator](#StringValidator)
+  - [RGB](RGB)
+  - [Custom Theme](#CustomTheme)
+  - [Custom Interpolable Property](#CustomInterpolableProperty)
 
 ---
 
@@ -333,6 +334,35 @@ Here are some options
       
   }
 ```
+
+### TransitionParams
+
+- Effect parameter
+
+| Property Name     | Type                 | Description                                                                 |
+|-------------------|----------------------|-----------------------------------------------------------------------------|
+| DefaultFrameRate  | int                  | Gets or sets the default frame rate for transitions.                      |
+| DefaultPriority   | DispatcherPriority   | Gets or sets the default priority level for transition operations.        |
+| DefaultIsBeginInvoke | bool              | Gets or sets whether the default invocation method is BeginInvoke.        |
+| Theme             | TransitionParams     | Gets or sets the theme-specific transition parameters.                    |
+| Hover             | TransitionParams     | Gets or sets the hover-specific transition parameters.                    |
+| IsAutoReverse     | bool                 | Gets or sets a value indicating whether the transition should auto-reverse. |
+| LoopTime          | int                  | Gets or sets the number of times the transition should loop.              |
+| Duration          | double               | Gets or sets the duration of the transition.                              |
+| FrameRate         | int                  | Gets or sets the frame rate for the transition.                           |
+| Acceleration      | double               | Gets or sets the acceleration factor for the transition.                |
+| Priority          | DispatcherPriority   | Gets or sets the priority level for the transition operation.           |
+| IsBeginInvoke     | bool                 | Gets or sets whether the invocation method is BeginInvoke.              |
+
+- Life cycle
+
+| Event Name    | Delegate Type | Description                                             |
+|---------------|---------------|---------------------------------------------------------|
+| Start         | Action        | Occurs when the transition starts.                    |
+| Update        | Action        | Occurs during each update tick of the transition.       |
+| LateUpdate    | Action        | Occurs after each update tick of the transition.        |
+| Completed     | Action        | Occurs when the transition completes.                   |
+
 
 ---
 
