@@ -4,26 +4,46 @@ namespace MinimalisticWPF
 {
     public class RGB
     {
-        public RGB() { R = 0; G = 0; B = 0; A = 0; }
+        public RGB() { }
         public RGB(int r, int g, int b)
         {
-            R = Math.Clamp(r, 0, 255);
-            G = Math.Clamp(g, 0, 255);
-            B = Math.Clamp(b, 0, 255);
-            A = 255;
+            R = r;
+            G = g;
+            B = b;
         }
         public RGB(int r, int g, int b, int a)
         {
-            R = Math.Clamp(r, 0, 255);
-            G = Math.Clamp(g, 0, 255);
-            B = Math.Clamp(b, 0, 255);
-            A = Math.Clamp(a, 0, 255);
+            R = r;
+            G = g;
+            B = b;
+            A = a;
         }
 
-        public int R { get; set; }
-        public int G { get; set; }
-        public int B { get; set; }
-        public int A { get; set; }
+        private int r = 0;
+        private int g = 0;
+        private int b = 0;
+        private int a = 255;
+
+        public int R
+        {
+            get => r;
+            set => r = Math.Clamp(value, 0, 255);
+        }
+        public int G
+        {
+            get => g;
+            set => g = Math.Clamp(value, 0, 255);
+        }
+        public int B
+        {
+            get => b;
+            set => b = Math.Clamp(value, 0, 255);
+        }
+        public int A
+        {
+            get => a;
+            set => a = Math.Clamp(value, 0, 255);
+        }
 
         public Color Color => Color.FromArgb((byte)A, (byte)R, (byte)G, (byte)B);
         public SolidColorBrush SolidColorBrush => new(Color);
