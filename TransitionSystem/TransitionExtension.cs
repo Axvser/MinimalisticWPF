@@ -1,7 +1,6 @@
 ﻿using MinimalisticWPF.StructuralDesign.Animator;
-using MinimalisticWPF.TransitionSystem;
 
-namespace MinimalisticWPF.Extension
+namespace MinimalisticWPF.TransitionSystem
 {
     public static class TransitionExtension
     {
@@ -9,6 +8,15 @@ namespace MinimalisticWPF.Extension
         {
             TransitionBoard<T> tempStoryBoard = new() { TransitionApplied = element };
             return tempStoryBoard;
+        }
+        public static TransitionScheduler[] BeginTransitions<T1, T2>(this T1 source, params TransitionBoard<T2>[] transitions) where T1 : class where T2 : class
+        {
+            return transitions.Select(t => t.StartIndependently(source)).ToArray();
+        }
+        public static IExecutableTransition BeginTransition<T>(this T source, IExecutableTransition executable) where T : class
+        {
+            executable.Start(source);
+            return executable;
         }
         public static IExecutableTransition BeginTransition<T1, T2>(this T1 source, T2 transfer) where T1 : class where T2 : class, ITransitionMeta
         {

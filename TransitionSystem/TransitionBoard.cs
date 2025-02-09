@@ -74,7 +74,7 @@ namespace MinimalisticWPF.TransitionSystem
                 else
                 {
                     var Machine = TransitionScheduler.CreateUniqueUnit(TransitionApplied);
-                    Machine.Interrupt();
+                    Machine.Dispose();
                     PropertyState.StateName = Transition.TempName + Machine.States.BoardSuffix;
                     Machine.States.Add(PropertyState);
                     Machine.Transition(PropertyState.StateName, TransitionParams, IsPreloaded ? FrameSequence : null);
@@ -84,7 +84,7 @@ namespace MinimalisticWPF.TransitionSystem
             {
                 TransitionApplied = target;
                 var Machine = TransitionScheduler.CreateUniqueUnit(target);
-                Machine.Interrupt();
+                Machine.Dispose();
                 PropertyState.StateName = Transition.TempName + Machine.States.BoardSuffix;
                 Machine.States.Add(PropertyState);
                 Machine.Transition(PropertyState.StateName, TransitionParams, IsPreloaded ? FrameSequence : null);
@@ -93,7 +93,7 @@ namespace MinimalisticWPF.TransitionSystem
         }
         public void Stop()
         {
-            TransitionScheduler.Interrupt();
+            TransitionScheduler.Dispose();
         }
         public ITransitionMeta Merge(ICollection<ITransitionMeta> metas)
         {
@@ -132,7 +132,7 @@ namespace MinimalisticWPF.TransitionSystem
             return meta;
         }
 
-        public void StartIndependently(object? target = null)
+        public TransitionScheduler StartIndependently(object? target = null)
         {
             if (target == null)
             {
@@ -143,20 +143,22 @@ namespace MinimalisticWPF.TransitionSystem
                 else
                 {
                     var Machine = TransitionScheduler.CreateIndependentUnit(TransitionApplied);
-                    Machine.Interrupt();
+                    Machine.Dispose();
                     PropertyState.StateName = Transition.TempName + Machine.States.BoardSuffix;
                     Machine.States.Add(PropertyState);
                     Machine.Transition(PropertyState.StateName, TransitionParams, IsPreloaded ? FrameSequence : null);
+                    return Machine;
                 }
             }
             else
             {
                 TransitionApplied = target;
                 var Machine = TransitionScheduler.CreateIndependentUnit(target);
-                Machine.Interrupt();
+                Machine.Dispose();
                 PropertyState.StateName = Transition.TempName + Machine.States.BoardSuffix;
                 Machine.States.Add(PropertyState);
                 Machine.Transition(PropertyState.StateName, TransitionParams, IsPreloaded ? FrameSequence : null);
+                return Machine;
             }
         }
 

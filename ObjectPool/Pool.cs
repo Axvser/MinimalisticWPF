@@ -47,8 +47,7 @@ namespace MinimalisticWPF.ObjectPool
                 if (sourceSet?.Count > 0)
                 {
                     var instance = sourceSet.First();
-                    var methods = instance as IPoolApplied;
-                    if (methods != null)
+                    if (instance is IPoolApplied methods)
                     {
                         methods.RunReusing();
                         disposeSet?.Add(instance);

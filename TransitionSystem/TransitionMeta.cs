@@ -1,6 +1,5 @@
 ﻿using MinimalisticWPF.StructuralDesign.Animator;
 using MinimalisticWPF.TransitionSystem.Basic;
-using MinimalisticWPF.Extension;
 using System.Reflection;
 
 namespace MinimalisticWPF.TransitionSystem
@@ -73,7 +72,7 @@ namespace MinimalisticWPF.TransitionSystem
         }
         public void Stop()
         {
-            TransitionScheduler.Interrupt();
+            TransitionScheduler.Dispose();
         }
         public IExecutableTransition Compile()
         {

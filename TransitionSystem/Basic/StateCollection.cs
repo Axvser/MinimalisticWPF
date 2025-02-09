@@ -5,7 +5,7 @@ namespace MinimalisticWPF.TransitionSystem.Basic
 {
     public sealed class StateCollection : ICollection<State>
     {
-        private ConcurrentDictionary<string, State> _nodes = new();
+        private ConcurrentDictionary<string, State> Nodes { get; set; } = new();
         private int _suffix = 0;
         public int BoardSuffix
         {
@@ -28,41 +28,41 @@ namespace MinimalisticWPF.TransitionSystem.Basic
         {
             get
             {
-                if (!_nodes.TryGetValue(stateName, out var result))
+                if (!Nodes.TryGetValue(stateName, out var result))
                     throw new ArgumentException($"There is no State named [ {stateName} ] in the collection");
                 return result;
             }
         }
 
-        public int Count => _nodes.Count;
+        public int Count => Nodes.Count;
         public bool IsReadOnly => false;
         public void Add(State item)
         {
-            _nodes.AddOrUpdate(item.StateName, item, (key, oldValue) => item);
+            Nodes.AddOrUpdate(item.StateName, item, (key, oldValue) => item);
         }
         public void Clear()
         {
-            _nodes.Clear();
+            Nodes.Clear();
         }
         public bool Contains(State item)
         {
-            return _nodes.ContainsKey(item.StateName);
+            return Nodes.ContainsKey(item.StateName);
         }
         public void CopyTo(State[] array, int arrayIndex)
         {
-            _nodes.Values.CopyTo(array, arrayIndex);
+            Nodes.Values.CopyTo(array, arrayIndex);
         }
         public bool Remove(State item)
         {
-            return _nodes.TryRemove(item.StateName, out _);
+            return Nodes.TryRemove(item.StateName, out _);
         }
         public IEnumerator<State> GetEnumerator()
         {
-            return _nodes.Values.GetEnumerator();
+            return Nodes.Values.GetEnumerator();
         }
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return _nodes.Values.GetEnumerator();
+            return Nodes.Values.GetEnumerator();
         }
     }
 }

@@ -1,8 +1,8 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace MinimalisticWPF.Fluent
+namespace MinimalisticWPF
 {
-    public class FluentStringValidator()
+    public class StringValidator()
     {
         private string? _start = null;
         private string? _end = null;
@@ -14,7 +14,7 @@ namespace MinimalisticWPF.Fluent
         private int? _maxLength = null;
         private int? _fixLength = null;
 
-        public FluentStringValidator StartWith(string value)
+        public StringValidator StartWith(string value)
         {
             if (!string.IsNullOrEmpty(value))
             {
@@ -22,7 +22,7 @@ namespace MinimalisticWPF.Fluent
             }
             return this;
         }
-        public FluentStringValidator EndWith(string value)
+        public StringValidator EndWith(string value)
         {
             if (!string.IsNullOrEmpty(value))
             {
@@ -30,7 +30,7 @@ namespace MinimalisticWPF.Fluent
             }
             return this;
         }
-        public FluentStringValidator VarLength(int min, int max)
+        public StringValidator VarLength(int min, int max)
         {
             if (max >= min)
             {
@@ -40,14 +40,14 @@ namespace MinimalisticWPF.Fluent
             }
             return this;
         }
-        public FluentStringValidator FixLength(int length)
+        public StringValidator FixLength(int length)
         {
             _minLength = null;
             _maxLength = null;
             _fixLength = length;
             return this;
         }
-        public FluentStringValidator Include(params string[] substrings)
+        public StringValidator Include(params string[] substrings)
         {
             foreach (var substring in substrings)
             {
@@ -58,7 +58,7 @@ namespace MinimalisticWPF.Fluent
             }
             return this;
         }
-        public FluentStringValidator Exclude(params string[] substrings)
+        public StringValidator Exclude(params string[] substrings)
         {
             foreach (var substring in substrings)
             {
@@ -69,12 +69,12 @@ namespace MinimalisticWPF.Fluent
             }
             return this;
         }
-        public FluentStringValidator Slice(int start, string value)
+        public StringValidator Slice(int start, string value)
         {
             _range.Add(Tuple.Create(start, value));
             return this;
         }
-        public FluentStringValidator Regex(string pattern)
+        public StringValidator Regex(string pattern)
         {
             if (!string.IsNullOrEmpty(pattern))
             {
@@ -82,12 +82,12 @@ namespace MinimalisticWPF.Fluent
             }
             return this;
         }
-        public FluentStringValidator OnlyNumbers()
+        public StringValidator OnlyNumbers()
         {
             _regexPattern = new Regex(@"^\d+$");
             return this;
         }
-        public FluentStringValidator OnlyLetters()
+        public StringValidator OnlyLetters()
         {
             _regexPattern = new Regex(@"^[a-zA-Z]+$");
             return this;

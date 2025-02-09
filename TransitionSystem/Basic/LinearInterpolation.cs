@@ -1,6 +1,5 @@
 ﻿using System.Windows;
 using System.Windows.Media;
-using MinimalisticWPF.Extension;
 
 namespace MinimalisticWPF.TransitionSystem.Basic
 {
@@ -36,10 +35,8 @@ namespace MinimalisticWPF.TransitionSystem.Basic
         {
             List<object?> result = new(steps);
 
-            var color1 = (start as Brush)?.ToRGB().Color;
-            var color2 = (end as Brush)?.ToRGB().Color;
-            color1 ??= new Color();
-            color2 ??= new Color();
+            var color1 = start is Brush c1 ? RGB.FromBrush(c1).Color : new Color();
+            var color2 = end is Brush c2 ? RGB.FromBrush(c2).Color : color1;
 
             if (steps == 0)
             {
@@ -50,10 +47,10 @@ namespace MinimalisticWPF.TransitionSystem.Basic
             for (var i = 0; i < steps; i++)
             {
                 var t = (double)(i + 1) / steps;
-                var r = (byte)(color1.Value.R + t * (color2.Value.R - color1.Value.R));
-                var g = (byte)(color1.Value.G + t * (color2.Value.G - color1.Value.G));
-                var b = (byte)(color1.Value.B + t * (color2.Value.B - color1.Value.B));
-                var a = (byte)(color1.Value.A + t * (color2.Value.A - color1.Value.A));
+                var r = (byte)(color1.R + t * (color2.R - color1.R));
+                var g = (byte)(color1.G + t * (color2.G - color1.G));
+                var b = (byte)(color1.B + t * (color2.B - color1.B));
+                var a = (byte)(color1.A + t * (color2.A - color1.A));
                 result.Add(new SolidColorBrush(Color.FromArgb(a, r, g, b)));
             }
             if (steps > 1) result[0] = start;

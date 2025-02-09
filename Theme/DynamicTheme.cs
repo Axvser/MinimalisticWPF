@@ -15,12 +15,12 @@ namespace MinimalisticWPF.Theme
         public static HashSet<object> GlobalInstance { get; internal set; } = new(64);
 
         private static bool _isloaded = false;
-        public static object? GetThemeValue(Type classType, Type attributeType, string propertyName)
+        public static object? GetThemeValue(Type classType, Type themeType, string propertyName)
         {
             Awake();
             if (TransitionSource.TryGetValue(classType, out var statesKVP))
             {
-                if (statesKVP.TryGetValue(attributeType, out var state))
+                if (statesKVP.TryGetValue(themeType, out var state))
                 {
                     if (state.Values.TryGetValue(propertyName, out var value))
                     {
@@ -30,12 +30,12 @@ namespace MinimalisticWPF.Theme
             }
             return null;
         }
-        public static void SetThemeValue(Type classType, Type attributeType, string propertyName, object? newValue)
+        public static void SetThemeValue(Type classType, Type themeType, string propertyName, object? newValue)
         {
             Awake();
             if (TransitionSource.TryGetValue(classType, out var statesKVP))
             {
-                if (statesKVP.TryGetValue(attributeType, out var state))
+                if (statesKVP.TryGetValue(themeType, out var state))
                 {
                     state.AddProperty(propertyName, newValue);
                 }
@@ -118,7 +118,7 @@ namespace MinimalisticWPF.Theme
                                 ,
                                 (false, true, false, false, false, false) => () =>
                                 {
-                                    var value = info.Context.Parameters.FirstOrDefault()?.ToString()?.ToBrush() ?? Brushes.Transparent;
+                                    var value = new SolidColorBrush((Color)ColorConverter.ConvertFromString(info.Context.Parameters.FirstOrDefault()?.ToString()));
                                     state.AddProperty(info.PropertyInfo.Name, value);
                                     return 2;
                                 }

@@ -18,11 +18,11 @@ namespace MinimalisticWPF.TransitionSystem
                 _maxFR = Math.Clamp(value, 1, int.MaxValue);
             }
         }
-        public static ConcurrentDictionary<Type, ConcurrentDictionary<object, TransitionScheduler>> MachinePool { get; internal set; } = new();
-        public static ConcurrentDictionary<Type, ConcurrentDictionary<string, PropertyInfo>> PropertyInfos { get; internal set; } = new();
-        public static ConcurrentDictionary<Type, Tuple<ConcurrentDictionary<string, PropertyInfo>, ConcurrentDictionary<string, PropertyInfo>, ConcurrentDictionary<string, PropertyInfo>, ConcurrentDictionary<string, PropertyInfo>, ConcurrentDictionary<string, PropertyInfo>, ConcurrentDictionary<string, PropertyInfo>, ConcurrentDictionary<string, PropertyInfo>>> SplitedPropertyInfos { get; internal set; } = new();
+        internal static ConcurrentDictionary<Type, ConcurrentDictionary<object, TransitionScheduler>> MachinePool { get; set; } = new();
+        internal static ConcurrentDictionary<Type, ConcurrentDictionary<string, PropertyInfo>> PropertyInfos { get; set; } = new();
+        internal static ConcurrentDictionary<Type, Tuple<ConcurrentDictionary<string, PropertyInfo>, ConcurrentDictionary<string, PropertyInfo>, ConcurrentDictionary<string, PropertyInfo>, ConcurrentDictionary<string, PropertyInfo>, ConcurrentDictionary<string, PropertyInfo>, ConcurrentDictionary<string, PropertyInfo>, ConcurrentDictionary<string, PropertyInfo>>> SplitedPropertyInfos { get; set; } = new();
 
-        public static TransitionScheduler CreateUniqueUnit(object targetObj, params State[] states)
+        internal static TransitionScheduler CreateUniqueUnit(object targetObj, params State[] states)
         {
             var type = targetObj.GetType();
             if (MachinePool.TryGetValue(type, out var machinedictionary))
@@ -51,11 +51,11 @@ namespace MinimalisticWPF.TransitionSystem
                 return newMachine;
             }
         }
-        public static TransitionScheduler CreateIndependentUnit(object targetObj, params State[] states)
+        internal static TransitionScheduler CreateIndependentUnit(object targetObj, params State[] states)
         {
             return new TransitionScheduler(targetObj, states);
         }
-        public static List<List<Tuple<PropertyInfo, List<object?>>>>? PreloadFrames(object? TransitionApplied, State state, TransitionParams par)
+        internal static List<List<Tuple<PropertyInfo, List<object?>>>>? PreloadFrames(object? TransitionApplied, State state, TransitionParams par)
         {
             if (TransitionApplied == null)
             {
@@ -68,7 +68,7 @@ namespace MinimalisticWPF.TransitionSystem
             var result = ComputingFrames(state, machine);
             return result;
         }
-        public static void InitializeTypes(params Type[] types)
+        internal static void InitializeTypes(params Type[] types)
         {
             foreach (var type in types)
             {
@@ -128,14 +128,14 @@ namespace MinimalisticWPF.TransitionSystem
             return false;
         }
 
-        public object TransitionApplied { get; internal set; }
-        public Type Type { get; internal set; }
-        public StateCollection States { get; internal set; } = [];
-        public double DeltaTime { get => 1000.0 / Math.Clamp(TransitionParams.FrameRate, 1, MaxFrameRate); }
-        public double FrameCount { get => Math.Clamp(TransitionParams.Duration * Math.Clamp(TransitionParams.FrameRate, 1, MaxFrameRate), 1, int.MaxValue); }
-        public string? CurrentState { get; internal set; }
-        public IExecutableTransition? Interpreter { get; internal set; }
-        public ConcurrentQueue<Tuple<string, ITransitionMeta>> Interpreters { get; internal set; } = new();
+        internal object TransitionApplied { get; set; }
+        internal Type Type { get; set; }
+        internal StateCollection States { get; set; } = [];
+        internal double DeltaTime { get => 1000.0 / Math.Clamp(TransitionParams.FrameRate, 1, MaxFrameRate); }
+        internal double FrameCount { get => Math.Clamp(TransitionParams.Duration * Math.Clamp(TransitionParams.FrameRate, 1, MaxFrameRate), 1, int.MaxValue); }
+        internal string? CurrentState { get; set; }
+        internal IExecutableTransition? Interpreter { get; set; }
+        internal ConcurrentQueue<Tuple<string, ITransitionMeta>> Interpreters { get; set; } = new();
 
         public TransitionScheduler Copy()
         {
@@ -147,7 +147,7 @@ namespace MinimalisticWPF.TransitionSystem
             return result;
         }
 
-        public void Interrupt()
+        public void Dispose()
         {
             IsReSet = true;
             CurrentState = null;
@@ -155,7 +155,7 @@ namespace MinimalisticWPF.TransitionSystem
             Interpreter = null;
             Interpreters.Clear();
         }
-        public void Transition(string stateName, Action<TransitionParams>? actionSet, List<List<Tuple<PropertyInfo, List<object?>>>>? preload = null)
+        internal void Transition(string stateName, Action<TransitionParams>? actionSet, List<List<Tuple<PropertyInfo, List<object?>>>>? preload = null)
         {
             IsReSet = false;
 
@@ -172,7 +172,7 @@ namespace MinimalisticWPF.TransitionSystem
                 Interpreters.Enqueue(Tuple.Create<string, ITransitionMeta>(stateName, new TransitionMeta(temp, preload ?? [])));
             }
         }
-        public void Transition(string stateName, TransitionParams? param, List<List<Tuple<PropertyInfo, List<object?>>>>? preload = null)
+        internal void Transition(string stateName, TransitionParams? param, List<List<Tuple<PropertyInfo, List<object?>>>>? preload = null)
         {
             IsReSet = false;
 
