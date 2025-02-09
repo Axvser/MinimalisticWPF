@@ -16,22 +16,24 @@ Practice →
 ## Features
 - Core
   - [Ⅰ Transition](#Transition)
-    - [Quick](#Quick)
-    - [Reusable](#Reusable)
-    - [Shared](#Merge)
-    - [Isolation](#Isolation)
-    - [Compile](#Compile)
+    - [Quick]
+    - [Reusable]
+    - [Shared]
+    - [Isolation]
+    - [Compile]
   - [Ⅱ ViewModel](#ViewModel)
-    - [Field](#Field)
-    - [Constructor](#Constructor)
-    - [Hover](#Hover)
-    - [Theme](#Theme)
+    - [Field]
+    - [Constructor]
+    - [Hover]
+    - [Theme]
     - [Dependency Properties](#Dependency)
   - [Ⅲ Aspect-Oriented Programming](#AOP)
   - [Ⅳ ObjectPool](#ObjectPool)
 - Other
-  - [StringValidator](#StringValidator)
-  - [RGB](#RGB)
+  - [StringValidator]
+  - [RGB]
+  - [Custom Theme]
+  - [Custom Interpolable Property]
 
 ---
 
@@ -498,4 +500,61 @@ Provides a reference class RGB to describe a color
   // Converting from RGB to other common classes to represent colors
   color = rgb2.Color;
   brush = rgb2.Brush;
+```
+
+---
+
+### Custom Theme
+
+In addition to light and dark themes, you can also add custom themes that are also global and handled by the source generator
+
+```csharp
+using MinimalisticWPF.StructuralDesign.Theme;
+
+namespace TestForMWpf
+{
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
+    internal class Glass(params object?[] objects) : Attribute, IThemeAttribute
+    {
+        public object?[] Parameters => objects;
+    }
+}
+```
+
+---
+
+### Custom Interpolable Property
+
+Make custom classes also participate in the transition system
+
+```csharp
+    internal class ComplexValue : IInterpolable
+    {
+        public ComplexValue() { }
+
+        public double DoubleValue { get; set; } = 0;
+        public Brush BrushValue { get; set; } = Brushes.Transparent;        
+
+        public List<object?> Interpolate(object? current, object? target, int steps)
+        {
+            List<object?> result = new List<object?>(steps);
+
+            ComplexValue old = current as ComplexValue ?? new ComplexValue();
+            ComplexValue tar = target as ComplexValue ?? new ComplexValue();
+
+            var doublelinear = IInterpolable.DoubleComputing(old.DoubleValue, tar.DoubleValue, steps);
+            var brushlinear = IInterpolable.BrushComputing(old.BrushValue, tar.BrushValue, steps);
+
+            for (int i = 0; i < steps; i++)
+            {
+                var dou = (double?)doublelinear[i];
+                var bru = (Brush?)brushlinear[i];
+                var newValue = new ComplexValue();
+                newValue.DoubleValue = dou ?? 0;
+                newValue.BrushValue = bru ?? Brushes.Transparent;
+                result.Add(newValue);
+            }
+
+            return result;
+        }
 ```
