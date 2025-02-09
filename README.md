@@ -251,7 +251,7 @@ Controls need to animate in response to your mouse hovering over them
 
 ### Theme
 
-Easily realize light and dark theme switch or other custom theme
+- Easily realize light and dark theme switch or other custom theme
 
 ```csharp
   [Observable]
@@ -280,6 +280,14 @@ Easily realize light and dark theme switch or other custom theme
   {
       
   }
+```
+
+- Switching between themes
+
+```csharp
+   this.ApplyTheme(typeof(Light),TransitionParams.Theme); // Local usage
+
+   DynamicTheme.Apply(typeof(Light),TransitionParams.Theme); // Global usage
 ```
 
 ### Dependency
