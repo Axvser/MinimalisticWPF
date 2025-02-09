@@ -16,17 +16,17 @@ Practice →
 ## Features
 - Core
   - [Ⅰ Transition](#Transition)
-    - [Quick](#（1）Quick)
-    - [Reusable](#（2）Reusable)
-    - [Shared](#（3）Merge)
-    - [Isolation](#（4）Isolation)
-    - [Compile](#（5）Compile)
+    - [Quick](#Quick)
+    - [Reusable](#Reusable)
+    - [Shared](#Merge)
+    - [Isolation](#Isolation)
+    - [Compile](#Compile)
   - [Ⅱ ViewModel](#ViewModel)
-    - [Field](#（1）Field)
-    - [Constructor](#（2）Constructor)
-    - [Hover](#（3）Hover)
-    - [Theme](#（4）Theme)
-    - [Dependency Properties](#（5）Dependency)
+    - [Field](#Field)
+    - [Constructor](#Constructor)
+    - [Hover](#Hover)
+    - [Theme](#Theme)
+    - [Dependency Properties](#Dependency)
   - [Ⅲ Aspect-Oriented Programming](#AOP)
   - [Ⅳ ObjectPool](#ObjectPool)
 - Other
@@ -43,7 +43,7 @@ namespace
   using MinimalisticWPF.TransitionSystem;
 ```
 
-### （1）Quick
+### Quick
 
 Load the transition on the instance by using the extension method
 
@@ -60,7 +60,7 @@ Load the transition on the instance by using the extension method
       .Start();
 ```
 
-### （2）Reusable
+### Reusable
 
 The transition is described beforehand and then applied for multiple instances
 
@@ -79,7 +79,7 @@ The transition is described beforehand and then applied for multiple instances
   control2.BeginTransition(transition);
 ```
 
-### （3）Shared
+### Shared
 
 Running multiple transitions, some shared mechanism makes them thread-safe
 
@@ -111,7 +111,7 @@ Running multiple transitions, some shared mechanism makes them thread-safe
   // Transition.Dispose(control);
 ```
 
-### （4）Isolation
+### Isolation
 
 Running multiple transitions, some isolation mechanism can make the effect more flexible, but it is not thread-safe
 
@@ -146,7 +146,7 @@ Running multiple transitions, some isolation mechanism can make the effect more 
   // schedulers[1].Dispose();
 ```
 
-### （5）Compile
+### Compile
 
 You can make the transition immutable with the Compile operation
 
@@ -184,7 +184,7 @@ This is the heart of the library. You will build awesome user controls in Mvvm m
 
 ★ Ultimately, everything is abstracted to data, and changing the data changes the functionality, and all you need in XAML is data binding ！
 
-### （1）Field
+### Field
 
 Automatically generate properties for fields
 
@@ -201,7 +201,7 @@ Automatically generate properties for fields
   }
 ```
 
-### （2）Constructor
+### Constructor
 
 Multiple constructors are generated automatically.Functions with the same parameter list will be called from within the same constructor
 
@@ -219,7 +219,7 @@ Multiple constructors are generated automatically.Functions with the same parame
   }
 ```
 
-### （3）Hover
+### Hover
 
 Controls need to animate in response to your mouse hovering over them
 
@@ -249,7 +249,7 @@ Controls need to animate in response to your mouse hovering over them
   }
 ```
 
-### （4）Theme
+### Theme
 
 Easily realize light and dark theme switch or other custom theme
 
@@ -282,7 +282,7 @@ Easily realize light and dark theme switch or other custom theme
   }
 ```
 
-### （5）Dependency
+### Dependency
 
 You can easily make user controls have dependency properties with the same name as properties in the ViewModel
 - param1 → DataContext type name
