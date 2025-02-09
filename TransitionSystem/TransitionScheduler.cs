@@ -254,7 +254,7 @@ namespace MinimalisticWPF.TransitionSystem
                     {
                         var currentValue = propertyinfo.GetValue(TransitionApplied);
                         var newValue = state.Values[propertyname];
-                        if (currentValue != newValue)
+                        if (currentValue == null || currentValue.Equals(newValue))
                         {
                             allFrames.Add(Tuple.Create(propertyinfo, LinearInterpolation.DoubleComputing(currentValue, newValue, FrameCount)));
                         }
@@ -274,7 +274,7 @@ namespace MinimalisticWPF.TransitionSystem
                     {
                         var currentValue = propertyinfo.GetValue(TransitionApplied);
                         var newValue = state.Values[propertyname];
-                        if (currentValue != newValue)
+                        if (currentValue == null || currentValue.Equals(newValue))
                         {
                             allFrames.Add(Tuple.Create(propertyinfo, LinearInterpolation.BrushComputing(currentValue, newValue, FrameCount)));
                         }
@@ -294,7 +294,7 @@ namespace MinimalisticWPF.TransitionSystem
                     {
                         var currentValue = propertyinfo.GetValue(TransitionApplied);
                         var newValue = state.Values[propertyname];
-                        if (currentValue != newValue)
+                        if (currentValue == null || currentValue.Equals(newValue))
                         {
                             allFrames.Add(Tuple.Create(propertyinfo, LinearInterpolation.TransformComputing(currentValue, newValue, FrameCount)));
                         }
@@ -314,7 +314,7 @@ namespace MinimalisticWPF.TransitionSystem
                     {
                         var currentValue = propertyinfo.GetValue(TransitionApplied);
                         var newValue = state.Values[propertyname];
-                        if (currentValue != newValue)
+                        if (currentValue == null || currentValue.Equals(newValue))
                         {
                             allFrames.Add(Tuple.Create(propertyinfo, LinearInterpolation.PointComputing(currentValue, newValue, FrameCount)));
                         }
@@ -334,7 +334,7 @@ namespace MinimalisticWPF.TransitionSystem
                     {
                         var currentValue = propertyinfo.GetValue(TransitionApplied);
                         var newValue = state.Values[propertyname];
-                        if (currentValue != newValue)
+                        if (currentValue == null || currentValue.Equals(newValue))
                         {
                             allFrames.Add(Tuple.Create(propertyinfo, LinearInterpolation.CornerRadiusComputing(currentValue, newValue, FrameCount)));
                         }
@@ -354,7 +354,7 @@ namespace MinimalisticWPF.TransitionSystem
                     {
                         var currentValue = propertyinfo.GetValue(TransitionApplied);
                         var newValue = state.Values[propertyname];
-                        if (currentValue != newValue)
+                        if (currentValue == null || currentValue.Equals(newValue))
                         {
                             allFrames.Add(Tuple.Create(propertyinfo, LinearInterpolation.ThicknessComputing(currentValue, newValue, FrameCount)));
                         }
@@ -372,11 +372,11 @@ namespace MinimalisticWPF.TransitionSystem
                 {
                     if (infodictionary.Item7.TryGetValue(propertyname, out var propertyinfo))
                     {
-                        var currentValue = (IInterpolable?)propertyinfo.GetValue(TransitionApplied);
-                        var newValue = (IInterpolable?)state.Values[propertyname];
-                        if (currentValue != newValue && newValue != null)
+                        var currentValue = propertyinfo.GetValue(TransitionApplied);
+                        var newValue = state.Values[propertyname];
+                        if ((currentValue == null || currentValue.Equals(newValue)) && currentValue is IInterpolable method)
                         {
-                            allFrames.Add(Tuple.Create(propertyinfo, newValue.Interpolate(currentValue?.Self, newValue.Self, FrameCount)));
+                            allFrames.Add(Tuple.Create(propertyinfo, method.Interpolate(currentValue, newValue, FrameCount)));
                         }
                     }
                 }

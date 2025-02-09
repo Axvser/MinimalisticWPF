@@ -10,7 +10,6 @@ namespace MinimalisticWPF.StructuralDesign.Animator
 {
     public interface IInterpolable
     {
-        public object Self { get; set; }
         public List<object?> Interpolate(object? current, object? target, int steps);
     }
 }
