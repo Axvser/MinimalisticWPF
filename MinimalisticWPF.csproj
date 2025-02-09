@@ -4,7 +4,7 @@
 		<NoWarn>1573</NoWarn>
 		<NoWarn>1591</NoWarn>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-		<TargetFrameworks>net6.0-windows;net7.0-windows;net8.0-windows;net9.0-windows</TargetFrameworks>
+		<TargetFrameworks>net6.0-windows;net8.0-windows;net9.0-windows</TargetFrameworks>
 		<LangVersion>latest</LangVersion>
 		<Nullable>enable</Nullable>
 		<UseWPF>true</UseWPF>
@@ -17,9 +17,9 @@
 		<RepositoryUrl>https://github.com/Axvser/MinimalisticWPF</RepositoryUrl>
 		<NeutralLanguage>zh-CN</NeutralLanguage>
 		<IncludeSymbols>False</IncludeSymbols>
-		<Description>It simplifies the process of visual effect realization, and provides special functions for MVVM / AOP / ObjectPool / DynamicTheme. Strictly speaking, this is a comprehensive project for personal learning purposes, and ultimately it should greatly improve the MVVM / AOP / …… programming experience by using source generators</Description>
+		<Description>UserControl and Animation are the most important parts in WPF project. This library will allow you to speed up these parts by using 【 C# + Source Generator 】. It will be possible to build nice looking user controls and build animations with clean C# code</Description>
 		<RepositoryType>git</RepositoryType>
-		<Version>2.8.2</Version>
+		<Version>2.9.0</Version>
 		<Authors>Axvser</Authors>
 	</PropertyGroup>
 

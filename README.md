@@ -2,23 +2,31 @@
 
 ##### UserControl and Animation are the most important parts in WPF project. This library will allow you to speed up these parts by using C# & Source Generator.
 
+Get →
+
 - [github](https://github.com/Axvser/MinimalisticWPF) 
 - [nuget](https://www.nuget.org/packages/MinimalisticWPF/)
 
+Practice →
+
+- [MinimalisticWPF.Controls](https://github.com/Axvser/MinimalisticWPF.Controls)
+
 ---
 
-## Directory
+## Features
 - Core
   - [Ⅰ Transition](#Transition)
-    - [Quick](#Quick)
-    - [Reusable](#Reusable)
-    - [Shared](#Merge)
-    - [Isolation](#Isolation)
-    - [Compile](#Compile)
+    - [Quick](#（1）Quick)
+    - [Reusable](#（2）Reusable)
+    - [Shared](#（3）Merge)
+    - [Isolation](#（4）Isolation)
+    - [Compile](#（5）Compile)
   - [Ⅱ ViewModel](#ViewModel)
-    - [Hover](#（1）Hover)
-    - [Theme](#（2）Theme)
-    - [Dependency](#（3）Dependency)
+    - [Field](#（1）Field)
+    - [Constructor](#（2）Constructor)
+    - [Hover](#（3）Hover)
+    - [Theme](#（4）Theme)
+    - [Dependency Properties](#（5）Dependency)
   - [Ⅲ Aspect-Oriented Programming](#AOP)
   - [Ⅳ ObjectPool](#ObjectPool)
 - Other
@@ -35,7 +43,7 @@ namespace
   using MinimalisticWPF.TransitionSystem;
 ```
 
-### Quick
+### （1）Quick
 
 Load the transition on the instance by using the extension method
 
@@ -52,7 +60,7 @@ Load the transition on the instance by using the extension method
       .Start();
 ```
 
-### Reusable
+### （2）Reusable
 
 The transition is described beforehand and then applied for multiple instances
 
@@ -71,7 +79,7 @@ The transition is described beforehand and then applied for multiple instances
   control2.BeginTransition(transition);
 ```
 
-### Shared
+### （3）Shared
 
 Running multiple transitions, some shared mechanism makes them thread-safe
 
@@ -103,7 +111,7 @@ Running multiple transitions, some shared mechanism makes them thread-safe
   // Transition.Dispose(control);
 ```
 
-### Isolation
+### （4）Isolation
 
 Running multiple transitions, some isolation mechanism can make the effect more flexible, but it is not thread-safe
 
@@ -132,10 +140,13 @@ Running multiple transitions, some isolation mechanism can make the effect more 
       .SetProperty(x => x.Height, 100)
       .SetParams(param2);
 
-  control.BeginTransitions(transition1, transition2);
+  var schedulers = control.BeginTransitions(transition1, transition2);
+
+  // schedulers[0].Dispose();
+  // schedulers[1].Dispose();
 ```
 
-### Compile
+### （5）Compile
 
 You can make the transition immutable with the Compile operation
 
@@ -168,11 +179,150 @@ You can make the transition immutable with the Compile operation
 ---
 
 ## ViewModel
-### （1）Hover
-### （2）Theme
-### （3）Dependency
 
+This is the heart of the library. You will build awesome user controls in Mvvm mode using clean C# code
 
+★ Ultimately, everything is abstracted to data, and changing the data changes the functionality, and all you need in XAML is data binding ！
+
+### （1）Field
+
+Automatically generate properties for fields
+
+```csharp
+  [Observable]
+  private int _id = 0;
+  partial void OnIdChanged(int oldValue, int newValue)
+  {
+      
+  }
+  partial void OnIdChanging(int oldValue, int newValue)
+  {
+      
+  }
+```
+
+### （2）Constructor
+
+Multiple constructors are generated automatically.Functions with the same parameter list will be called from within the same constructor
+
+```csharp
+  [Constructor]
+  private void SetDefaultValue()
+  {
+
+  }
+
+  [Constructor]
+  private void SetDefaultValues(int id, int age)
+  {
+
+  }
+```
+
+### （3）Hover
+
+Controls need to animate in response to your mouse hovering over them
+
+```csharp
+  [Observable(CanHover: true)]
+  private Brush background = Brushes.White;
+
+  [Constructor]
+  private void SetDefaultValue()
+  {
+      // The default values are the same as the initial values of the fields, and you can change the values of these properties to achieve the mouse hover animation
+      HoveredBackground = Brushes.Cyan;
+      NoHoveredBackground = Brushes.White;
+
+      // You can change the transition details
+      HoveredTransition.SetParams(TransitionParams.Hover);
+      NoHoveredTransition.SetParams(TransitionParams.Hover);
+
+      // This change will automatically enable the hover transition
+      IsHovered = true;
+
+      // You can see if the hover transition is loading
+      if (IsHoverChanging)
+      {
+
+      }
+  }
+```
+
+### （4）Theme
+
+Easily realize light and dark theme switch or other custom theme
+
+```csharp
+  [Observable]
+  [Dark("#1e1e1e")]
+  [Light("White")]
+  private Brush background = Brushes.White;
+
+  [Constructor]
+  private void SetDefaultTheme()
+  {
+      // Setting the current theme
+      CurrentTheme = typeof(Light);
+
+      // You can see if you're switching topics
+      if (IsThemeChanging)
+      {
+
+      }
+  }
+
+  partial void OnThemeChanging(Type? oldTheme, Type newTheme)
+  {
+      
+  }
+  partial void OnThemeChanged(Type? oldTheme, Type newTheme)
+  {
+      
+  }
+```
+
+### （5）Dependency
+
+You can easily make user controls have dependency properties with the same name as properties in the ViewModel
+- param1 → DataContext type name
+- param2 → The name of the namespace in which the ViewModel is defined. If no class with the same name exists, omit namespace validation
+
+```csharp
+  [DataContextConfig(nameof(Class1), "TestForMWpf")]
+  public partial class MainWindow : Window
+```
+
+- Class1
+
+```csharp
+    public partial class Class1
+    {
+        [Observable(CanDependency:true)]
+        [Dark("#1e1e1e")]
+        [Light("White")]
+        private Brush background = Brushes.White;
+    }
+```
+
+- Once configured, the control already contains dependency properties with the same name as properties in the ViewModel.
+
+Here are some options 
+
+```csharp
+  partial void OnBackgroundChanged(Brush oldValue, Brush newValue)
+  {
+      
+  }
+  partial void OnDarkBackgroundChanged(Brush oldValue, Brush newValue)
+  {
+      
+  }
+  partial void OnLightBackgroundChanged(Brush oldValue, Brush newValue)
+  {
+      
+  }
+```
 
 ---
 
