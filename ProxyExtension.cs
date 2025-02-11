@@ -1,7 +1,7 @@
 ﻿using MinimalisticWPF.AspectOriented;
 using System.Reflection;
 
-namespace MinimalisticWPF.Extension
+namespace MinimalisticWPF
 {
     public static class ProxyExtension
     {

@@ -11,6 +11,9 @@ Practice →
 
 - [MinimalisticWPF.Controls](https://github.com/Axvser/MinimalisticWPF.Controls)
 
+ Versions →
+- [V3.0.0](#V3.0.0) `LTS`
+
 ---
 
 ## Features
@@ -257,7 +260,7 @@ Controls need to animate in response to your mouse hovering over them
 - Easily realize light and dark theme switch or other custom theme
 
 ```csharp
-  [Observable]
+  [Observable(CanIsolated:true)] // If isolation is enabled, theme effects are not shared between instances, so select as needed
   [Dark("#1e1e1e")]
   [Light("White")]
   private Brush background = Brushes.White;
@@ -294,10 +297,22 @@ Controls need to animate in response to your mouse hovering over them
 - Switching between themes
 
 ```csharp
-   this.ApplyTheme(typeof(Light),TransitionParams.Theme); // Local usage
-
-   DynamicTheme.Apply(typeof(Light),TransitionParams.Theme); // Global usage
+   DynamicTheme.Apply(typeof(Light),TransitionParams.Theme);
 ```
+
+- DynamicTheme
+
+| Method Name | Description |
+|-------------|-------------|
+| Awake()     | Loads all types with `DynamicThemeAttribute` and initializes shared resources. |
+| Awake<T>(params T[] targets) | Initializes specific target collections. |
+| TryGetTransitionMeta<T>(T target, Type themeType, out ITransitionMeta result) | Attempts to get transition metadata for a specified target. |
+| Apply(Type themeType, TransitionParams? param = null) | Applies a specified theme to all globally registered objects. |
+| SetSharedValue(Type classType, Type themeType, string propertyName, object? newValue) | Sets a shared property value. |
+| GetSharedValue(Type classType, Type themeType, string propertyName) | Gets a shared property value. |
+| SetIsolatedValue<T>(T target, Type themeType, string propertyName, object? newValue) | Sets an isolated property value. |
+| GetIsolatedValue<T>(T target, Type themeType, string propertyName) | Gets an isolated property value. |
+| Dispose<T>(params T[] targets) | Removes specified targets and their related state information. |
 
 ### Dependency
 
@@ -599,3 +614,10 @@ Make custom classes also participate in the transition system
             return result;
         }
 ```
+
+---
+
+## V3.0.0
+
+First long term support release, now the project is ready for production
+

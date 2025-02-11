@@ -19,12 +19,12 @@
 		<IncludeSymbols>False</IncludeSymbols>
 		<Description>UserControl and Animation are the most important parts in WPF project. This library will allow you to speed up these parts by using 【 C# + Source Generator 】. It will be possible to build nice looking user controls and build animations with clean C# code</Description>
 		<RepositoryType>git</RepositoryType>
-		<Version>2.9.0</Version>
+		<Version>3.0.0 - LTS</Version>
 		<Authors>Axvser</Authors>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="MinimalisticWPF.Generator" Version="2.3.8" />
+		<PackageReference Include="MinimalisticWPF.Generator" Version="2.5.2" />
 	</ItemGroup>
 
 	<ItemGroup>
