@@ -4,7 +4,7 @@
 		<NoWarn>1573</NoWarn>
 		<NoWarn>1591</NoWarn>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-		<TargetFrameworks>net6.0-windows;net8.0-windows;net9.0-windows</TargetFrameworks>
+		<TargetFramework>net5-windows</TargetFramework>
 		<LangVersion>latest</LangVersion>
 		<Nullable>enable</Nullable>
 		<UseWPF>true</UseWPF>
