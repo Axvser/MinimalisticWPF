@@ -10,6 +10,8 @@ namespace MinimalisticWPF.TransitionSystem
 {
     public sealed class TransitionScheduler
     {
+
+#if NET5_0_OR_GREATER
         public static int MaxFrameRate
         {
             get => _maxFR;
@@ -18,6 +20,18 @@ namespace MinimalisticWPF.TransitionSystem
                 _maxFR = Math.Clamp(value, 1, int.MaxValue);
             }
         }
+#endif
+#if NET471_OR_GREATER
+        public static int MaxFrameRate
+        {
+            get => _maxFR;
+            set
+            {
+                _maxFR = value.Clamp(1, int.MaxValue);
+            }
+        }
+#endif
+
         internal static ConcurrentDictionary<Type, ConcurrentDictionary<object, TransitionScheduler>> MachinePool { get; set; } = new();
         internal static ConcurrentDictionary<Type, ConcurrentDictionary<string, PropertyInfo>> PropertyInfos { get; set; } = new();
         internal static ConcurrentDictionary<Type, Tuple<ConcurrentDictionary<string, PropertyInfo>, ConcurrentDictionary<string, PropertyInfo>, ConcurrentDictionary<string, PropertyInfo>, ConcurrentDictionary<string, PropertyInfo>, ConcurrentDictionary<string, PropertyInfo>, ConcurrentDictionary<string, PropertyInfo>, ConcurrentDictionary<string, PropertyInfo>>> SplitedPropertyInfos { get; set; } = new();
@@ -131,8 +145,17 @@ namespace MinimalisticWPF.TransitionSystem
         internal object TransitionApplied { get; set; }
         internal Type Type { get; set; }
         internal StateCollection States { get; set; } = [];
+
+#if NET5_0_OR_GREATER
         internal double DeltaTime { get => 1000.0 / Math.Clamp(TransitionParams.FrameRate, 1, MaxFrameRate); }
         internal double FrameCount { get => Math.Clamp(TransitionParams.Duration * Math.Clamp(TransitionParams.FrameRate, 1, MaxFrameRate), 1, int.MaxValue); }
+#endif
+
+#if NET471_OR_GREATER
+        internal double DeltaTime { get => 1000.0 / TransitionParams.FrameRate.Clamp(1, MaxFrameRate); }
+        internal double FrameCount { get => (TransitionParams.Duration * TransitionParams.FrameRate.Clamp(1, MaxFrameRate)).Clamp(1, int.MaxValue); }
+#endif
+
         internal string? CurrentState { get; set; }
         internal IExecutableTransition? Interpreter { get; set; }
         internal ConcurrentQueue<Tuple<string, ITransitionMeta>> Interpreters { get; set; } = new();
@@ -153,7 +176,12 @@ namespace MinimalisticWPF.TransitionSystem
             CurrentState = null;
             Interpreter?.Stop();
             Interpreter = null;
+#if NET5_0_OR_GREATER
             Interpreters.Clear();
+#endif
+#if NET471_OR_GREATER
+            Interpreters = new();
+#endif
         }
         internal void Transition(string stateName, Action<TransitionParams>? actionSet, List<List<Tuple<PropertyInfo, List<object?>>>>? preload = null)
         {

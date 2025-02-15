@@ -1,4 +1,6 @@
-﻿using MinimalisticWPF.AspectOriented;
+﻿#if NET5_0_OR_GREATER
+
+using MinimalisticWPF.AspectOriented;
 using System.Reflection;
 
 namespace MinimalisticWPF
@@ -75,3 +77,5 @@ namespace MinimalisticWPF
         }
     }
 }
+
+#endif

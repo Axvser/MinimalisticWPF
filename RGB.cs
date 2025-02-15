@@ -24,6 +24,7 @@ namespace MinimalisticWPF
         private int b = 0;
         private int a = 255;
 
+#if NET5_0_OR_GREATER
         public int R
         {
             get => r;
@@ -44,6 +45,29 @@ namespace MinimalisticWPF
             get => a;
             set => a = Math.Clamp(value, 0, 255);
         }
+#endif
+#if NET471_OR_GREATER
+        public int R
+        {
+            get => r;
+            set => r = value.Clamp(0, 255);
+        }
+        public int G
+        {
+            get => g;
+            set => g = value.Clamp(0, 255);
+        }
+        public int B
+        {
+            get => b;
+            set => b = value.Clamp(0, 255);
+        }
+        public int A
+        {
+            get => a;
+            set => a = value.Clamp(0, 255);
+        }
+#endif
 
         public Color Color => Color.FromArgb((byte)A, (byte)R, (byte)G, (byte)B);
         public SolidColorBrush SolidColorBrush => new(Color);
@@ -77,9 +101,18 @@ namespace MinimalisticWPF
             if (obj is string text) return Equals(FromString(text));
             return false;
         }
+#if NET5_0_OR_GREATER
         public override int GetHashCode()
         {
             return HashCode.Combine(R, G, B, A);
         }
+#endif
+
+#if NET471_OR_GREATER
+        public override int GetHashCode()
+        {
+            return HashCodeExtensions.Combine(R, G, B, A);
+        }
+#endif
     }
 }

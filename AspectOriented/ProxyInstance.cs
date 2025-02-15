@@ -1,4 +1,6 @@
-﻿using System.Reflection;
+﻿#if NET5_0_OR_GREATER
+
+using System.Reflection;
 
 namespace MinimalisticWPF.AspectOriented
 {
@@ -52,3 +54,5 @@ namespace MinimalisticWPF.AspectOriented
         }
     }
 }
+
+#endif

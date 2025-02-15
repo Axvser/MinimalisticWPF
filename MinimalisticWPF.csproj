@@ -4,7 +4,7 @@
 		<NoWarn>1573</NoWarn>
 		<NoWarn>1591</NoWarn>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
-		<TargetFramework>net5-windows</TargetFramework>
+		<TargetFrameworks>netframework4.7.1;net5.0-windows</TargetFrameworks>
 		<LangVersion>latest</LangVersion>
 		<Nullable>enable</Nullable>
 		<UseWPF>true</UseWPF>
@@ -19,11 +19,22 @@
 		<IncludeSymbols>False</IncludeSymbols>
 		<Description>UserControl and Animation are the most important parts in WPF project. This library will allow you to speed up these parts by using 【 C# + Source Generator 】. It will be possible to build nice looking user controls and build animations with clean C# code</Description>
 		<RepositoryType>git</RepositoryType>
-		<Version>3.0.0-LTS</Version>
+		<Version>3.1.0-pre</Version>
 		<Authors>Axvser</Authors>
 	</PropertyGroup>
 
-	<ItemGroup>
+	<!-- .NET Framework specific settings -->
+	<ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+		<Reference Include="System.Core" />
+		<Reference Include="System.Xml.Linq" />
+		<Reference Include="System.Data.DataSetExtensions" />
+		<Reference Include="Microsoft.CSharp" />
+		<Reference Include="System.Net.Http" />
+	</ItemGroup>
+
+	<!-- .NET 5 specific settings -->
+	<ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
+		<PackageReference Include="System.Text.Json" Version="5.0.0" />
 		<PackageReference Include="MinimalisticWPF.Generator" Version="2.5.2" />
 	</ItemGroup>
 

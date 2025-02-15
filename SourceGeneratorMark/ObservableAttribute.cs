@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿#if NET5_0_OR_GREATER
 
 namespace MinimalisticWPF
 {
@@ -30,3 +29,5 @@ namespace MinimalisticWPF
         public string[] Cascades { get; private set; } = Cascades;
     }
 }
+
+#endif

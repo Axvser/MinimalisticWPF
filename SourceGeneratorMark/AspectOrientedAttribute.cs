@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿#if NET5_0_OR_GREATER
 
 namespace MinimalisticWPF
 {
@@ -10,6 +8,8 @@ namespace MinimalisticWPF
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public class AspectOrientedAttribute() : Attribute
     {
-        
+
     }
 }
+
+#endif

@@ -18,7 +18,12 @@ namespace MinimalisticWPF.Theme
 
         public static ConcurrentDictionary<Type, ConcurrentDictionary<Type, State>> SharedSource { get; internal set; } = new();
         public static ConcurrentDictionary<IThemeApplied, ConcurrentDictionary<Type, State>> IsolatedSource { get; internal set; } = new();
+#if NET5_0_OR_GREATER
         public static HashSet<IThemeApplied> GlobalInstance { get; internal set; } = new(64);
+#endif
+#if NET471_OR_GREATER
+        public static HashSet<IThemeApplied> GlobalInstance { get; internal set; } = new();
+#endif
 
         public static bool TryGetTransitionMeta<T>(T target, Type themeType, out ITransitionMeta result) where T : IThemeApplied
         {
@@ -45,7 +50,9 @@ namespace MinimalisticWPF.Theme
         public static void Awake<T>(params T[] targets) where T : IThemeApplied
         {
             Awake();
+#if NET5_0_OR_GREATER
             IsolatedGeneration(targets);
+#endif
         }
         public static void Awake()
         {
@@ -116,6 +123,19 @@ namespace MinimalisticWPF.Theme
             return null;
         }
 
+        public static void AddIsolatedValue<T>(T target, ConcurrentDictionary<Type, State> source) where T : IThemeApplied
+        {
+            Awake();
+
+            if (IsolatedSource.TryGetValue(target, out var old))
+            {
+                IsolatedSource.TryUpdate(target, source, old);
+            }
+            else
+            {
+                IsolatedSource.TryAdd(target, source);
+            }
+        }
         public static void SetIsolatedValue<T>(T target, Type themeType, string propertyName, object? newValue) where T : IThemeApplied
         {
             Awake();
@@ -217,6 +237,7 @@ namespace MinimalisticWPF.Theme
                 SharedSource.TryAdd(cs, unit);
             }
         }
+#if NET5_0_OR_GREATER
         private static void IsolatedGeneration<T>(params T[] targets) where T : IThemeApplied
         {
             if (Attributes == null) return;
@@ -305,5 +326,6 @@ namespace MinimalisticWPF.Theme
                 IsolatedSource.TryAdd(target, unit);
             }
         }
+#endif
     }
 }

@@ -1,13 +1,13 @@
-﻿using MinimalisticWPF.TransitionSystem;
+﻿#if NET471_OR_GREATER
+
+using MinimalisticWPF.StructuralDesign.Animator;
+using MinimalisticWPF.TransitionSystem;
 using MinimalisticWPF.TransitionSystem.Basic;
 
-namespace MinimalisticWPF.StructuralDesign.Animator
+namespace MinimalisticWPF
 {
-    public interface IMergeableTransition
+    internal class MetaMergeExtension
     {
-        public ITransitionMeta Merge(ICollection<ITransitionMeta> metas);
-
-#if NET5_0_OR_GREATER
         internal static ITransitionMeta MergeMetas(ICollection<ITransitionMeta> metas)
         {
             var state = new State()
@@ -20,6 +20,7 @@ namespace MinimalisticWPF.StructuralDesign.Animator
             }
             return state;
         }
-#endif
     }
 }
+
+#endif

@@ -12,7 +12,8 @@ Practice →
 - [MinimalisticWPF.Controls](https://github.com/Axvser/MinimalisticWPF.Controls)
 
  Versions →
-- [V3.0.0](#V3.0.0) `LTS`
+- [V3.0.0](#V3.0.0) `LTS` `net 5`
+- [V3.1.0](#V3.1.0) `Preview` `net 5` `net framework4.7.1`
 
 ---
 
@@ -25,14 +26,14 @@ Practice →
     - [Isolation](#Isolation)
     - [Compile](#Compile)
     - [TransitionParams](#TransitionParams)
-  - [Ⅱ ViewModel](#ViewModel)
+  - [Ⅱ ViewModel](#ViewModel) `net 5`
     - [Field](#Field)
     - [Constructor](#Constructor)
     - [Hover](#Hover)
     - [Theme](#Theme)
     - [Dependency Properties](#Dependency)
-  - [Ⅲ Aspect-Oriented Programming](#AOP)
-  - [Ⅳ ObjectPool](#ObjectPool)
+  - [Ⅲ Aspect-Oriented Programming](#AOP) `net 5`
+  - [Ⅳ ObjectPool](#ObjectPool) `net 5`
 - Other
   - [StringValidator](#StringValidator)
   - [RGB](RGB)
@@ -621,3 +622,6 @@ Make custom classes also participate in the transition system
 
 First long term support release, now the project is ready for production
 
+## V3.1.0
+
+The project now supports `net framework4.7.1`
