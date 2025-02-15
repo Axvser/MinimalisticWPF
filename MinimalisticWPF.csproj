@@ -16,11 +16,13 @@
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<RepositoryUrl>https://github.com/Axvser/MinimalisticWPF</RepositoryUrl>
 		<NeutralLanguage>zh-CN</NeutralLanguage>
-		<IncludeSymbols>False</IncludeSymbols>
 		<Description>UserControl and Animation are the most important parts in WPF project. This library will allow you to speed up these parts by using 【 C# + Source Generator 】. It will be possible to build nice looking user controls and build animations with clean C# code</Description>
 		<RepositoryType>git</RepositoryType>
 		<Version>3.1.0-pre</Version>
 		<Authors>Axvser</Authors>
+		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+		<IncludeSymbols>False</IncludeSymbols>
 	</PropertyGroup>
 
 	<!-- .NET Framework specific settings -->
@@ -37,12 +39,22 @@
 		<PackageReference Include="System.Text.Json" Version="5.0.0" />
 		<PackageReference Include="MinimalisticWPF.Generator" Version="2.5.2" />
 	</ItemGroup>
+	<ItemGroup>
+	  <None Remove="LICENSE.txt" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<None Include="README.md">
 			<Pack>True</Pack>
 			<PackagePath>\</PackagePath>
 		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Resource Include="LICENSE.txt">
+	    <Pack>True</Pack>
+	    <PackagePath>\</PackagePath>
+	  </Resource>
 	</ItemGroup>
 
 </Project>
