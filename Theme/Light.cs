@@ -1,4 +1,6 @@
-﻿using MinimalisticWPF.StructuralDesign.Theme;
+﻿#if NET5_0_OR_GREATER
+
+using MinimalisticWPF.StructuralDesign.Theme;
 
 namespace MinimalisticWPF.Theme
 {
@@ -8,3 +10,5 @@ namespace MinimalisticWPF.Theme
         public object?[] Parameters { get; set; } = param;
     }
 }
+
+#endif

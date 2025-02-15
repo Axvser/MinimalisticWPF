@@ -18,8 +18,8 @@ Practice →
 ---
 
 ## Features
-- Core
-  - [Ⅰ Transition](#Transition)
+- ### Core
+  - [Ⅰ Transition](#Transition) `net 5` `net framework4.7.1`
     - [Quick](#Quick)
     - [Reusable](#Reusable)
     - [Shared](#Shared)
@@ -34,11 +34,11 @@ Practice →
     - [Dependency Properties](#Dependency)
   - [Ⅲ Aspect-Oriented Programming](#AOP) `net 5`
   - [Ⅳ ObjectPool](#ObjectPool) `net 5`
-- Other
-  - [StringValidator](#StringValidator)
-  - [RGB](RGB)
-  - [Custom Theme](#CustomTheme)
-  - [Custom Interpolable Property](#CustomInterpolableProperty)
+- ### Non-Core 
+  - [StringValidator](#StringValidator) `net 5` `net framework4.7.1`
+  - [RGB](RGB) `net 5` `net framework4.7.1`
+  - [Custom Theme](#CustomTheme) `net 5`
+  - [Custom Interpolable Property](#CustomInterpolableProperty) `net 5` `net framework4.7.1`
 
 ---
 

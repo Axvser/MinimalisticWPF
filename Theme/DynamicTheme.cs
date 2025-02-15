@@ -1,4 +1,6 @@
-﻿using MinimalisticWPF.StructuralDesign.Animator;
+﻿#if NET5_0_OR_GREATER
+
+using MinimalisticWPF.StructuralDesign.Animator;
 using MinimalisticWPF.StructuralDesign.Theme;
 using MinimalisticWPF.TransitionSystem;
 using MinimalisticWPF.TransitionSystem.Basic;
@@ -18,12 +20,7 @@ namespace MinimalisticWPF.Theme
 
         public static ConcurrentDictionary<Type, ConcurrentDictionary<Type, State>> SharedSource { get; internal set; } = new();
         public static ConcurrentDictionary<IThemeApplied, ConcurrentDictionary<Type, State>> IsolatedSource { get; internal set; } = new();
-#if NET5_0_OR_GREATER
         public static HashSet<IThemeApplied> GlobalInstance { get; internal set; } = new(64);
-#endif
-#if NET471_OR_GREATER
-        public static HashSet<IThemeApplied> GlobalInstance { get; internal set; } = new();
-#endif
 
         public static bool TryGetTransitionMeta<T>(T target, Type themeType, out ITransitionMeta result) where T : IThemeApplied
         {
@@ -237,7 +234,6 @@ namespace MinimalisticWPF.Theme
                 SharedSource.TryAdd(cs, unit);
             }
         }
-#if NET5_0_OR_GREATER
         private static void IsolatedGeneration<T>(params T[] targets) where T : IThemeApplied
         {
             if (Attributes == null) return;
@@ -326,6 +322,7 @@ namespace MinimalisticWPF.Theme
                 IsolatedSource.TryAdd(target, unit);
             }
         }
-#endif
     }
 }
+
+#endif

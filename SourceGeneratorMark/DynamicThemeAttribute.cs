@@ -1,4 +1,6 @@
-﻿namespace MinimalisticWPF
+﻿#if NET5_0_OR_GREATER
+
+namespace MinimalisticWPF
 {
     /// <summary>
     /// [ Source Generator ] allows the class to participate in the global dynamic theme switching
@@ -9,3 +11,5 @@
 
     }
 }
+
+#endif
