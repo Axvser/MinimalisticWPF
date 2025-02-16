@@ -1,6 +1,6 @@
 ﻿# MinimalisticWPF
 
-##### UserControl and Animation are the most important parts in WPF project. This library will allow you to speed up these parts by using C# & Source Generator.
+##### Using C# code to write front-end effects in a WPF project ?  This sounds crazy, but this library can help you. It not only has a completely independent `transition system`, but also has support for `source code generators` of the MVVM design pattern. For back-end developers, this can greatly reduce the learning cost of XAML. And you know, the C# syntax is concise and elegant.
 
 Get →
 
@@ -12,8 +12,8 @@ Practice →
 - [MinimalisticWPF.Controls](https://github.com/Axvser/MinimalisticWPF.Controls)
 
  Versions →
-- [V3.0.0](#V3.0.0) `LTS` `net 5`
-- [V3.1.0](#V3.1.0) `Preview` `net 5` `net framework4.7.1`
+- [V3.0.0](#) `LTS` `net 5`
+- [V4.0.0](#) `LTS` `net 5` `net framework4.7.1`
 
 ---
 
@@ -615,13 +615,3 @@ Make custom classes also participate in the transition system
             return result;
         }
 ```
-
----
-
-## V3.0.0
-
-First long term support release, now the project is ready for production
-
-## V3.1.0
-
-The project now supports `net framework4.7.1`
