@@ -219,6 +219,8 @@ namespace MinimalisticWPF.TransitionSystem
 
         internal async void InterpreterScheduler(string stateName, TransitionParams? actionSet, List<List<Tuple<PropertyInfo, List<object?>>>>? preload)
         {
+            if (Application.Current == null) return;
+
             var targetState = States[stateName];
             actionSet ??= new TransitionParams();
             TransitionParams = actionSet;
@@ -226,19 +228,11 @@ namespace MinimalisticWPF.TransitionSystem
             {
                 DeltaTime = (int)DeltaTime,
             };
-
-            if (Application.Current == null)
-            {
-                return;
-            }
-            else
-            {
-                TransitionParams.StartInvoke();
-            }
-
+         
             animationInterpreter.FrameSequence = preload ?? ComputingFrames(targetState, this);
             CurrentState = stateName;
             Interpreter = animationInterpreter;
+            TransitionParams.StartInvoke();
             await animationInterpreter.Start();
         }
         internal TransitionScheduler(object instance, params State[] states)

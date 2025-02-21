@@ -12,8 +12,14 @@ Practice →
 - [MinimalisticWPF.Controls](https://github.com/Axvser/MinimalisticWPF.Controls)
 
  Versions →
-- [V3.0.0](#) `LTS` `net 5`
-- [V4.0.0](#) `LTS` `net 5` `net framework4.7.1`
+- [V3.0.0](#) `LTS` | `net 5`
+- [V4.0.0](#) `LTS` | `net 5` `net framework4.7.1`
+
+---
+ 
+- [V4.1.0](#) `Pre` | `net 5` `net framework4.7.1`
+  - Use better scheduling decisions for frame update operations.
+  - Short-circuit evaluation is used for some logical judgments.
 
 ---
 

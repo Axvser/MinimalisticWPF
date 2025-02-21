@@ -28,6 +28,7 @@ namespace MinimalisticWPF.TransitionSystem
         public event Action? Update;
         public event Action? LateUpdate;
         public event Action? Completed;
+
         public bool IsAutoReverse { get; set; } = false;
         public int LoopTime { get; set; } = 0;
         public double Duration { get; set; } = 0;
