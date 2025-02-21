@@ -13,7 +13,6 @@ namespace MinimalisticWPF.TransitionSystem
 
         public static int DefaultFrameRate { get; set; } = 60;
         public static DispatcherPriority DefaultPriority { get; set; } = DispatcherPriority.Normal;
-        public static bool DefaultIsBeginInvoke { get; set; } = false;
         public static TransitionParams Theme { get; set; } = new()
         {
             FrameRate = DefaultFrameRate,
@@ -35,7 +34,7 @@ namespace MinimalisticWPF.TransitionSystem
         public int FrameRate { get; set; } = DefaultFrameRate;
         public double Acceleration { get; set; } = 0;
         public DispatcherPriority Priority { get; set; } = DefaultPriority;
-        public bool IsBeginInvoke { get; set; } = DefaultIsBeginInvoke;
+        public bool IsAsync { get; set; } = false;
 
         public TransitionParams DeepCopy()
         {
@@ -51,7 +50,7 @@ namespace MinimalisticWPF.TransitionSystem
                 FrameRate = FrameRate,
                 Acceleration = Acceleration,
                 Priority = Priority,
-                IsBeginInvoke = IsBeginInvoke
+                IsAsync = IsAsync
             };
             return copy;
         }

@@ -241,10 +241,10 @@ namespace MinimalisticWPF.TransitionSystem
             Interpreter = animationInterpreter;
             await animationInterpreter.Start();
         }
-        internal TransitionScheduler(object viewModel, params State[] states)
+        internal TransitionScheduler(object instance, params State[] states)
         {
-            TransitionApplied = viewModel;
-            Type = viewModel.GetType();
+            TransitionApplied = instance;
+            Type = instance.GetType();
             InitializeTypes(Type);
             foreach (var state in states)
             {

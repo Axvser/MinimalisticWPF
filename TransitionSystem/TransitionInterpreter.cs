@@ -31,6 +31,7 @@ namespace MinimalisticWPF.TransitionSystem
             IsRunning = true;
 
             var accTimes = GetAccDeltaTime(FrameCount);
+            var isInvokeAsync = !Application.Current.Dispatcher.CheckAccess() || TransitionParams.IsAsync;
 
             for (int x = LoopDepth; TransitionParams.LoopTime == int.MaxValue || x <= TransitionParams.LoopTime; x++, LoopDepth++)
             {
@@ -47,7 +48,7 @@ namespace MinimalisticWPF.TransitionSystem
                     {
                         for (int k = 0; k < FrameSequence[j].Count; k++)
                         {
-                            FrameUpdate(i, j, k);
+                            FrameUpdate(i, j, k, isInvokeAsync);
                         }
                     }
                     FrameEnd();
@@ -64,7 +65,7 @@ namespace MinimalisticWPF.TransitionSystem
                         {
                             for (int k = 0; k < FrameSequence[j].Count; k++)
                             {
-                                FrameUpdate(i, j, k);
+                                FrameUpdate(i, j, k, isInvokeAsync);
                             }
                         }
                         FrameEnd();
@@ -83,11 +84,13 @@ namespace MinimalisticWPF.TransitionSystem
 
         private void Reset()
         {
+            var isInvokeAsync = !Application.Current.Dispatcher.CheckAccess() || TransitionParams.IsAsync;
+
             for (int j = 0; j < FrameSequence.Count; j++)
             {
                 for (int k = 0; k < FrameSequence[j].Count; k++)
                 {
-                    FrameUpdate(0, j, k);
+                    FrameUpdate(0, j, k, isInvokeAsync);
                 }
             }
         }
@@ -104,28 +107,20 @@ namespace MinimalisticWPF.TransitionSystem
         {
             TransitionParams.UpdateInvoke();
         }
-        private async void FrameUpdate(int i, int j, int k)
+        private async void FrameUpdate(int i, int j, int k, bool isAsync)
         {
-            if (IsFrameIndexRight(i, j, k) && Application.Current != null)
+            if (!IsFrameIndexRight(i, j, k) || Application.Current == null) return;
+
+            if (isAsync)
             {
-                if (TransitionParams.IsBeginInvoke)
+                await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    try
-                    {
-                        await Application.Current.Dispatcher.BeginInvoke(TransitionParams.Priority, () =>
-                        {
-                            FrameSequence[j][k].Item1.SetValue(TransitionScheduler.TransitionApplied, FrameSequence[j][k].Item2[i]);
-                        });
-                    }
-                    catch { }
-                }
-                else
-                {
-                    Application.Current.Dispatcher.Invoke(TransitionParams.Priority, () =>
-                    {
-                        FrameSequence[j][k].Item1.SetValue(TransitionScheduler.TransitionApplied, FrameSequence[j][k].Item2[i]);
-                    });
-                }
+                    FrameSequence[j][k].Item1.SetValue(TransitionScheduler.TransitionApplied, FrameSequence[j][k].Item2[i]);
+                }, TransitionParams.Priority);
+            }
+            else
+            {
+                FrameSequence[j][k].Item1.SetValue(TransitionScheduler.TransitionApplied, FrameSequence[j][k].Item2[i]);
             }
         }
         private void FrameEnd()
