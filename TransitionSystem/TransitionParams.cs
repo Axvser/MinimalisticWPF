@@ -23,6 +23,11 @@ namespace MinimalisticWPF.TransitionSystem
             FrameRate = DefaultFrameRate,
             Duration = 0.3
         };
+        public static TransitionParams Tractive { get; set; } = new()
+        {
+            FrameRate = DefaultFrameRate,
+            Duration = 3,
+        };
 
         public event Action? Start;
         public event Action? Update;
