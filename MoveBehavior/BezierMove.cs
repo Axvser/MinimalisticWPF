@@ -1,6 +1,7 @@
 ﻿using MinimalisticWPF.StructuralDesign.Move;
 using MinimalisticWPF.TransitionSystem;
 using MinimalisticWPF.TransitionSystem.Basic;
+using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Reflection;
 using System.Windows;
@@ -19,13 +20,63 @@ namespace MinimalisticWPF.MoveBehavior
                 (RenderTimes.RunTime, false) => Visibility.Visible,
                 (RenderTimes.DesignTime, true) => Visibility.Visible,
                 (RenderTimes.AnyTime, _) => Visibility.Visible,
-                _ => Visibility.Collapsed,
+                _ => Visibility.Collapsed
             };
-            foreach (Anchor anchor in Children)
-            {
-                anchor.Foreground = AnchorBrush;
-            }
         }
+
+        public Brush DrawBrush
+        {
+            get { return (Brush)GetValue(DrawBrushProperty); }
+            set { SetValue(DrawBrushProperty, value); }
+        }
+        public static readonly DependencyProperty DrawBrushProperty =
+            DependencyProperty.Register
+            ("DrawBrush",
+                typeof(Brush),
+                typeof(BezierMove),
+                new PropertyMetadata(Brushes.Cyan, (dp, e) =>
+                {
+                    if (dp is BezierMove bm)
+                    {
+                        bm.DrawPen = new Pen((Brush)e.NewValue, bm.DrawThickness);
+                    }
+                }));
+
+        public double DrawThickness
+        {
+            get { return (double)GetValue(DrawThicknessProperty); }
+            set { SetValue(DrawThicknessProperty, value); }
+        }
+        public static readonly DependencyProperty DrawThicknessProperty =
+            DependencyProperty.Register
+            ("DrawThickness",
+                typeof(double),
+                typeof(BezierMove),
+                new PropertyMetadata(1.0, (dp, e) =>
+                {
+                    if (dp is BezierMove bm)
+                    {
+                        bm.DrawPen = new Pen(bm.DrawBrush, (double)e.NewValue);
+                    }
+                }));
+
+        public Pen DrawPen
+        {
+            get { return (Pen)GetValue(DrawPenProperty); }
+            internal set { SetValue(DrawPenProperty, value); }
+        }
+        public static readonly DependencyProperty DrawPenProperty =
+            DependencyProperty.Register
+            ("DrawPen",
+                typeof(Pen),
+                typeof(BezierMove),
+                new PropertyMetadata(new Pen(Brushes.Cyan, 1), (dp, e) =>
+                {
+                    if (dp is BezierMove bm)
+                    {
+                        bm.InvalidateVisual();
+                    }
+                }));
 
         public RenderTimes RenderTime
         {
@@ -125,12 +176,26 @@ namespace MinimalisticWPF.MoveBehavior
         public void Start(FrameworkElement target)
         {
             var offest = new Point(target.ActualWidth / 2, target.ActualHeight / 2);
-            var scheduler = TransitionScheduler.CreateUniqueUnit(target);
+            var search = MoveBehaviorExtension.Schedulers.TryGetValue(target, out var value);
+            var scheduler = search ? value : TransitionScheduler.CreateIndependentUnit(target);
+            if (scheduler is null) throw new ArgumentException("Failed to create TransitionScheduler");
+            if (!search)
+            {
+                MoveBehaviorExtension.Schedulers.TryAdd(target, scheduler);
+            }
             var state = new State() { StateName = "beziermovestate" };
             state.AddProperty(MoveBehaviorExtension.RenderTransformPropertyInfo.Name, null);
             scheduler.States.Add(state);
             scheduler.TransitionParams = TransitionParams;
             scheduler.InterpreterScheduler(state.StateName, TransitionParams, GetNormalFrames(offest, (int)scheduler.FrameCount));
+        }
+
+        public void Stop(FrameworkElement target)
+        {
+            if(MoveBehaviorExtension.Schedulers.TryGetValue(target, out var scheduler))
+            {
+                scheduler.Interpreter?.Stop();
+            }
         }
 
         protected override void OnInitialized(EventArgs e)
@@ -149,23 +214,16 @@ namespace MinimalisticWPF.MoveBehavior
         {
             base.OnVisualChildrenChanged(visualAdded, visualRemoved);
 
-            if (DesignerProperties.GetIsInDesignMode(this))
+            if (visualAdded is Anchor addedPoint)
             {
-                // 处理新增控件
-                if (visualAdded is Anchor addedPoint)
-                {
-                    addedPoint.Foreground = AnchorBrush;
-                    HookPositionChanges(addedPoint);
-                }
-
-                // 处理移除控件
-                if (visualRemoved is Anchor removedPoint)
-                {
-                    UnhookPositionChanges(removedPoint);
-                }
+                addedPoint.Foreground = AnchorBrush;
+                HookPositionChanges(addedPoint);
             }
 
-            InvalidateVisual();
+            if (visualRemoved is Anchor removedPoint)
+            {
+                UnhookPositionChanges(removedPoint);
+            }
         }
 
         private void DrawBezierCurve(DrawingContext dc)

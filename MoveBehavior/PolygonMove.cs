@@ -2,6 +2,7 @@
 using MinimalisticWPF.TransitionSystem;
 using MinimalisticWPF.TransitionSystem.Basic;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
@@ -22,11 +23,61 @@ namespace MinimalisticWPF.MoveBehavior
                 (RenderTimes.AnyTime, _) => Visibility.Visible,
                 _ => Visibility.Collapsed,
             };
-            foreach(Anchor anchor in Children)
-            {
-                anchor.Foreground = AnchorBrush;
-            }
         }
+
+        public Brush DrawBrush
+        {
+            get { return (Brush)GetValue(DrawBrushProperty); }
+            set { SetValue(DrawBrushProperty, value); }
+        }
+        public static readonly DependencyProperty DrawBrushProperty =
+            DependencyProperty.Register
+            ("DrawBrush",
+                typeof(Brush),
+                typeof(PolygonMove),
+                new PropertyMetadata(Brushes.Cyan, (dp, e) =>
+                {
+                    if (dp is PolygonMove pm)
+                    {
+                        pm.DrawPen = new Pen((Brush)e.NewValue, pm.DrawThickness);
+                    }
+                }));
+
+        public double DrawThickness
+        {
+            get { return (double)GetValue(DrawThicknessProperty); }
+            set { SetValue(DrawThicknessProperty, value); }
+        }
+        public static readonly DependencyProperty DrawThicknessProperty =
+            DependencyProperty.Register
+            ("DrawThickness",
+                typeof(double),
+                typeof(PolygonMove),
+                new PropertyMetadata(1.0, (dp, e) =>
+                {
+                    if (dp is PolygonMove pm)
+                    {
+                        pm.DrawPen = new Pen(pm.DrawBrush, (double)e.NewValue);
+                    }
+                }));
+
+        public Pen DrawPen
+        {
+            get { return (Pen)GetValue(DrawPenProperty); }
+            internal set { SetValue(DrawPenProperty, value); }
+        }
+        public static readonly DependencyProperty DrawPenProperty =
+            DependencyProperty.Register
+            ("DrawPen",
+                typeof(Pen),
+                typeof(PolygonMove),
+                new PropertyMetadata(new Pen(Brushes.Cyan, 1), (dp, e) =>
+                {
+                    if (dp is PolygonMove pm)
+                    {
+                        pm.InvalidateVisual();
+                    }
+                }));
 
         public bool IsClosed
         {
@@ -40,7 +91,7 @@ namespace MinimalisticWPF.MoveBehavior
                 typeof(PolygonMove),
                 new PropertyMetadata(false, (dp, e) =>
                 {
-                    if(dp is PolygonMove pm)
+                    if (dp is PolygonMove pm)
                     {
                         pm.InvalidateVisual();
                     }
@@ -144,12 +195,26 @@ namespace MinimalisticWPF.MoveBehavior
         public void Start(FrameworkElement target)
         {
             var offset = new Point(target.ActualWidth / 2, target.ActualHeight / 2);
-            var scheduler = TransitionScheduler.CreateUniqueUnit(target);
+            var search = MoveBehaviorExtension.Schedulers.TryGetValue(target, out var value);
+            var scheduler = search ? value : TransitionScheduler.CreateIndependentUnit(target);
+            if (scheduler is null) throw new ArgumentException("Failed to create TransitionScheduler");
+            if (!search)
+            {
+                MoveBehaviorExtension.Schedulers.TryAdd(target, scheduler);
+            }
             var state = new State() { StateName = "polygonmovestate" };
             state.AddProperty(MoveBehaviorExtension.RenderTransformPropertyInfo.Name, null);
             scheduler.States.Add(state);
             scheduler.TransitionParams = TransitionParams;
             scheduler.InterpreterScheduler(state.StateName, TransitionParams, GetNormalFrames(offset, (int)scheduler.FrameCount));
+        }
+
+        public void Stop(FrameworkElement target)
+        {
+            if (MoveBehaviorExtension.Schedulers.TryGetValue(target, out var scheduler))
+            {
+                scheduler.Interpreter?.Stop();
+            }
         }
 
         protected override void OnInitialized(EventArgs e)
@@ -168,23 +233,16 @@ namespace MinimalisticWPF.MoveBehavior
         {
             base.OnVisualChildrenChanged(visualAdded, visualRemoved);
 
-            if (DesignerProperties.GetIsInDesignMode(this))
+            if (visualAdded is Anchor addedPoint)
             {
-                // 处理新增控件
-                if (visualAdded is Anchor addedPoint)
-                {
-                    addedPoint.Foreground = AnchorBrush;
-                    HookPositionChanges(addedPoint);
-                }
-
-                // 处理移除控件
-                if (visualRemoved is Anchor removedPoint)
-                {
-                    UnhookPositionChanges(removedPoint);
-                }
+                addedPoint.Foreground = AnchorBrush;
+                HookPositionChanges(addedPoint);
             }
 
-            InvalidateVisual();
+            if (visualRemoved is Anchor removedPoint)
+            {
+                UnhookPositionChanges(removedPoint);
+            }
         }
 
         private void DrawPolygon(DrawingContext dc)
@@ -204,8 +262,7 @@ namespace MinimalisticWPF.MoveBehavior
             geometry.Figures.Add(figure);
 
             // 绘制多边形
-            var pen = new Pen(Brushes.Cyan, 1);
-            dc.DrawGeometry(null, pen, geometry);
+            dc.DrawGeometry(null, DrawPen, geometry);
         }
 
         private List<Point> GetControlPoints()
