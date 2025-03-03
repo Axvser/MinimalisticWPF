@@ -10,14 +10,6 @@ using System.Windows.Media;
 
 namespace MinimalisticWPF.MoveBehavior
 {
-    public enum RenderTimes
-    {
-        DesignTime,
-        RunTime,
-        AnyTime,
-        None
-    }
-
     public class BezierMove : Canvas, IMoveMeta, IExecutableMove
     {
         public BezierMove()
@@ -29,6 +21,10 @@ namespace MinimalisticWPF.MoveBehavior
                 (RenderTimes.AnyTime, _) => Visibility.Visible,
                 _ => Visibility.Collapsed,
             };
+            foreach (Anchor anchor in Children)
+            {
+                anchor.Foreground = AnchorBrush;
+            }
         }
 
         public RenderTimes RenderTime

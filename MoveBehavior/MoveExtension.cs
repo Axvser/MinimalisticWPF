@@ -9,6 +9,14 @@ using System.Windows;
 
 namespace MinimalisticWPF.MoveBehavior
 {
+    public enum RenderTimes
+    {
+        DesignTime,
+        RunTime,
+        AnyTime,
+        None
+    }
+
     public static class MoveBehaviorExtension
     {
         internal static PropertyInfo RenderTransformPropertyInfo = typeof(UIElement).GetProperty("RenderTransform") ?? throw new ArgumentNullException("Can not get RenderTransform PropertyInfo");

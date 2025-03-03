@@ -22,6 +22,10 @@ namespace MinimalisticWPF.MoveBehavior
                 (RenderTimes.AnyTime, _) => Visibility.Visible,
                 _ => Visibility.Collapsed,
             };
+            foreach(Anchor anchor in Children)
+            {
+                anchor.Foreground = AnchorBrush;
+            }
         }
 
         public bool IsClosed
