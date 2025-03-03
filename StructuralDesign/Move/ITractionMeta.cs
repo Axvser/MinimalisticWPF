@@ -8,7 +8,7 @@ using System.Windows;
 
 namespace MinimalisticWPF.StructuralDesign.Move
 {
-    public interface ITractionMeta
+    public interface IMoveMeta
     {
         public int Accuracy { get; set; }
         public List<Point> Anchors { get; }

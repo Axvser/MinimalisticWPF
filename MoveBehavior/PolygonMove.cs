@@ -1,26 +1,19 @@
 ﻿using MinimalisticWPF.StructuralDesign.Move;
 using MinimalisticWPF.TransitionSystem;
 using MinimalisticWPF.TransitionSystem.Basic;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Documents;
 using System.Windows.Media;
 
 namespace MinimalisticWPF.MoveBehavior
 {
-    public enum RenderTimes
+    public class PolygonMove : Canvas, IMoveMeta, IExecutableMove
     {
-        DesignTime,
-        RunTime,
-        AnyTime,
-        None
-    }
-
-    public class BezierMove : Canvas, IMoveMeta, IExecutableMove
-    {
-        public BezierMove()
+        public PolygonMove()
         {
             Visibility = (RenderTime, DesignerProperties.GetIsInDesignMode(this)) switch
             {
@@ -31,6 +24,24 @@ namespace MinimalisticWPF.MoveBehavior
             };
         }
 
+        public bool IsClosed
+        {
+            get { return (bool)GetValue(IsClosedProperty); }
+            set { SetValue(IsClosedProperty, value); }
+        }
+        public static readonly DependencyProperty IsClosedProperty =
+            DependencyProperty.Register
+            ("IsClosed",
+                typeof(bool),
+                typeof(PolygonMove),
+                new PropertyMetadata(false, (dp, e) =>
+                {
+                    if(dp is PolygonMove pm)
+                    {
+                        pm.InvalidateVisual();
+                    }
+                }));
+
         public RenderTimes RenderTime
         {
             get { return (RenderTimes)GetValue(RenderTimeProperty); }
@@ -40,12 +51,12 @@ namespace MinimalisticWPF.MoveBehavior
             DependencyProperty.Register
             ("RenderTime",
                 typeof(RenderTimes),
-                typeof(BezierMove),
+                typeof(PolygonMove),
                 new PropertyMetadata(RenderTimes.DesignTime, (dp, e) =>
                 {
-                    if (dp is BezierMove bm)
+                    if (dp is PolygonMove pm)
                     {
-                        bm.Visibility = ((RenderTimes)e.NewValue, DesignerProperties.GetIsInDesignMode(bm)) switch
+                        pm.Visibility = ((RenderTimes)e.NewValue, DesignerProperties.GetIsInDesignMode(pm)) switch
                         {
                             (RenderTimes.RunTime, false) => Visibility.Visible,
                             (RenderTimes.DesignTime, true) => Visibility.Visible,
@@ -64,16 +75,16 @@ namespace MinimalisticWPF.MoveBehavior
             DependencyProperty.Register
             ("AnchorBrush",
                 typeof(Brush),
-                typeof(BezierMove),
+                typeof(PolygonMove),
                 new PropertyMetadata(Brushes.White, (dp, e) =>
                 {
-                    if (dp is BezierMove bm)
+                    if (dp is PolygonMove pm)
                     {
-                        foreach (Anchor child in bm.Children)
+                        foreach (Anchor child in pm.Children)
                         {
                             child.Foreground = (Brush)e.NewValue;
                         }
-                        bm.InvalidateVisual();
+                        pm.InvalidateVisual();
                     }
                 }));
 
@@ -86,17 +97,17 @@ namespace MinimalisticWPF.MoveBehavior
             DependencyProperty.Register
             ("AnchorSize",
                 typeof(double),
-                typeof(BezierMove),
+                typeof(PolygonMove),
                 new PropertyMetadata(0.0, (dp, e) =>
                 {
-                    if (dp is BezierMove bm)
+                    if (dp is PolygonMove pm)
                     {
-                        foreach (Anchor child in bm.Children)
+                        foreach (Anchor child in pm.Children)
                         {
                             child.Width = (double)e.NewValue;
                             child.Height = child.Width;
                         }
-                        bm.InvalidateVisual();
+                        pm.InvalidateVisual();
                     }
                 }));
 
@@ -109,16 +120,16 @@ namespace MinimalisticWPF.MoveBehavior
             DependencyProperty.Register
             ("Accuracy",
                 typeof(int),
-                typeof(BezierMove),
+                typeof(PolygonMove),
                 new PropertyMetadata(99, (dp, e) =>
                 {
-                    if (dp is BezierMove bm)
+                    if (dp is PolygonMove pm)
                     {
-                        bm.InvalidateVisual();
+                        pm.InvalidateVisual();
                     }
                 }));
 
-        public List<Point> Anchors => BezierCurve.Generate(Accuracy, GetControlPoints());
+        public List<Point> Anchors => GetControlPoints();
 
         public TransitionParams TransitionParams { get; set; } = new()
         {
@@ -128,13 +139,13 @@ namespace MinimalisticWPF.MoveBehavior
 
         public void Start(FrameworkElement target)
         {
-            var offest = new Point(target.ActualWidth / 2, target.ActualHeight / 2);
+            var offset = new Point(target.ActualWidth / 2, target.ActualHeight / 2);
             var scheduler = TransitionScheduler.CreateUniqueUnit(target);
-            var state = new State() { StateName = "beziermovestate" };
+            var state = new State() { StateName = "polygonmovestate" };
             state.AddProperty(MoveBehaviorExtension.RenderTransformPropertyInfo.Name, null);
             scheduler.States.Add(state);
             scheduler.TransitionParams = TransitionParams;
-            scheduler.InterpreterScheduler(state.StateName, TransitionParams, GetNormalFrames(offest, (int)scheduler.FrameCount));
+            scheduler.InterpreterScheduler(state.StateName, TransitionParams, GetNormalFrames(offset, (int)scheduler.FrameCount));
         }
 
         protected override void OnInitialized(EventArgs e)
@@ -146,7 +157,7 @@ namespace MinimalisticWPF.MoveBehavior
         protected override void OnRender(DrawingContext dc)
         {
             base.OnRender(dc);
-            DrawBezierCurve(dc);
+            DrawPolygon(dc);
         }
 
         protected override void OnVisualChildrenChanged(DependencyObject visualAdded, DependencyObject visualRemoved)
@@ -172,25 +183,23 @@ namespace MinimalisticWPF.MoveBehavior
             InvalidateVisual();
         }
 
-        private void DrawBezierCurve(DrawingContext dc)
+        private void DrawPolygon(DrawingContext dc)
         {
-            // 获取所有锚点坐标（设计时/运行时兼容）
+            // 获取所有锚点坐标
             var points = GetControlPoints();
             if (points.Count < 2) return;
 
-            // 生成贝塞尔曲线
-            var curve = BezierCurve.Generate(Accuracy, points);
-
             // 创建路径几何
             var geometry = new PathGeometry();
-            var figure = new PathFigure { StartPoint = curve[0] };
-            foreach (var point in curve.Skip(1))
+            var figure = new PathFigure { StartPoint = points[0] };
+            foreach (var point in points.Skip(1))
             {
                 figure.Segments.Add(new LineSegment(point, true));
             }
+            figure.IsClosed = IsClosed;
             geometry.Figures.Add(figure);
 
-            // 绘制曲线
+            // 绘制多边形
             var pen = new Pen(Brushes.Cyan, 1);
             dc.DrawGeometry(null, pen, geometry);
         }
@@ -252,16 +261,34 @@ namespace MinimalisticWPF.MoveBehavior
             InvalidateVisual();
         }
 
-        private List<List<Tuple<PropertyInfo, List<object?>>>> GetNormalFrames(Point offest, int framecount)
+        private List<List<Tuple<PropertyInfo, List<object?>>>> GetNormalFrames(Point offset, int frameCount)
         {
-            if (framecount < 2) framecount = 2;
+            if (frameCount < 2) frameCount = 2;
             List<List<Tuple<PropertyInfo, List<object?>>>> result = [[]];
 
-            Accuracy = framecount - 1;
+            // 计算路径上的点
+            var points = GetControlPoints();
+            if (points.Count < 2) return result;
 
-            List<object?> frames = Anchors.Select(a => (object?)(new TranslateTransform(a.X - offest.X, a.Y - offest.Y))).ToList();
+            // 计算每一帧的位置
+            List<object?> frames = new List<object?>();
+            for (int i = 0; i < frameCount; i++)
+            {
+                double t = (double)i / (frameCount - 1);
+                int segmentIndex = (int)(t * (points.Count - 1));
+                double segmentT = t * (points.Count - 1) - segmentIndex;
+
+                Point p1 = points[segmentIndex];
+                Point p2 = points[(segmentIndex + 1) % points.Count];
+                Point interpolatedPoint = new Point(
+                    p1.X + segmentT * (p2.X - p1.X),
+                    p1.Y + segmentT * (p2.Y - p1.Y)
+                );
+
+                frames.Add(new TranslateTransform(interpolatedPoint.X - offset.X, interpolatedPoint.Y - offset.Y));
+            }
+
             result[0].Add(Tuple.Create<PropertyInfo, List<object?>>(MoveBehaviorExtension.RenderTransformPropertyInfo, frames));
-
             return result;
         }
     }

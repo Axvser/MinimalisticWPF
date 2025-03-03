@@ -7,8 +7,8 @@ using System.Windows;
 
 namespace MinimalisticWPF.StructuralDesign.Move
 {
-    public interface IExecutableTraction
+    public interface IExecutableMove
     {
-        public void Tractive(FrameworkElement target);
+        public void Start(FrameworkElement target);
     }
 }

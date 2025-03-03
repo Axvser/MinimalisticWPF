@@ -44,7 +44,7 @@ namespace MinimalisticWPF.MoveBehavior
             DependencyPropertyChangedEventArgs e)
         {
             // 通知父画布重绘
-            if (d is Anchor anchor && anchor.Parent is BezierMove canvas)
+            if (d is Anchor anchor && anchor.Parent is Canvas canvas)
             {
                 canvas.InvalidateVisual();
             }
@@ -52,7 +52,7 @@ namespace MinimalisticWPF.MoveBehavior
 
         private void Thumb_DragDelta(object sender, DragDeltaEventArgs e)
         {
-            if (Parent is BezierMove canvas)
+            if (Parent is Canvas canvas)
             {
                 // 更新坐标
                 Canvas.SetLeft(this, Canvas.GetLeft(this) + e.HorizontalChange);
@@ -77,7 +77,7 @@ namespace MinimalisticWPF.MoveBehavior
                     e.Property == HeightProperty)
                 {
                     // 通知父画布更新
-                    if (Parent is BezierMove canvas)
+                    if (Parent is Canvas canvas)
                     {
                         canvas.InvalidateVisual();
                     }

@@ -15,8 +15,8 @@
     <Thumb.Template>
         <ControlTemplate>
             <Grid Background="{TemplateBinding Background}">
-                <Border Background="{TemplateBinding Foreground}" Width="1"/>
-                <Border Background="{TemplateBinding Foreground}" Height="1"/>
+                <Border Background="{TemplateBinding Foreground}" Width="0.5"/>
+                <Border Background="{TemplateBinding Foreground}" Height="0.5"/>
             </Grid>
         </ControlTemplate>
     </Thumb.Template>
