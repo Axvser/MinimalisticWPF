@@ -25,6 +25,24 @@ namespace MinimalisticWPF.MoveBehavior
             };
         }
 
+        public double Duration
+        {
+            get { return (double)GetValue(DurationProperty); }
+            set { SetValue(DurationProperty, value); }
+        }
+        public static readonly DependencyProperty DurationProperty =
+            DependencyProperty.Register
+            ("Duration",
+                typeof(double),
+                typeof(PolygonMove),
+                new PropertyMetadata(5.0, (dp, e) =>
+                {
+                    if (dp is PolygonMove pm)
+                    {
+                        pm.TransitionParams.Duration = (double)e.NewValue;
+                    }
+                }));
+
         public Brush DrawBrush
         {
             get { return (Brush)GetValue(DrawBrushProperty); }

@@ -39,14 +39,13 @@ namespace MinimalisticWPF.MoveBehavior
             foreach (var move in moves)
             {
 #if NET
-                double FrameCount = Math.Clamp(transitionParams.Duration * Math.Clamp(transitionParams.FrameRate, 1, TransitionScheduler.MaxFrameRate), 1, int.MaxValue);
+                double FrameCount = Math.Clamp(move.TransitionParams.Duration * Math.Clamp(move.TransitionParams.FrameRate, 1, TransitionScheduler.MaxFrameRate), 1, int.MaxValue);
 #endif
 
 #if NETFRAMEWORK
-                double FrameCount = (transitionParams.Duration * transitionParams.FrameRate.Clamp(1, TransitionScheduler.MaxFrameRate)).Clamp(1, int.MaxValue);
+                double FrameCount = (move.TransitionParams.Duration * move.TransitionParams.FrameRate.Clamp(1, TransitionScheduler.MaxFrameRate)).Clamp(1, int.MaxValue);
 #endif
-                duration += transitionParams.Duration;
-                move.TransitionParams = transitionParams;
+                duration += move.TransitionParams.Duration;
                 foreach (var frame in move.GetNormalFrames(offest, (int)FrameCount)[0][0].Item2)
                 {
                     frames.Add(frame);
