@@ -12,7 +12,7 @@ using System.Windows.Media;
 
 namespace MinimalisticWPF.MoveBehavior
 {
-    public class PolygonMove : Canvas, IMoveMeta, IExecutableMove
+    public class PolygonMove : Canvas, IMoveMeta
     {
         public PolygonMove()
         {
@@ -192,29 +192,35 @@ namespace MinimalisticWPF.MoveBehavior
             Duration = 5
         };
 
-        public void Start(FrameworkElement target)
+        public List<List<Tuple<PropertyInfo, List<object?>>>> GetNormalFrames(Point offset, int frameCount)
         {
-            var offset = new Point(target.ActualWidth / 2, target.ActualHeight / 2);
-            var search = MoveBehaviorExtension.Schedulers.TryGetValue(target, out var value);
-            var scheduler = search ? value : TransitionScheduler.CreateIndependentUnit(target);
-            if (scheduler is null) throw new ArgumentException("Failed to create TransitionScheduler");
-            if (!search)
-            {
-                MoveBehaviorExtension.Schedulers.TryAdd(target, scheduler);
-            }
-            var state = new State() { StateName = "polygonmovestate" };
-            state.AddProperty(MoveBehaviorExtension.RenderTransformPropertyInfo.Name, null);
-            scheduler.States.Add(state);
-            scheduler.TransitionParams = TransitionParams;
-            scheduler.InterpreterScheduler(state.StateName, TransitionParams, GetNormalFrames(offset, (int)scheduler.FrameCount));
-        }
+            if (frameCount < 2) frameCount = 2;
+            List<List<Tuple<PropertyInfo, List<object?>>>> result = [[]];
 
-        public void Stop(FrameworkElement target)
-        {
-            if (MoveBehaviorExtension.Schedulers.TryGetValue(target, out var scheduler))
+            // 计算路径上的点
+            var points = GetControlPoints();
+            if (points.Count < 2) return result;
+
+            // 计算每一帧的位置
+            List<object?> frames = new List<object?>();
+            for (int i = 0; i < frameCount; i++)
             {
-                scheduler.Interpreter?.Stop();
+                double t = (double)i / (frameCount - 1);
+                int segmentIndex = (int)(t * (points.Count - 1));
+                double segmentT = t * (points.Count - 1) - segmentIndex;
+
+                Point p1 = points[segmentIndex];
+                Point p2 = points[(segmentIndex + 1) % points.Count];
+                Point interpolatedPoint = new Point(
+                    p1.X + segmentT * (p2.X - p1.X),
+                    p1.Y + segmentT * (p2.Y - p1.Y)
+                );
+
+                frames.Add(new TranslateTransform(interpolatedPoint.X - offset.X, interpolatedPoint.Y - offset.Y));
             }
+
+            result[0].Add(Tuple.Create<PropertyInfo, List<object?>>(MoveBehaviorExtension.RenderTransformPropertyInfo, frames));
+            return result;
         }
 
         protected override void OnInitialized(EventArgs e)
@@ -243,6 +249,8 @@ namespace MinimalisticWPF.MoveBehavior
             {
                 UnhookPositionChanges(removedPoint);
             }
+
+            InvalidateVisual();
         }
 
         private void DrawPolygon(DrawingContext dc)
@@ -320,37 +328,6 @@ namespace MinimalisticWPF.MoveBehavior
         {
             // 强制重绘画布
             InvalidateVisual();
-        }
-
-        private List<List<Tuple<PropertyInfo, List<object?>>>> GetNormalFrames(Point offset, int frameCount)
-        {
-            if (frameCount < 2) frameCount = 2;
-            List<List<Tuple<PropertyInfo, List<object?>>>> result = [[]];
-
-            // 计算路径上的点
-            var points = GetControlPoints();
-            if (points.Count < 2) return result;
-
-            // 计算每一帧的位置
-            List<object?> frames = new List<object?>();
-            for (int i = 0; i < frameCount; i++)
-            {
-                double t = (double)i / (frameCount - 1);
-                int segmentIndex = (int)(t * (points.Count - 1));
-                double segmentT = t * (points.Count - 1) - segmentIndex;
-
-                Point p1 = points[segmentIndex];
-                Point p2 = points[(segmentIndex + 1) % points.Count];
-                Point interpolatedPoint = new Point(
-                    p1.X + segmentT * (p2.X - p1.X),
-                    p1.Y + segmentT * (p2.Y - p1.Y)
-                );
-
-                frames.Add(new TranslateTransform(interpolatedPoint.X - offset.X, interpolatedPoint.Y - offset.Y));
-            }
-
-            result[0].Add(Tuple.Create<PropertyInfo, List<object?>>(MoveBehaviorExtension.RenderTransformPropertyInfo, frames));
-            return result;
         }
     }
 }

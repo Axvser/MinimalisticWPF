@@ -24,7 +24,7 @@ namespace MinimalisticWPF
         private int b = 0;
         private int a = 255;
 
-#if NET5_0_OR_GREATER
+#if NET
         public int R
         {
             get => r;
@@ -46,7 +46,7 @@ namespace MinimalisticWPF
             set => a = Math.Clamp(value, 0, 255);
         }
 #endif
-#if NET471_OR_GREATER
+#if NETFRAMEWORK
         public int R
         {
             get => r;
@@ -101,14 +101,14 @@ namespace MinimalisticWPF
             if (obj is string text) return Equals(FromString(text));
             return false;
         }
-#if NET5_0_OR_GREATER
+#if NET
         public override int GetHashCode()
         {
             return HashCode.Combine(R, G, B, A);
         }
 #endif
 
-#if NET471_OR_GREATER
+#if NETFRAMEWORK
         public override int GetHashCode()
         {
             return HashCodeExtensions.Combine(R, G, B, A);

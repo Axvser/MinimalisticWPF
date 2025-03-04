@@ -11,7 +11,7 @@ namespace MinimalisticWPF.TransitionSystem
     public sealed class TransitionScheduler
     {
 
-#if NET5_0_OR_GREATER
+#if NET
         public static int MaxFrameRate
         {
             get => _maxFR;
@@ -21,7 +21,7 @@ namespace MinimalisticWPF.TransitionSystem
             }
         }
 #endif
-#if NET471_OR_GREATER
+#if NETFRAMEWORK
         public static int MaxFrameRate
         {
             get => _maxFR;
@@ -146,12 +146,12 @@ namespace MinimalisticWPF.TransitionSystem
         internal Type Type { get; set; }
         internal StateCollection States { get; set; } = [];
 
-#if NET5_0_OR_GREATER
+#if NET
         internal double DeltaTime { get => 1000.0 / Math.Clamp(TransitionParams.FrameRate, 1, MaxFrameRate); }
         internal double FrameCount { get => Math.Clamp(TransitionParams.Duration * Math.Clamp(TransitionParams.FrameRate, 1, MaxFrameRate), 1, int.MaxValue); }
 #endif
 
-#if NET471_OR_GREATER
+#if NETFRAMEWORK
         internal double DeltaTime { get => 1000.0 / TransitionParams.FrameRate.Clamp(1, MaxFrameRate); }
         internal double FrameCount { get => (TransitionParams.Duration * TransitionParams.FrameRate.Clamp(1, MaxFrameRate)).Clamp(1, int.MaxValue); }
 #endif
@@ -176,10 +176,10 @@ namespace MinimalisticWPF.TransitionSystem
             CurrentState = null;
             Interpreter?.Stop();
             Interpreter = null;
-#if NET5_0_OR_GREATER
+#if NET
             Interpreters.Clear();
 #endif
-#if NET471_OR_GREATER
+#if NETFRAMEWORK
             Interpreters = new();
 #endif
         }

@@ -1,4 +1,4 @@
-﻿#if NET471_OR_GREATER
+﻿#if NETFRAMEWORK
 
 namespace MinimalisticWPF
 {

@@ -1,4 +1,4 @@
-﻿#if NET5_0_OR_GREATER
+﻿#if NET
 
 using MinimalisticWPF.StructuralDesign.Animator;
 using MinimalisticWPF.StructuralDesign.Theme;
@@ -47,7 +47,7 @@ namespace MinimalisticWPF.Theme
         public static void Awake<T>(params T[] targets) where T : IThemeApplied
         {
             Awake();
-#if NET5_0_OR_GREATER
+#if NET
             IsolatedGeneration(targets);
 #endif
         }

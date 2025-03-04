@@ -154,10 +154,10 @@ namespace MinimalisticWPF.TransitionSystem
             List<int> result = [];
             if (TransitionParams.Acceleration == 0) return result;
 
-#if NET5_0_OR_GREATER
+#if NET
             var acc = Math.Clamp(TransitionParams.Acceleration, -1, 1);
 #endif
-#if NET471_OR_GREATER
+#if NETFRAMEWORK
             var acc = TransitionParams.Acceleration.Clamp(-1, 1);
 #endif
             var start = DeltaTime * (1 + acc);

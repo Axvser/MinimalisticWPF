@@ -7,7 +7,7 @@ namespace MinimalisticWPF.StructuralDesign.Animator
     {
         public ITransitionMeta Merge(ICollection<ITransitionMeta> metas);
 
-#if NET5_0_OR_GREATER
+#if NET
         internal static ITransitionMeta MergeMetas(ICollection<ITransitionMeta> metas)
         {
             var state = new State()

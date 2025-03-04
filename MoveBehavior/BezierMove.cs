@@ -4,6 +4,7 @@ using MinimalisticWPF.TransitionSystem.Basic;
 using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -11,7 +12,7 @@ using System.Windows.Media;
 
 namespace MinimalisticWPF.MoveBehavior
 {
-    public class BezierMove : Canvas, IMoveMeta, IExecutableMove
+    public class BezierMove : Canvas, IMoveMeta
     {
         public BezierMove()
         {
@@ -173,29 +174,17 @@ namespace MinimalisticWPF.MoveBehavior
             Duration = 5
         };
 
-        public void Start(FrameworkElement target)
+        public List<List<Tuple<PropertyInfo, List<object?>>>> GetNormalFrames(Point offest, int framecount)
         {
-            var offest = new Point(target.ActualWidth / 2, target.ActualHeight / 2);
-            var search = MoveBehaviorExtension.Schedulers.TryGetValue(target, out var value);
-            var scheduler = search ? value : TransitionScheduler.CreateIndependentUnit(target);
-            if (scheduler is null) throw new ArgumentException("Failed to create TransitionScheduler");
-            if (!search)
-            {
-                MoveBehaviorExtension.Schedulers.TryAdd(target, scheduler);
-            }
-            var state = new State() { StateName = "beziermovestate" };
-            state.AddProperty(MoveBehaviorExtension.RenderTransformPropertyInfo.Name, null);
-            scheduler.States.Add(state);
-            scheduler.TransitionParams = TransitionParams;
-            scheduler.InterpreterScheduler(state.StateName, TransitionParams, GetNormalFrames(offest, (int)scheduler.FrameCount));
-        }
+            if (framecount < 2) framecount = 2;
+            List<List<Tuple<PropertyInfo, List<object?>>>> result = [[]];
 
-        public void Stop(FrameworkElement target)
-        {
-            if(MoveBehaviorExtension.Schedulers.TryGetValue(target, out var scheduler))
-            {
-                scheduler.Interpreter?.Stop();
-            }
+            Accuracy = framecount - 1;
+
+            List<object?> frames = Anchors.Select(a => (object?)(new TranslateTransform(a.X - offest.X, a.Y - offest.Y))).ToList();
+            result[0].Add(Tuple.Create<PropertyInfo, List<object?>>(MoveBehaviorExtension.RenderTransformPropertyInfo, frames));
+
+            return result;
         }
 
         protected override void OnInitialized(EventArgs e)
@@ -224,6 +213,8 @@ namespace MinimalisticWPF.MoveBehavior
             {
                 UnhookPositionChanges(removedPoint);
             }
+
+            InvalidateVisual();
         }
 
         private void DrawBezierCurve(DrawingContext dc)
@@ -245,8 +236,7 @@ namespace MinimalisticWPF.MoveBehavior
             geometry.Figures.Add(figure);
 
             // 绘制曲线
-            var pen = new Pen(Brushes.Cyan, 1);
-            dc.DrawGeometry(null, pen, geometry);
+            dc.DrawGeometry(null, DrawPen, geometry);
         }
 
         private List<Point> GetControlPoints()
@@ -304,19 +294,6 @@ namespace MinimalisticWPF.MoveBehavior
         {
             // 强制重绘画布
             InvalidateVisual();
-        }
-
-        private List<List<Tuple<PropertyInfo, List<object?>>>> GetNormalFrames(Point offest, int framecount)
-        {
-            if (framecount < 2) framecount = 2;
-            List<List<Tuple<PropertyInfo, List<object?>>>> result = [[]];
-
-            Accuracy = framecount - 1;
-
-            List<object?> frames = Anchors.Select(a => (object?)(new TranslateTransform(a.X - offest.X, a.Y - offest.Y))).ToList();
-            result[0].Add(Tuple.Create<PropertyInfo, List<object?>>(MoveBehaviorExtension.RenderTransformPropertyInfo, frames));
-
-            return result;
-        }
+        }       
     }
 }

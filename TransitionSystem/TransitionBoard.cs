@@ -97,10 +97,10 @@ namespace MinimalisticWPF.TransitionSystem
         }
         public ITransitionMeta Merge(ICollection<ITransitionMeta> metas)
         {
-#if NET5_0_OR_GREATER
+#if NET
             var result = IMergeableTransition.MergeMetas(metas);
 #endif
-#if NET471_OR_GREATER
+#if NETFRAMEWORK
             var result = MetaMergeExtension.MergeMetas(metas);
 #endif
             PropertyState = result.PropertyState;

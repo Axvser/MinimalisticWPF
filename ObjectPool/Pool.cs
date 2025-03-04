@@ -1,6 +1,4 @@
-﻿#if NET5_0_OR_GREATER
-
-using MinimalisticWPF.StructuralDesign.Pool;
+﻿using MinimalisticWPF.StructuralDesign.Pool;
 using System.Collections.Concurrent;
 
 namespace MinimalisticWPF.ObjectPool
@@ -104,5 +102,3 @@ namespace MinimalisticWPF.ObjectPool
         }
     }
 }
-
-#endif
