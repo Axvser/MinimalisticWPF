@@ -17,9 +17,13 @@ Practice →
 
 ---
  
-- [V4.1.0](#) `Pre` | `net 5` `net framework4.7.1`
+- [V4.1.0](#) `Pre`
   - Use better scheduling decisions for frame update operations.
   - Short-circuit evaluation is used for some logical judgments.
+
+- [V4.2.0](#) `Pre`
+  - The library now allows you to draw a path in XAML using a drag and drop operation, and then you can load a movement that conforms to that path for the control
+  - Some functions are no longer Core
 
 ---
 
@@ -38,9 +42,13 @@ Practice →
     - [Hover](#Hover)
     - [Theme](#Theme)
     - [Dependency Properties](#Dependency)
-  - [Ⅲ Aspect-Oriented Programming](#AOP) `net 5`
-  - [Ⅳ ObjectPool](#ObjectPool) `net 5`
+  - [Ⅲ MoveBehavior](#MoveBehavior) `net 5` `net framework4.7.1`
+    - [Drawing path](#MovePath)
+    - [Follow the path](#ApplyMove)
+    - [Multiple path](#MultipleMove)
 - ### Non-Core 
+  - [Aspect-Oriented Programming](#AOP) `net 5`
+  - [ObjectPool](#ObjectPool) `net 5`
   - [StringValidator](#StringValidator) `net 5` `net framework4.7.1`
   - [RGB](RGB) `net 5` `net framework4.7.1`
   - [Custom Theme](#CustomTheme) `net 5`
@@ -396,6 +404,58 @@ Here are some options
 | LateUpdate    | Action        | Occurs after each update tick of the transition.        |
 | Completed     | Action        | Occurs when the transition completes.                   |
 
+
+---
+
+## MoveBehavior
+
+- ### MovePath
+
+(1) using related drawing elements
+  
+```xml
+        xmlns:mn="clr-namespace:MinimalisticWPF.MoveBehavior;assembly=MinimalisticWPF"
+```
+
+(2) create Bezier curve traces or polyline traces
+
+```xml
+            <mn:BezierMove x:Name="move1" Height="450" Width="800"
+                            DrawBrush="White" DrawThickness="1" 
+                            AnchorSize="30" AnchorBrush="White"
+                            RenderTime="AnyTime"
+                            Duration="2">
+                <mn:Anchor Canvas.Left="314" Canvas.Top="115" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                <mn:Anchor Canvas.Left="380" Canvas.Top="29" HorizontalAlignment="Center" VerticalAlignment="Top"/>
+                <mn:Anchor Canvas.Left="370" Canvas.Top="314" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+            </mn:BezierMove>
+
+            <mn:PolygonMove x:Name="move2" Height="450" Width="800" 
+                            DrawBrush="Cyan" DrawThickness="1" 
+                            AnchorSize="30" AnchorBrush="Lime"
+                            RenderTime="AnyTime"
+                            Duration="7">
+                <mn:Anchor Canvas.Left="370" Canvas.Top="314" HorizontalAlignment="Center" VerticalAlignment="Top"/>
+                <mn:Anchor Canvas.Left="534" Canvas.Top="94" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+                <mn:Anchor Canvas.Left="746" Canvas.Top="263" HorizontalAlignment="Left" VerticalAlignment="Top"/>
+            </mn:PolygonMove>
+```
+
+- ### ApplyMove
+
+The library adjusts the RenderTransform of the control to achieve the movement effect. You need to make sure that the control is inside the Canvas and that the control is at zero
+
+```xml
+control.BeginMove(move1);
+```
+
+- ### MultipleMove
+
+These moves can be concatenated, but note that the transition parameters do not affect the duration of each path
+
+```xml
+control.BeginMove(Move.Create(control, TransitionParams.Move, [move1, move2]));
+```
 
 ---
 
