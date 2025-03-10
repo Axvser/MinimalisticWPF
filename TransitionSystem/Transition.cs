@@ -1,7 +1,10 @@
 ﻿using MinimalisticWPF.StructuralDesign.Animator;
+using System.Reflection;
 
 namespace MinimalisticWPF.TransitionSystem
 {
+    public delegate List<object?> InterpolationHandler(object? start, object? end, int steps);
+
     public static class Transition
     {
         private static string _tempName = "temp";

@@ -9,7 +9,8 @@ namespace MinimalisticWPF.TransitionSystem.Basic
         internal State() { }
 
         public string StateName { get; internal set; } = string.Empty;
-        public ConcurrentDictionary<string, object?> Values { get; internal set; } = new ConcurrentDictionary<string, object?>();
+        public ConcurrentDictionary<string, object?> Values { get; internal set; } = new();
+        public ConcurrentDictionary<string, InterpolationHandler> Calculators { get; internal set; } = new();
         public TransitionParams TransitionParams { get; set; } = new();
         public State PropertyState
         {
@@ -33,6 +34,26 @@ namespace MinimalisticWPF.TransitionSystem.Basic
                 }
 
                 return Values[propertyName];
+            }
+        }
+        public void Add(string propertyName, object? value)
+        {
+            AddProperty(propertyName, value);
+        }
+        public void Add(string propertyName, object? value, InterpolationHandler calculator)
+        {
+            AddProperty(propertyName, value);
+            AddCalculator(propertyName, calculator);
+        }
+        public void AddCalculator(string propertyName, InterpolationHandler value)
+        {
+            if (Calculators.TryGetValue(propertyName, out var ori))
+            {
+                Calculators.TryUpdate(propertyName, value, ori);
+            }
+            else
+            {
+                Calculators.TryAdd(propertyName, value);
             }
         }
         public void AddProperty(string propertyName, object? value)
@@ -63,6 +84,10 @@ namespace MinimalisticWPF.TransitionSystem.Basic
             {
                 AddProperty(values.Key, values.Value);
             }
+            foreach (var calculator in meta.PropertyState.Calculators)
+            {
+                AddCalculator(calculator.Key, calculator.Value);
+            }
             return this;
         }
 
@@ -77,6 +102,11 @@ namespace MinimalisticWPF.TransitionSystem.Basic
             foreach (var kvp in Values)
             {
                 newState.Values[kvp.Key] = kvp.Value;
+            }
+
+            foreach (var kvp in Calculators)
+            {
+                newState.Calculators[kvp.Key] = kvp.Value;
             }
 
             return newState;

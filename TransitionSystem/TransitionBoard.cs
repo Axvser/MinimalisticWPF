@@ -193,12 +193,12 @@ namespace MinimalisticWPF.TransitionSystem
             }
             return this;
         }
-        public TransitionBoard<T> SetProperty(Expression<Func<T, Transform>> propertyLambda, params Transform[] newValue)
+        public TransitionBoard<T> SetProperty(Expression<Func<T, Transform>> propertyLambda, ICollection<Transform> newValue)
         {
             if (propertyLambda.Body is MemberExpression propertyExpr)
             {
                 var property = propertyExpr.Member as PropertyInfo;
-                if (property == null || !property.CanRead || !property.CanWrite || property.PropertyType != typeof(Transform) || newValue.Length == 0)
+                if (property == null || !property.CanRead || !property.CanWrite || property.PropertyType != typeof(Transform))
                 {
                     return this;
                 }
@@ -261,6 +261,109 @@ namespace MinimalisticWPF.TransitionSystem
             }
             return this;
         }
+
+        public TransitionBoard<T> SetProperty(Expression<Func<T, double>> propertyLambda, double newValue, InterpolationHandler calculator)
+        {
+            if (propertyLambda.Body is MemberExpression propertyExpr)
+            {
+                var property = propertyExpr.Member as PropertyInfo;
+                if (property == null || !property.CanRead || !property.CanWrite || property.PropertyType != typeof(double))
+                {
+                    return this;
+                }
+                PropertyState.AddProperty(property.Name, (object?)newValue);
+                PropertyState.AddCalculator(property.Name, calculator);
+            }
+            return this;
+        }
+        public TransitionBoard<T> SetProperty(Expression<Func<T, Brush>> propertyLambda, Brush newValue, InterpolationHandler calculator)
+        {
+            if (propertyLambda.Body is MemberExpression propertyExpr)
+            {
+                var property = propertyExpr.Member as PropertyInfo;
+                if (property == null || !property.CanRead || !property.CanWrite || property.PropertyType != typeof(Brush))
+                {
+                    return this;
+                }
+                PropertyState.AddProperty(property.Name, (object?)newValue);
+                PropertyState.AddCalculator(property.Name, calculator);
+            }
+            return this;
+        }
+        public TransitionBoard<T> SetProperty(Expression<Func<T, Transform>> propertyLambda, ICollection<Transform> newValue, InterpolationHandler calculator)
+        {
+            if (propertyLambda.Body is MemberExpression propertyExpr)
+            {
+                var property = propertyExpr.Member as PropertyInfo;
+                if (property == null || !property.CanRead || !property.CanWrite || property.PropertyType != typeof(Transform))
+                {
+                    return this;
+                }
+                var value = newValue.Select(t => t.Value).Aggregate(Matrix.Identity, (acc, matrix) => acc * matrix);
+                var interpolatedMatrixStr = $"{value.M11},{value.M12},{value.M21},{value.M22},{value.OffsetX},{value.OffsetY}";
+                var result = Transform.Parse(interpolatedMatrixStr);
+                PropertyState.AddProperty(property.Name, (object?)result);
+                PropertyState.AddCalculator(property.Name, calculator);
+            }
+            return this;
+        }
+        public TransitionBoard<T> SetProperty(Expression<Func<T, Point>> propertyLambda, Point newValue, InterpolationHandler calculator)
+        {
+            if (propertyLambda.Body is MemberExpression propertyExpr)
+            {
+                var property = propertyExpr.Member as PropertyInfo;
+                if (property == null || !property.CanRead || !property.CanWrite || property.PropertyType != typeof(Point))
+                {
+                    return this;
+                }
+                PropertyState.AddProperty(property.Name, (object?)newValue);
+                PropertyState.AddCalculator(property.Name, calculator);
+            }
+            return this;
+        }
+        public TransitionBoard<T> SetProperty(Expression<Func<T, CornerRadius>> propertyLambda, CornerRadius newValue, InterpolationHandler calculator)
+        {
+            if (propertyLambda.Body is MemberExpression propertyExpr)
+            {
+                var property = propertyExpr.Member as PropertyInfo;
+                if (property == null || !property.CanRead || !property.CanWrite || property.PropertyType != typeof(CornerRadius))
+                {
+                    return this;
+                }
+                PropertyState.AddProperty(property.Name, (object?)newValue);
+                PropertyState.AddCalculator(property.Name, calculator);
+            }
+            return this;
+        }
+        public TransitionBoard<T> SetProperty(Expression<Func<T, Thickness>> propertyLambda, Thickness newValue, InterpolationHandler calculator)
+        {
+            if (propertyLambda.Body is MemberExpression propertyExpr)
+            {
+                var property = propertyExpr.Member as PropertyInfo;
+                if (property == null || !property.CanRead || !property.CanWrite || property.PropertyType != typeof(Thickness))
+                {
+                    return this;
+                }
+                PropertyState.AddProperty(property.Name, (object?)newValue);
+                PropertyState.AddCalculator(property.Name, calculator);
+            }
+            return this;
+        }
+        public TransitionBoard<T> SetProperty(Expression<Func<T, IInterpolable>> propertyLambda, IInterpolable newValue, InterpolationHandler calculator)
+        {
+            if (propertyLambda.Body is MemberExpression propertyExpr)
+            {
+                var property = propertyExpr.Member as PropertyInfo;
+                if (property == null || !property.CanRead || !property.CanWrite || !typeof(IInterpolable).IsAssignableFrom(property.PropertyType))
+                {
+                    return this;
+                }
+                PropertyState.AddProperty(property.Name, (object?)newValue);
+                PropertyState.AddCalculator(property.Name, calculator);
+            }
+            return this;
+        }
+
         public TransitionBoard<T> SetParams(Action<TransitionParams> modifyParams)
         {
             var temp = new TransitionParams();

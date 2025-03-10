@@ -228,7 +228,7 @@ namespace MinimalisticWPF.TransitionSystem
             {
                 DeltaTime = (int)DeltaTime,
             };
-         
+
             animationInterpreter.FrameSequence = preload ?? ComputingFrames(targetState, this);
             CurrentState = stateName;
             Interpreter = animationInterpreter;
@@ -278,7 +278,7 @@ namespace MinimalisticWPF.TransitionSystem
                         var newValue = state.Values[propertyname];
                         if (currentValue == null || !currentValue.Equals(newValue))
                         {
-                            allFrames.Add(Tuple.Create(propertyinfo, LinearInterpolation.DoubleComputing(currentValue, newValue, FrameCount)));
+                            allFrames.Add(Tuple.Create(propertyinfo, state.Calculators.TryGetValue(propertyname, out var calculator) ? calculator.Invoke(currentValue, newValue, FrameCount) : LinearInterpolation.DoubleComputing(currentValue, newValue, FrameCount)));
                         }
                     }
                 }
@@ -298,7 +298,7 @@ namespace MinimalisticWPF.TransitionSystem
                         var newValue = state.Values[propertyname];
                         if (currentValue == null || !currentValue.Equals(newValue))
                         {
-                            allFrames.Add(Tuple.Create(propertyinfo, LinearInterpolation.BrushComputing(currentValue, newValue, FrameCount)));
+                            allFrames.Add(Tuple.Create(propertyinfo, state.Calculators.TryGetValue(propertyname, out var calculator) ? calculator.Invoke(currentValue, newValue, FrameCount) : LinearInterpolation.BrushComputing(currentValue, newValue, FrameCount)));
                         }
                     }
                 }
@@ -318,7 +318,7 @@ namespace MinimalisticWPF.TransitionSystem
                         var newValue = state.Values[propertyname];
                         if (currentValue == null || !currentValue.Equals(newValue))
                         {
-                            allFrames.Add(Tuple.Create(propertyinfo, LinearInterpolation.TransformComputing(currentValue, newValue, FrameCount)));
+                            allFrames.Add(Tuple.Create(propertyinfo, state.Calculators.TryGetValue(propertyname, out var calculator) ? calculator.Invoke(currentValue, newValue, FrameCount) : LinearInterpolation.TransformComputing(currentValue, newValue, FrameCount)));
                         }
                     }
                 }
@@ -338,7 +338,7 @@ namespace MinimalisticWPF.TransitionSystem
                         var newValue = state.Values[propertyname];
                         if (currentValue == null || !currentValue.Equals(newValue))
                         {
-                            allFrames.Add(Tuple.Create(propertyinfo, LinearInterpolation.PointComputing(currentValue, newValue, FrameCount)));
+                            allFrames.Add(Tuple.Create(propertyinfo, state.Calculators.TryGetValue(propertyname, out var calculator) ? calculator.Invoke(currentValue, newValue, FrameCount) : LinearInterpolation.PointComputing(currentValue, newValue, FrameCount)));
                         }
                     }
                 }
@@ -358,7 +358,7 @@ namespace MinimalisticWPF.TransitionSystem
                         var newValue = state.Values[propertyname];
                         if (currentValue == null || !currentValue.Equals(newValue))
                         {
-                            allFrames.Add(Tuple.Create(propertyinfo, LinearInterpolation.CornerRadiusComputing(currentValue, newValue, FrameCount)));
+                            allFrames.Add(Tuple.Create(propertyinfo, state.Calculators.TryGetValue(propertyname, out var calculator) ? calculator.Invoke(currentValue, newValue, FrameCount) : LinearInterpolation.CornerRadiusComputing(currentValue, newValue, FrameCount)));
                         }
                     }
                 }
@@ -378,7 +378,7 @@ namespace MinimalisticWPF.TransitionSystem
                         var newValue = state.Values[propertyname];
                         if (currentValue == null || !currentValue.Equals(newValue))
                         {
-                            allFrames.Add(Tuple.Create(propertyinfo, LinearInterpolation.ThicknessComputing(currentValue, newValue, FrameCount)));
+                            allFrames.Add(Tuple.Create(propertyinfo, state.Calculators.TryGetValue(propertyname, out var calculator) ? calculator.Invoke(currentValue, newValue, FrameCount) : LinearInterpolation.ThicknessComputing(currentValue, newValue, FrameCount)));
                         }
                     }
                 }
@@ -398,7 +398,7 @@ namespace MinimalisticWPF.TransitionSystem
                         var newValue = state.Values[propertyname];
                         if ((currentValue == null || !currentValue.Equals(newValue)) && currentValue is IInterpolable method)
                         {
-                            allFrames.Add(Tuple.Create(propertyinfo, method.Interpolate(currentValue, newValue, FrameCount)));
+                            allFrames.Add(Tuple.Create(propertyinfo, state.Calculators.TryGetValue(propertyname, out var calculator) ? calculator.Invoke(currentValue, newValue, FrameCount) : method.Interpolate(currentValue, newValue, FrameCount)));
                         }
                     }
                 }
