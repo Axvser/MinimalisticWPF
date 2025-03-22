@@ -1,0 +1,57 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<NoWarn>1573</NoWarn>
+		<NoWarn>1591</NoWarn>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<TargetFrameworks>netframework4.6.2;net5.0-windows</TargetFrameworks>
+		<LangVersion>latest</LangVersion>
+		<Nullable>enable</Nullable>
+		<UseWPF>true</UseWPF>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<Title>MinimalisticWPF</Title>
+		<Copyright></Copyright>
+		<PackageProjectUrl>https://github.com/Axvser/MinimalisticWPF</PackageProjectUrl>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<RepositoryUrl>https://github.com/Axvser/MinimalisticWPF</RepositoryUrl>
+		<NeutralLanguage>zh-CN</NeutralLanguage>
+		<Description>Using C# code to write front-end effects in a WPF project? This sounds crazy, but this library can help you. It not only has a completely independent transition system, but also has support for source code generators of the MVVM design pattern. For back-end developers, this can greatly reduce the learning cost of XAML. And you know, the C# syntax is concise and elegant.</Description>
+		<RepositoryType>git</RepositoryType>
+		<Version>4.5.0-pre</Version>
+		<Authors>Axvser</Authors>
+		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+		<IncludeSymbols>False</IncludeSymbols>
+	</PropertyGroup>
+
+	<!-- .NET Framework specific settings -->
+	<ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
+		<Reference Include="System.Core" />
+		<Reference Include="System.Xml.Linq" />
+		<Reference Include="System.Data.DataSetExtensions" />
+		<Reference Include="Microsoft.CSharp" />
+		<Reference Include="System.Net.Http" />
+	</ItemGroup>
+
+	<!-- .NET 5 specific settings -->
+
+	<ItemGroup>
+		<Resource Include="README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</Resource>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="MinimalisticWPF.Generator" Version="2.6.4" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Resource Include="LICENSE.txt">
+	    <Pack>True</Pack>
+	    <PackagePath>\</PackagePath>
+	  </Resource>
+	</ItemGroup>
+
+</Project>

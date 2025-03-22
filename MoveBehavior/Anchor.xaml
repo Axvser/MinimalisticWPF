@@ -1,0 +1,23 @@
+﻿<Thumb x:Class="MinimalisticWPF.MoveBehavior.Anchor"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:MinimalisticWPF.MoveBehavior"
+             mc:Ignorable="d"
+             Width="20" 
+             Height="20"
+             Background="Transparent"
+             Foreground="White"
+             DragDelta="Thumb_DragDelta"
+             HorizontalAlignment="Center"
+             VerticalAlignment="Center">
+    <Thumb.Template>
+        <ControlTemplate>
+            <Grid Background="{TemplateBinding Background}">
+                <Border Background="{TemplateBinding Foreground}" Width="0.5"/>
+                <Border Background="{TemplateBinding Foreground}" Height="0.5"/>
+            </Grid>
+        </ControlTemplate>
+    </Thumb.Template>
+</Thumb>
