@@ -1,26 +1,20 @@
 ﻿using MinimalisticWPF.StructuralDesign.Animator;
 using MinimalisticWPF.TransitionSystem.Basic;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 
 namespace MinimalisticWPF.ParticleSystem
 {
-    public class ParticleState(Point position, double size, Pen pen) : IInterpolable
+    public sealed class ParticleState(Point position, Pen pen) : IInterpolable
     {
-        public static ParticleState Default { get; } = new ParticleState(new Point(0, 0), 0, new Pen(Brushes.Transparent, 0));
+        public static ParticleState Default { get; } = new ParticleState(new Point(0, 0), new Pen(Brushes.Transparent, 0));
 
         public Point Position { get; set; } = position;
-        public double Size { get; set; } = size;
         public Pen Pen { get; set; } = pen;
 
         public ParticleState Clone()
         {
-            return new ParticleState(new Point(Position.X, Position.Y), Size, new Pen(Pen.Brush.Clone(), Pen.Thickness));
+            return new ParticleState(new Point(Position.X, Position.Y), new Pen(Pen.Brush.Clone(), Pen.Thickness));
         }
 
         public List<object?> Interpolate(object? current, object? target, int steps)
@@ -40,7 +34,6 @@ namespace MinimalisticWPF.ParticleSystem
 
             // 提前计算插值结果
             var positions = LinearInterpolation.PointComputing(start.Position, end.Position, steps);
-            var sizes = LinearInterpolation.DoubleComputing(start.Size, end.Size, steps);
             var brushes = LinearInterpolation.BrushComputing(start.Pen.Brush, end.Pen.Brush, steps);
             var thicknesses = LinearInterpolation.DoubleComputing(start.Pen.Thickness, end.Pen.Thickness, steps);
 
@@ -50,9 +43,6 @@ namespace MinimalisticWPF.ParticleSystem
 #pragma warning disable CS8605 
                 var position = (Point)positions[i];
 #pragma warning restore CS8605 
-#pragma warning disable CS8605 
-                var size = (double)sizes[i];
-#pragma warning restore CS8605 
 #pragma warning disable CS8600
                 var brush = (Brush)brushes[i];
 #pragma warning restore CS8600
@@ -60,7 +50,7 @@ namespace MinimalisticWPF.ParticleSystem
                 var thickness = (double)thicknesses[i];
 #pragma warning restore CS8605 
 
-                result.Add(new ParticleState(position, size, new Pen(brush, thickness)));
+                result.Add(new ParticleState(position, new Pen(brush, thickness)));
             }
 
             // 确保首尾值准确

@@ -7,7 +7,7 @@ using System.Windows.Shapes;
 
 namespace MinimalisticWPF.ParticleSystem
 {
-    public class ShapeEdgeSampler
+    public sealed class ShapeEdgeSampler
     {
         private readonly Shape _shape;
         private readonly FrameworkElement _relativeTo;
@@ -20,28 +20,18 @@ namespace MinimalisticWPF.ParticleSystem
             _relativeTo = relativeTo ?? throw new ArgumentNullException(nameof(relativeTo));
 
             _flattenedGeometry = shape.RenderedGeometry.GetFlattenedPathGeometry();
-            _totalLength = CalculateTotalLength(_flattenedGeometry);
+            _totalLength = ShapeEdgeSampler.CalculateTotalLength(_flattenedGeometry);
         }
 
         public IEnumerable<Point> GetUniformPointsOnEdge(int sampleCount)
         {
             if (sampleCount < 1) throw new ArgumentOutOfRangeException(nameof(sampleCount));
-
-            IEnumerable<Point> localPoints;
-
-            switch (_shape)
+            IEnumerable<Point> localPoints = _shape switch
             {
-                case Ellipse ellipse:
-                    localPoints = GetUniformPointsOnEllipse(ellipse, sampleCount);
-                    break;
-                case Rectangle rect:
-                    localPoints = GetUniformPointsOnRectangle(rect, sampleCount);
-                    break;
-                default:
-                    localPoints = GetUniformPointsOnPath(sampleCount);
-                    break;
-            }
-
+                Ellipse ellipse => ShapeEdgeSampler.GetUniformPointsOnEllipse(ellipse, sampleCount),
+                Rectangle rect => ShapeEdgeSampler.GetUniformPointsOnRectangle(rect, sampleCount),
+                _ => GetUniformPointsOnPath(sampleCount),
+            };
             var transform = _shape.TransformToVisual(_relativeTo);
             return localPoints.Select(p => transform.Transform(p));
         }
@@ -51,13 +41,13 @@ namespace MinimalisticWPF.ParticleSystem
             if (random == null) throw new ArgumentNullException(nameof(random));
 
             double targetLength = random.NextDouble() * _totalLength;
-            Point localPoint = GetPointAtLength(_flattenedGeometry, targetLength);
+            Point localPoint = ShapeEdgeSampler.GetPointAtLength(_flattenedGeometry, targetLength);
 
             var transform = _shape.TransformToVisual(_relativeTo);
             return transform.Transform(localPoint);
         }
 
-        private double CalculateTotalLength(PathGeometry geometry)
+        private static double CalculateTotalLength(PathGeometry geometry)
         {
             double length = 0;
             foreach (var figure in geometry.Figures)
@@ -78,7 +68,7 @@ namespace MinimalisticWPF.ParticleSystem
             return length;
         }
 
-        private Point GetPointAtLength(PathGeometry geometry, double targetLength)
+        private static Point GetPointAtLength(PathGeometry geometry, double targetLength)
         {
             double accumulated = 0;
             foreach (var figure in geometry.Figures)
@@ -106,7 +96,7 @@ namespace MinimalisticWPF.ParticleSystem
             return new Point();
         }
 
-        private IEnumerable<Point> GetUniformPointsOnEllipse(Ellipse ellipse, int sampleCount)
+        private static IEnumerable<Point> GetUniformPointsOnEllipse(Ellipse ellipse, int sampleCount)
         {
             double width = ellipse.ActualWidth;
             double height = ellipse.ActualHeight;
@@ -122,7 +112,7 @@ namespace MinimalisticWPF.ParticleSystem
                     cy + ry * Math.Sin(theta)));
         }
 
-        private IEnumerable<Point> GetUniformPointsOnRectangle(Rectangle rect, int sampleCount)
+        private static IEnumerable<Point> GetUniformPointsOnRectangle(Rectangle rect, int sampleCount)
         {
             double width = rect.ActualWidth;
             double height = rect.ActualHeight;
@@ -140,7 +130,7 @@ namespace MinimalisticWPF.ParticleSystem
             foreach (var (side, length) in sideWeights)
             {
                 int pointsOnSide = (int)Math.Round(sampleCount * length / perimeter);
-                points.AddRange(GetPointsOnRectSide(side, width, height, pointsOnSide));
+                points.AddRange(ShapeEdgeSampler.GetPointsOnRectSide(side, width, height, pointsOnSide));
             }
 
             while (points.Count > sampleCount) points.RemoveAt(points.Count - 1);
@@ -149,7 +139,7 @@ namespace MinimalisticWPF.ParticleSystem
             return points;
         }
 
-        private IEnumerable<Point> GetPointsOnRectSide(int side, double w, double h, int count)
+        private static IEnumerable<Point> GetPointsOnRectSide(int side, double w, double h, int count)
         {
             if (count <= 0) yield break;
 
@@ -172,7 +162,7 @@ namespace MinimalisticWPF.ParticleSystem
             double stepLength = _totalLength / sampleCount;
 
             return Enumerable.Range(0, sampleCount)
-                .Select(i => GetPointAtLength(_flattenedGeometry, i * stepLength));
+                .Select(i => ShapeEdgeSampler.GetPointAtLength(_flattenedGeometry, i * stepLength));
         }
     }
 }

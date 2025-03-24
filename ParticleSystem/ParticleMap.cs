@@ -11,8 +11,6 @@ namespace MinimalisticWPF.ParticleSystem
 {
     public sealed class ParticleMap : IExecutableTransition
     {
-        private static Random random = new();
-
         internal ParticleState start;
         internal ParticleState end = ParticleState.Default.Clone();
 
@@ -28,21 +26,21 @@ namespace MinimalisticWPF.ParticleSystem
         public event Action? Updated;
         public event Action? Completed;
 
-        internal ParticleMap(Point startPosition, double startSize, Pen startPen)
+        internal ParticleMap(Point startPosition, Pen startPen)
         {
-            start = new ParticleState(startPosition, startSize, startPen);
+            start = new ParticleState(startPosition, startPen);
             StateValue = start.Clone();
             TransitionScheduler = TransitionScheduler.CreateUniqueUnit(this);
         }
 
-        public static ParticleMap From(Point position, double size, Pen pen)
+        public static ParticleMap From(Point position,Pen pen)
         {
-            return new ParticleMap(position, size, pen);
+            return new ParticleMap(position,pen);
         }
 
-        public ParticleMap To(Point position, double size, Pen pen)
+        public ParticleMap To(Point position,Pen pen)
         {
-            end = new ParticleState(position, size, pen);
+            end = new ParticleState(position,pen);
             return this;
         }
 

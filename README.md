@@ -24,7 +24,7 @@
 ### 版本矩阵 📦
 | 版本   | 类型 | 目标框架                   | 特性               |
 |--------|------|----------------------------|--------------------|
-| 4.x    | LTS  | .NET 5 / .NET Framework 4.6.2 |                 |
+| 4.x    | Limited Support Release  | .NET 5 / .NET Framework 4.6.2 | 基础能力 + 任何可能的扩展 |
 
 ---
 
@@ -164,7 +164,7 @@ A minimalist development experience for WPF projects, enabling advanced frontend
 ### Version Matrix 📦  
 | Version | Type | Target Frameworks             | Key Features       |  
 |---------|------|-------------------------------|--------------------|
-| 4.x     | LTS  | .NET 5 / .NET Framework 4.6.2 |                    |  
+| 4.x    | Limited Support Release  | .NET 5 / .NET Framework 4.6.2 | Basic capabilities + any possible extensions |
 
 ---
 

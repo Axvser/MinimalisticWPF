@@ -1,6 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using MinimalisticWPF.MoveBehavior;
+using MinimalisticWPF.StructuralDesign;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -8,110 +7,207 @@ using System.Windows.Shapes;
 
 namespace MinimalisticWPF.ParticleSystem
 {
-    public class ParticleCanvas : Canvas
+    public sealed class ParticleCanvas : Canvas, IOptionalRendeTime
     {
-        private readonly List<ParticleMap> _activeParticles = new();
-        private readonly Random _random = new();
-        private DrawingVisual _visual;
-        private bool _isRendering;
-        private Shape? _terminator;
-        private List<Shape> _emitters = new();
+        private ParticleMapsBaker? Baker;
+
+        public RenderTimes RenderTime
+        {
+            get { return (RenderTimes)GetValue(RenderTimeProperty); }
+            set { SetValue(RenderTimeProperty, value); }
+        }
+
+        public bool CanShapeRendered
+        {
+            get { return (bool)GetValue(CanShapeRenderedProperty); }
+            set { SetValue(CanShapeRenderedProperty, value); }
+        }
+
+        public int Capacity
+        {
+            get { return (int)GetValue(CapacityProperty); }
+            set { SetValue(CapacityProperty, value); }
+        }
+
+        public double DurationObfuscationConstant
+        {
+            get { return (double)GetValue(DurationObfuscationConstantProperty); }
+            set { SetValue(DurationObfuscationConstantProperty, value); }
+        }
+
+        public double Duration
+        {
+            get { return (double)GetValue(DurationProperty); }
+            set { SetValue(DurationProperty, value); }
+        }
+
+        public Brush StartBrush
+        {
+            get { return (Brush)GetValue(StartBrushProperty); }
+            set { SetValue(StartBrushProperty, value); }
+        }
+
+        public Brush EndBrush
+        {
+            get { return (Brush)GetValue(EndBrushProperty); }
+            set { SetValue(EndBrushProperty, value); }
+        }
+
+        public double StartSize
+        {
+            get { return (double)GetValue(StartSizeProperty); }
+            set { SetValue(StartSizeProperty, value); }
+        }
+
+        public double EndSize
+        {
+            get { return (double)GetValue(EndSizeProperty); }
+            set { SetValue(EndSizeProperty, value); }
+        }
+
+        public static readonly DependencyProperty EndSizeProperty =
+            DependencyProperty.Register("EndSize", typeof(double), typeof(ParticleCanvas), new PropertyMetadata(1.0, (dp, e) =>
+            {
+                if (dp is ParticleCanvas canvas)
+                {
+                    ParticleCanvas_Loaded(canvas, new());
+                }
+            }));
+
+        public static readonly DependencyProperty StartSizeProperty =
+            DependencyProperty.Register("StartSize", typeof(double), typeof(ParticleCanvas), new PropertyMetadata(1.0, (dp, e) =>
+            {
+                if (dp is ParticleCanvas canvas)
+                {
+                    ParticleCanvas_Loaded(canvas, new());
+                }
+            }));
+
+        public static readonly DependencyProperty EndBrushProperty =
+            DependencyProperty.Register("EndBrush", typeof(Brush), typeof(ParticleCanvas), new PropertyMetadata(Brushes.Violet, (dp, e) =>
+            {
+                if (dp is ParticleCanvas canvas)
+                {
+                    ParticleCanvas_Loaded(canvas, new());
+                }
+            }));
+
+        public static readonly DependencyProperty StartBrushProperty =
+            DependencyProperty.Register("StartBrush", typeof(Brush), typeof(ParticleCanvas), new PropertyMetadata(Brushes.Cyan, (dp, e) =>
+            {
+                if (dp is ParticleCanvas canvas)
+                {
+                    ParticleCanvas_Loaded(canvas, new());
+                }
+            }));
+
+        public static readonly DependencyProperty DurationProperty =
+            DependencyProperty.Register("Duration", typeof(double), typeof(ParticleCanvas), new PropertyMetadata(1.0, (dp, e) =>
+            {
+                if (dp is ParticleCanvas canvas)
+                {
+                    ParticleCanvas_Loaded(canvas, new());
+                }
+            }));
+
+        public static readonly DependencyProperty DurationObfuscationConstantProperty =
+            DependencyProperty.Register("DurationObfuscationConstant", typeof(double), typeof(ParticleCanvas), new PropertyMetadata(0.0, (dp, e) =>
+            {
+                if (dp is ParticleCanvas canvas)
+                {
+                    ParticleCanvas_Loaded(canvas, new());
+                }
+            }));
+
+        public static readonly DependencyProperty CapacityProperty =
+            DependencyProperty.Register("Capacity", typeof(int), typeof(ParticleCanvas), new PropertyMetadata(100, (dp, e) =>
+            {
+                if (dp is ParticleCanvas canvas)
+                {
+                    ParticleCanvas_Loaded(canvas, new());
+                }
+            }));
+
+        public static readonly DependencyProperty CanShapeRenderedProperty =
+            DependencyProperty.Register("CanShapeRendered", typeof(bool), typeof(ParticleCanvas), new PropertyMetadata(true, (dp, e) =>
+            {
+                if (dp is ParticleCanvas canvas)
+                {
+                    var state = ((bool)e.NewValue) ? Visibility.Visible : Visibility.Hidden;
+                    foreach (Shape shape in canvas.Children)
+                    {
+                        shape.Visibility = state;
+                    }
+                }
+            }));
+
+        public static readonly DependencyProperty RenderTimeProperty =
+            DependencyProperty.Register("RenderTime", typeof(RenderTimes), typeof(ParticleCanvas), new PropertyMetadata(RenderTimes.AnyTime, (dp, e) =>
+            {
+                if (dp is ParticleCanvas canvas)
+                {
+                    var state = canvas.AnalizeVisibility();
+                    if (state == Visibility.Visible)
+                    {
+                        canvas.Baker?.UpdateMaps();
+                    }
+                    else
+                    {
+                        canvas?.Baker?.Clear();
+                    }
+                }
+            }));
 
         public ParticleCanvas()
         {
-            Loaded += OnLoaded;
-
-            // 启用硬件加速
-            CacheMode = new BitmapCache();
-            _visual = new DrawingVisual();
-            AddVisualChild(_visual);
+            CompositionTarget.Rendering += (sender, e) =>
+            {
+                InvalidateVisual();
+            };
+            Loaded += ParticleCanvas_Loaded;
         }
 
-        protected override void OnVisualChildrenChanged(DependencyObject added, DependencyObject removed)
+        private static void ParticleCanvas_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is ParticleCanvas canvas)
+            {
+                canvas.Baker?.Clear();
+                canvas.Baker = new(canvas);
+                canvas.Baker?.UpdateSamplers();
+                canvas.Baker?.UpdateMaps();
+            }
+        }
+
+        protected override async void OnVisualChildrenChanged(DependencyObject added, DependencyObject removed)
         {
             base.OnVisualChildrenChanged(added, removed);
-            InitializeBoundaries();
-        }
-
-        private void InitializeBoundaries()
-        {
-            var shapes = Children.OfType<Shape>().ToList();
-            if (shapes.Count < 2) return;
-            _terminator = shapes.Last();
-            _emitters = shapes.Take(shapes.Count - 1).ToList();
-        }
-
-        private void OnLoaded(object sender, RoutedEventArgs e)
-        {
-            Dispatcher.BeginInvoke(new Action(StartRendering), System.Windows.Threading.DispatcherPriority.Loaded);
-        }
-
-        public void StartRendering()
-        {
-            if (_isRendering || _terminator == null || _emitters.Count == 0) return;
-
-            // 初始化固定数量的粒子
-            for (int i = 0; i < 100; i++)
+            if (added is Shape)
             {
-                var particle = CreateNewParticle();
-                _activeParticles.Add(particle);
-            }
-
-            CompositionTarget.Rendering += OnRenderingFrame;
-            _isRendering = true;
-        }
-
-        private ParticleMap CreateNewParticle()
-        {
-            var emitter = _emitters[_random.Next(_emitters.Count)];
-            var startPoint = new ShapeEdgeSampler(emitter, this).GetRandomPointOnEdge(_random);
-            var endPoint = new ShapeEdgeSampler(_terminator, this).GetRandomPointOnEdge(_random);
-
-            var particle = ParticleMap.From(startPoint, 1, new Pen(Brushes.Cyan, 1))
-                .To(endPoint, 1, new Pen(Brushes.Violet, 1));
-
-            particle.Duration = _random.NextDouble() * 2 + 1;
-            particle.Completed += () => ResetParticle(particle);
-            particle.Start();
-
-            return particle;
-        }
-
-        private void ResetParticle(ParticleMap particle)
-        {
-            var emitter = _emitters[_random.Next(_emitters.Count)];
-            var startPoint = new ShapeEdgeSampler(emitter, this).GetRandomPointOnEdge(_random);
-            var endPoint = new ShapeEdgeSampler(_terminator, this).GetRandomPointOnEdge(_random);
-
-            particle.To(endPoint, 1, new Pen(Brushes.Violet, 1));
-            particle.Duration = _random.NextDouble() * 2 + 1;
-            particle.Start();
-        }
-
-        private void OnRenderingFrame(object? sender, EventArgs e)
-        {
-            RenderParticles();
-        }
-
-        private void RenderParticles()
-        {
-            using (var dc = _visual.RenderOpen())
-            {
-                foreach (var particle in _activeParticles.Where(p => p.IsActive))
+                if (Baker is not null)
                 {
-                    var state = particle.StateValue;
-                    dc.DrawEllipse(state.Pen.Brush, null, state.Position, state.Size, state.Size);
+                    Baker.UpdateSamplers();
+                    await Baker.UpdateMaps();
+                }
+            }
+            if (removed is Shape)
+            {
+                if (Baker is not null)
+                {
+                    Baker.UpdateSamplers();
+                    await Baker.UpdateMaps();
                 }
             }
         }
-
-        // 重写视觉树方法以支持 DrawingVisual
-        protected override int VisualChildrenCount => 1;
-
-        protected override Visual GetVisualChild(int index)
+        protected override void OnRender(DrawingContext dc)
         {
-            if (index != 0) throw new ArgumentOutOfRangeException(nameof(index));
-            return _visual;
+            base.OnRender(dc);
+
+            if (Baker is null || !Baker.IsActived) return;
+
+            foreach (var context in Baker.ReadSource())
+            {
+                dc.DrawEllipse(Baker.IsVisible ? context.Item2.Brush : Brushes.Transparent, null, context.Item1, context.Item2.Thickness, context.Item2.Thickness);
+            }
         }
     }
 }
