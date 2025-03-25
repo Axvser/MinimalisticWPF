@@ -1,41 +1,40 @@
-﻿using System.Text.RegularExpressions;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace MinimalisticWPF
 {
     public class StringValidator
     {
-        private string? _start = default;
-        private string? _end = default;
-        private readonly HashSet<string> _containsSubstrings = [];
-        private readonly HashSet<string> _excludeSubstrings = [];
-        private Regex? _regexPattern = default;
-        private readonly List<Tuple<int, string>> _range = [];
-        private int? _minLength = default;
-        private int? _maxLength = default;
-        private int? _fixLength = default;
-        private bool? _allowNull = false;
-        private bool? _allowEmpty = false;
-        private bool? _allowWhiteSpace = true;
-        private HashSet<char>? _allowedChars = default;
-        private HashSet<char>? _disallowedChars = default;
-        private StringComparison _comparisonType = StringComparison.Ordinal;
+        private string? _start = null;
+        private bool _startIgnoreCase = false;
+        private string? _end = null;
+        private bool _endIgnoreCase = false;
+        private readonly HashSet<SubstringCondition> _containsSubstrings = [];
+        private readonly HashSet<SubstringCondition> _excludeSubstrings = [];
+        private Regex? _regexPattern = null;
+        private readonly List<Tuple<int, string, bool>> _range = [];
+        private int? _minLength = null;
+        private int? _maxLength = null;
+        private int? _fixLength = null;
 
-        public StringValidator StartWith(string value, StringComparison comparisonType = StringComparison.Ordinal)
+        public StringValidator StartWith(string value, bool ignoreCase = false)
         {
             if (!string.IsNullOrEmpty(value))
             {
                 _start = value;
-                _comparisonType = comparisonType;
+                _startIgnoreCase = ignoreCase;
             }
             return this;
         }
 
-        public StringValidator EndWith(string value, StringComparison comparisonType = StringComparison.Ordinal)
+        public StringValidator EndWith(string value, bool ignoreCase = false)
         {
             if (!string.IsNullOrEmpty(value))
             {
                 _end = value;
-                _comparisonType = comparisonType;
+                _endIgnoreCase = ignoreCase;
             }
             return this;
         }
@@ -61,11 +60,16 @@ namespace MinimalisticWPF
 
         public StringValidator Include(params string[] substrings)
         {
+            return Include(false, substrings);
+        }
+
+        public StringValidator Include(bool ignoreCase, params string[] substrings)
+        {
             foreach (var substring in substrings)
             {
                 if (!string.IsNullOrEmpty(substring))
                 {
-                    _containsSubstrings.Add(substring);
+                    _containsSubstrings.Add(new SubstringCondition(substring, ignoreCase));
                 }
             }
             return this;
@@ -73,30 +77,32 @@ namespace MinimalisticWPF
 
         public StringValidator Exclude(params string[] substrings)
         {
+            return Exclude(false, substrings);
+        }
+
+        public StringValidator Exclude(bool ignoreCase, params string[] substrings)
+        {
             foreach (var substring in substrings)
             {
                 if (!string.IsNullOrEmpty(substring))
                 {
-                    _excludeSubstrings.Add(substring);
+                    _excludeSubstrings.Add(new SubstringCondition(substring, ignoreCase));
                 }
             }
             return this;
         }
 
-        public StringValidator Slice(int start, string value)
+        public StringValidator Slice(int start, string value, bool ignoreCase = false)
         {
-            if (!string.IsNullOrEmpty(value))
-            {
-                _range.Add(Tuple.Create(start, value));
-            }
+            _range.Add(Tuple.Create(start, value, ignoreCase));
             return this;
         }
 
-        public StringValidator Regex(string pattern, RegexOptions options = RegexOptions.None)
+        public StringValidator Regex(string pattern)
         {
             if (!string.IsNullOrEmpty(pattern))
             {
-                _regexPattern = new Regex(pattern, options);
+                _regexPattern = new Regex(pattern);
             }
             return this;
         }
@@ -107,124 +113,74 @@ namespace MinimalisticWPF
             return this;
         }
 
-        public StringValidator OnlyLetters()
+        public StringValidator OnlyWords()
         {
             _regexPattern = new Regex(@"^[a-zA-Z]+$");
             return this;
         }
 
-        public StringValidator AllowNull(bool allow = true)
-        {
-            _allowNull = allow;
-            return this;
-        }
-
-        public StringValidator AllowEmpty(bool allow = true)
-        {
-            _allowEmpty = allow;
-            return this;
-        }
-
-        public StringValidator AllowWhiteSpace(bool allow = true)
-        {
-            _allowWhiteSpace = allow;
-            return this;
-        }
-
-        public StringValidator AllowedChars(params char[] chars)
-        {
-            _allowedChars ??= [];
-
-            foreach (var c in chars)
-            {
-                _allowedChars.Add(c);
-            }
-            return this;
-        }
-
-        public StringValidator DisallowedChars(params char[] chars)
-        {
-            _disallowedChars ??= [];
-
-            foreach (var c in chars)
-            {
-                _disallowedChars.Add(c);
-            }
-            return this;
-        }
-
-        public StringValidator CaseSensitive(bool caseSensitive = true)
-        {
-            _comparisonType = caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
-            return this;
-        }
-
         public bool Validate(string input)
         {
-            // Null check
-            if (input == null)
-                return _allowNull ?? false;
-
-            // Empty check
-            if (input.Length == 0)
-                return _allowEmpty ?? false;
-
-            // Whitespace check
-            if (!(_allowWhiteSpace ?? true) && input.Any(char.IsWhiteSpace))
-                return false;
-
-            // Length validations
-            if (_fixLength.HasValue && input.Length != _fixLength.Value)
-                return false;
-
-            if (_minLength.HasValue && _maxLength.HasValue &&
-                (input.Length < _minLength.Value || input.Length > _maxLength.Value))
-                return false;
-
-            // Start/end checks
-            if (_start != null && !input.StartsWith(_start, _comparisonType))
-                return false;
-
-            if (_end != null && !input.EndsWith(_end, _comparisonType))
-                return false;
-
-            // Contains/excludes checks
-            if (_containsSubstrings.Count > 0 &&
-                !_containsSubstrings.All(s => input.IndexOf(s, _comparisonType) >= 0))
-                return false;
-
-            if (_excludeSubstrings.Count > 0 &&
-                _excludeSubstrings.Any(s => input.IndexOf(s, _comparisonType) >= 0))
-                return false;
-
-            // Slice checks
-            if (_range.Count > 0)
+            if (_start != null)
             {
-                foreach (var range in _range)
-                {
-                    if (range.Item1 < 0 || range.Item1 + range.Item2.Length > input.Length)
-                        return false;
-
-                    if (!string.Equals(
-                        input.Substring(range.Item1, range.Item2.Length),
-                        range.Item2,
-                        _comparisonType))
-                        return false;
-                }
+                var comparison = _startIgnoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+                if (!input.StartsWith(_start, comparison))
+                    return false;
             }
 
-            // Regex check
+            if (_end != null)
+            {
+                var comparison = _endIgnoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+                if (!input.EndsWith(_end, comparison))
+                    return false;
+            }
+
             if (_regexPattern != null && !_regexPattern.IsMatch(input))
                 return false;
 
-            // Allowed/disallowed chars checks
-            if (_allowedChars != null && input.Any(c => !_allowedChars.Contains(c)))
-                return false;
+            foreach (var sliceCondition in _range)
+            {
+                int start = sliceCondition.Item1;
+                string expected = sliceCondition.Item2;
+                bool ignoreCase = sliceCondition.Item3;
 
-            if (_disallowedChars != null && input.Any(c => _disallowedChars.Contains(c)))
+                if (start < 0 || start + expected.Length > input.Length)
+                    return false;
+
+                string actual = input.Substring(start, expected.Length);
+                var comparison = ignoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+                if (!actual.Equals(expected, comparison))
+                    return false;
+            }
+
+            foreach (var condition in _containsSubstrings)
+            {
+                bool found = input.IndexOf(condition.Value, condition.IgnoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal) >= 0;
+                if (!found)
+                    return false;
+            }
+
+            foreach (var condition in _excludeSubstrings)
+            {
+                bool found = input.IndexOf(condition.Value, condition.IgnoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal) >= 0;
+                if (found)
+                    return false;
+            }
+
+            if (_minLength != null && input.Length < _minLength)
+                return false;
+            if (_maxLength != null && input.Length > _maxLength)
+                return false;
+            if (_fixLength != null && input.Length != _fixLength)
                 return false;
 
             return true;
+        }
+
+        private readonly struct SubstringCondition(string value, bool ignoreCase)
+        {
+            public string Value { get; } = value;
+            public bool IgnoreCase { get; } = ignoreCase;
         }
     }
 }
