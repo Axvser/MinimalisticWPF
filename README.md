@@ -17,7 +17,11 @@
 1. **[过渡系统](#过渡系统)** - 属性动画与复合过渡  
 2. **[MVVM增强](#mvvm增强)** - 源码生成器驱动的ViewModel  
 3. **[路径运动](#路径运动)** - 可视化轨迹设计与控件运动  
-4. **[扩展工具](#扩展工具)** - 字符串处理/颜色管理/AOP  
+4. **[粒子特效](#粒子特效)** - 可视化粒子发射器与消散边界
+5. **[扩展工具](#扩展工具)** - 字符串处理/颜色管理/AOP 
+
+### 完整文档 📚
+[查看Wiki获取完整API参考](https://github.com/Axvser/MinimalisticWPF/wiki)
 
 ---
 
@@ -101,19 +105,18 @@ DynamicTheme.Apply(typeof(Light));
 <a name="路径运动"></a>
 ## 路径运动 🛤️
 
-### 使用步骤
-1. **XAML绘制路径**
-```xml
-<mn:BezierMove Duration="3">
-    <mn:Anchor X="100" Y="50"/>
-    <mn:Anchor X="200" Y="150"/>
-</mn:BezierMove>
-```
+拖拽设计器中的锚点，即可以指定路径控制元素移动 ！
 
-2. **代码触发运动**
-```csharp
-control.BeginMove(movePath);
-```
+![](https://s3.bmp.ovh/imgs/2025/03/25/1454ad276b2e2ad3.png)
+
+---
+
+<a name="粒子特效"></a>
+## 粒子特效 ✨
+
+用 Shape 作为粒子发射器 OR 粒子消散边界 , 你可轻松创建简单的粒子特效 !
+
+![](https://s3.bmp.ovh/imgs/2025/03/25/90b1c4fc66056138.png)
 
 ---
 
@@ -142,11 +145,11 @@ var result = StringCatcher.Chinese(text); // ["世界"]
 ---
 ---
 
-<a name="english"></a>
-## English Version
+<a name="english"></a>  
+## English Version  
 
 ### Introduction 📖  
-A minimalist development experience for WPF projects, enabling advanced frontend animations, MVVM patterns, and path-based motion through pure C# code. Features include source generators, an independent transition system, theme switching, and more—significantly reducing the learning curve for XAML.  
+A minimalist development experience for WPF projects, enabling advanced frontend animations, MVVM patterns, path-based motion, and particle effects through pure C# code. Features include source generators, an independent transition system, theme switching, and more—significantly reducing the learning curve for XAML.  
 
 [![GitHub](https://img.shields.io/badge/GitHub-Repository-blue?logo=github)](https://github.com/Axvser/MinimalisticWPF)  
 [![NuGet](https://img.shields.io/nuget/v/MinimalisticWPF?color=green&logo=nuget)](https://www.nuget.org/packages/MinimalisticWPF/)  
@@ -157,7 +160,8 @@ A minimalist development experience for WPF projects, enabling advanced frontend
 1. **[Transition System](#transition-system)** - Property animations & composite transitions  
 2. **[MVVM Enhancements](#mvvm-enhancements)** - Source generator-driven ViewModel  
 3. **[Path Animation](#path-animation)** - Visual trajectory design & control motion  
-4. **[Utilities](#utilities)** - String processing/color management/AOP  
+4. **[Particle Effects](#particle-effects)** - Shape-based emitters & dissipation boundaries  
+5. **[Utilities](#utilities)** - String processing/color management/AOP  
 
 ---
 
@@ -241,19 +245,18 @@ DynamicTheme.Apply(typeof(Light));
 <a name="path-animation"></a>  
 ## Path Animation 🛤️  
 
-### Usage Steps  
-1. **Design Path in XAML**  
-```xml  
-<mn:BezierMove Duration="3">  
-    <mn:Anchor X="100" Y="50"/>  
-    <mn:Anchor X="200" Y="150"/>  
-</mn:BezierMove>  
-```  
+Drag anchors in the designer to define motion paths for elements!  
 
-2. **Trigger Motion via Code**  
-```csharp  
-control.BeginMove(movePath);  
-```  
+![](https://s3.bmp.ovh/imgs/2025/03/25/1454ad276b2e2ad3.png)  
+
+---
+
+<a name="particle-effects"></a>  
+## Particle Effects ✨  
+
+Use Shapes as particle emitters OR dissipation boundaries to create stunning visual effects with ease!  
+
+![](https://s3.bmp.ovh/imgs/2025/03/25/90b1c4fc66056138.png)  
 
 ---
 
@@ -276,6 +279,4 @@ var result = StringCatcher.Chinese(text); // ["世界"]
 ---
 
 ### Full Documentation 📚  
-[View Complete API Reference on Wiki](https://github.com/Axvser/MinimalisticWPF/wiki)  
-
----
+[View Complete API Reference on Wiki](https://github.com/Axvser/MinimalisticWPF/wiki)
