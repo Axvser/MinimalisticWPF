@@ -1,4 +1,5 @@
-﻿using MinimalisticWPF.StructuralDesign.Animator;
+﻿using Microsoft.Win32;
+using MinimalisticWPF.StructuralDesign.Animator;
 using MinimalisticWPF.StructuralDesign.Theme;
 using MinimalisticWPF.TransitionSystem;
 using MinimalisticWPF.TransitionSystem.Basic;
@@ -11,9 +12,19 @@ namespace MinimalisticWPF.Theme
 {
     public static class DynamicTheme
     {
-        private static bool _isloaded = false;
+        private const string SYSTEM_THEME_REGISTRYKEY = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize";
+        private const string SYSTEM_THEME_LIGHT = "AppsUseLightTheme";
 
-        public static Type? CurrentTheme { get; private set; }
+        private static bool _isloaded = false;
+        private static bool _issysthemeevenadded = false;
+        private static Type? _currentTheme = null;
+        private static bool _followSystem = false;
+        private static Type _alternativeTheme = typeof(Dark);
+
+        public static Type CurrentTheme
+        {
+            get => _currentTheme ?? (_followSystem ? GetSystemTheme(_alternativeTheme) : _alternativeTheme);
+        }
         public static IEnumerable<Type>? Attributes { get; private set; }
 
         public static ConcurrentDictionary<Type, ConcurrentDictionary<Type, State>> SharedSource { get; internal set; } = new();
@@ -21,8 +32,35 @@ namespace MinimalisticWPF.Theme
 #if NET
         public static HashSet<IThemeApplied> GlobalInstance { get; internal set; } = new(64);
 #elif NETFRAMEWORK
-        public static HashSet<IThemeApplied> GlobalInstance { get; internal set; } = new();
+        public static HashSet<IThemeApplied> GlobalInstance { get; internal set; } = [];
 #endif
+
+        /// <summary>
+        /// [ App.cs ] Call before anything happens to make sure it works
+        /// <para>
+        /// Follow system topics dynamically
+        /// </para>
+        /// </summary>
+        /// <param name="alternativeTheme">Alternate topic to take if the system topic fails to be read</param>
+        public static void FollowSystem(Type alternativeTheme)
+        {
+            _followSystem = true;
+            _alternativeTheme = alternativeTheme;
+            _currentTheme = GetSystemTheme(alternativeTheme);
+        }
+        /// <summary>
+        /// [ App.cs ] Call before anything happens to make sure it works
+        /// <para>
+        /// Follow the initial theme you specify and do not follow the system
+        /// </para>
+        /// </summary>
+        /// <param name="themeType">initial theme</param>
+        public static void StartWith(Type themeType)
+        {
+            _followSystem = false;
+            _alternativeTheme = themeType;
+            _currentTheme = themeType;
+        }
 
         public static bool TryGetTransitionMeta<T>(T target, Type themeType, out ITransitionMeta result) where T : IThemeApplied
         {
@@ -55,25 +93,34 @@ namespace MinimalisticWPF.Theme
         {
             if (!_isloaded)
             {
+                AddSystemThemeEvent();
                 var Assemblies = AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.GetTypes());
                 var classes = Assemblies.Where(t => t.GetCustomAttribute<DynamicThemeAttribute>(true) != null);
                 Attributes = Assemblies.Where(t => typeof(IThemeAttribute).IsAssignableFrom(t) && typeof(Attribute).IsAssignableFrom(t) && !t.IsAbstract);
                 SharedGeneration(classes, Attributes);
                 _isloaded = true;
+                Application.Current.MainWindow.Closed += RemoveSystemThemeEvent;
+                if (_followSystem)
+                {
+                    Apply(GetSystemTheme(_alternativeTheme), TransitionParams.Theme);
+                }
             }
         }
-        public static void Dispose<T>(params T[] targets) where T : IThemeApplied
+        public static void Dispose()
         {
-            foreach (var target in targets)
-            {
-                IsolatedSource.TryRemove(target, out _);
-                GlobalInstance.Remove(target);
-            }
+            _currentTheme = null;
+            Attributes = null;
+            _isloaded = false;
+            GlobalInstance.Clear();
+            SharedSource.Clear();
+            IsolatedSource.Clear();
+            RemoveSystemThemeEvent(null, EventArgs.Empty);
+            Application.Current.MainWindow.Closed -= RemoveSystemThemeEvent;
         }
         public static void Apply(Type themeType, TransitionParams? param = null)
         {
             Awake();
-
+            _currentTheme = themeType;
             foreach (var item in GlobalInstance)
             {
                 param ??= TransitionParams.Theme.DeepCopy();
@@ -95,8 +142,6 @@ namespace MinimalisticWPF.Theme
                     item.BeginTransition(meta, param);
                 }
             }
-
-            CurrentTheme = themeType;
         }
 
         public static void SetSharedValue(Type classType, Type themeType, string propertyName, object? newValue)
@@ -152,6 +197,46 @@ namespace MinimalisticWPF.Theme
             }
 
             return null;
+        }
+
+        private static void AddSystemThemeEvent()
+        {
+            if (!_issysthemeevenadded)
+            {
+                SystemEvents.UserPreferenceChanged += SystemEvents_UserPreferenceChanged;
+                _issysthemeevenadded = true;
+            }
+        }
+        private static void RemoveSystemThemeEvent(object? sender, EventArgs e)
+        {
+            if (_issysthemeevenadded)
+            {
+                SystemEvents.UserPreferenceChanged -= SystemEvents_UserPreferenceChanged;
+                _issysthemeevenadded = false;
+            }
+        }
+        private static void SystemEvents_UserPreferenceChanged(object sender, UserPreferenceChangedEventArgs e)
+        {
+            if (_followSystem)
+            {
+                Apply(GetSystemTheme(_alternativeTheme), TransitionParams.Theme);
+            }
+        }
+        private static Type GetSystemTheme(Type alternativeTheme)
+        {
+            RegistryKey? key = Registry.CurrentUser.OpenSubKey(SYSTEM_THEME_REGISTRYKEY);
+            if (key != null)
+            {
+                var theme = (int?)key.GetValue(SYSTEM_THEME_LIGHT, -1);
+                key.Close();
+                if (theme == 1)
+                {
+                    _currentTheme = typeof(Light);
+                    return typeof(Light);
+                }
+            }
+            _currentTheme = alternativeTheme;
+            return alternativeTheme;
         }
 
 #if NETFRAMEWORK
@@ -278,7 +363,6 @@ namespace MinimalisticWPF.Theme
             }
         }
 #else
-
         private static void SharedGeneration(IEnumerable<Type> classes, IEnumerable<Type> attributes)
         {
             foreach (var cs in classes)
