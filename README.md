@@ -25,10 +25,16 @@
 
 ---
 
-### 版本矩阵 📦
-| 版本   | 类型 | 目标框架                   | 特性               |
-|--------|------|----------------------------|--------------------|
-| 4.x    | Limited Support Release  | .NET 5 / .NET Framework 4.6.2 | 基础能力 + 任何可能的扩展 |
+### 版本 📦
+| 版本   | 类型 | 目标框架                   |
+|--------|------|----------------------------|
+| 4.x    | Limited Support Release  | .NET 5 / .NET Framework 4.6.2 |
+
+### 更新日志 📜 
+
+| 版本 | 亮点 | 更新时间 |
+|---------|------------|--------------|
+| [v4.5.3](https://github.com/Axvser/MinimalisticWPF/wiki/Changes-v4.5.3)  | 系统主题跟随 | 2025-03-27 |
 
 ---
 
@@ -165,10 +171,16 @@ A minimalist development experience for WPF projects, enabling advanced frontend
 
 ---
 
-### Version Matrix 📦  
-| Version | Type | Target Frameworks             | Key Features       |  
-|---------|------|-------------------------------|--------------------|
-| 4.x    | Limited Support Release  | .NET 5 / .NET Framework 4.6.2 | Basic capabilities + any possible extensions |
+### Version 📦  
+| Version | Type | Target Frameworks             |
+|---------|------|-------------------------------|
+| 4.x    | Limited Support Release  | .NET 5 / .NET Framework 4.6.2 |
+
+### 📜 History
+
+| Version | Highlights | Release Date |
+|---------|------------|--------------|
+| [v4.5.3](https://github.com/Axvser/MinimalisticWPF/wiki/Changes-v4.5.3)  | System topic following | 2025-03-27 |
 
 ---
 
