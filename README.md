@@ -15,10 +15,11 @@
 
 ### 核心功能导航 🚀
 1. **[过渡系统](#过渡系统)** - 属性动画与复合过渡  
-2. **[MVVM增强](#mvvm增强)** - 源码生成器驱动的ViewModel  
-3. **[路径运动](#路径运动)** - 可视化轨迹设计与控件运动  
-4. **[粒子特效](#粒子特效)** - 可视化粒子发射器与消散边界
-5. **[扩展工具](#扩展工具)** - 字符串处理/颜色管理/AOP 
+2. **[V增强](#v增强)** - 源码生成器驱动的View
+3. **[VM增强](#vm增强)** - 源码生成器驱动的ViewModel  
+4. **[路径运动](#路径运动)** - 可视化轨迹设计与控件运动  
+5. **[粒子特效](#粒子特效)** - 可视化粒子发射器与消散边界
+6. **[扩展工具](#扩展工具)** - 字符串处理/颜色管理/AOP 
 
 ### 完整文档 📚
 [查看Wiki获取完整API参考](https://github.com/Axvser/MinimalisticWPF/wiki)
@@ -87,12 +88,24 @@ grid2.BeginTransition(template);
 
 ---
 
-<a name="mvvm增强"></a>
-## MVVM增强 🧩
+<a name="v增强"></a>
+## View增强 🧩
 
 ### 特性亮点
-- **源码生成器** - 自动生成属性/构造函数/依赖属性
-- **主题切换** - 一键切换Light/Dark模式
+- **源码生成器** - 自动生成依赖属性/构造函数
+- **主题切换** - 标记特性以实现Light/Dark等主题
+- **悬停交互** - 内置鼠标悬停动画支持
+
+### 示例：主题切换
+
+![](https://s3.bmp.ovh/imgs/2025/04/01/82c5b3d196f1ba1b.png)
+
+<a name="vm增强"></a>
+## ViewModel增强 🧩
+
+### 特性亮点
+- **源码生成器** - 自动生成属性/构造函数
+- **主题切换** - 标记特性以实现Light/Dark等主题
 - **悬停交互** - 内置鼠标悬停动画支持
 
 ### 示例：主题切换
@@ -165,10 +178,11 @@ A minimalist development experience for WPF projects, enabling advanced frontend
 
 ### Core Features Navigation 🚀  
 1. **[Transition System](#transition-system)** - Property animations & composite transitions  
-2. **[MVVM Enhancements](#mvvm-enhancements)** - Source generator-driven ViewModel  
-3. **[Path Animation](#path-animation)** - Visual trajectory design & control motion  
-4. **[Particle Effects](#particle-effects)** - Shape-based emitters & dissipation boundaries  
-5. **[Utilities](#utilities)** - String processing/color management/AOP  
+2. **[V Enhancements](#v-enhancements)** - Source generator-driven View
+3. **[VM Enhancements](#vm-enhancements)** - Source generator-driven ViewModel  
+4. **[Path Animation](#path-animation)** - Visual trajectory design & control motion  
+5. **[Particle Effects](#particle-effects)** - Shape-based emitters & dissipation boundaries  
+6. **[Utilities](#utilities)** - String processing/color management/AOP  
 
 ---
 
@@ -234,11 +248,23 @@ grid2.BeginTransition(template);
 
 ---
 
-<a name="mvvm-enhancements"></a>  
-## MVVM Enhancements 🧩  
+<a name="v-enhancements"></a>
+## View Enhancements 🧩
 
 ### Key Highlights  
-- **Source Generators** - Auto-generate properties/constructors/dependency properties  
+- **Source Generators** - Auto-generate dependency properties/constructors  
+- **Theme Switching** - One-click Light/Dark mode toggle  
+- **Hover Interaction** - Built-in mouse hover animations  
+
+### 示例：主题切换
+
+![](https://s3.bmp.ovh/imgs/2025/04/01/82c5b3d196f1ba1b.png)
+
+<a name="vm-enhancements"></a>  
+## ViewModel Enhancements 🧩  
+
+### Key Highlights  
+- **Source Generators** - Auto-generate properties/constructors
 - **Theme Switching** - One-click Light/Dark mode toggle  
 - **Hover Interaction** - Built-in mouse hover animations  
 
