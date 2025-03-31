@@ -7,7 +7,6 @@ namespace MinimalisticWPF.TransitionSystem.Basic
     public sealed class State : ITransitionMeta, ICloneable
     {
         internal State() { }
-
         public string StateName { get; internal set; } = string.Empty;
         public ConcurrentDictionary<string, object?> Values { get; internal set; } = new();
         public ConcurrentDictionary<string, InterpolationHandler> Calculators { get; internal set; } = new();
@@ -23,29 +22,6 @@ namespace MinimalisticWPF.TransitionSystem.Basic
             }
         }
         public List<List<Tuple<PropertyInfo, List<object?>>>> FrameSequence => [];
-
-        public object? this[string propertyName]
-        {
-            get
-            {
-                if (!Values.TryGetValue(propertyName, out _))
-                {
-                    throw new ArgumentException($"There is no property State value named [ {propertyName} ] in the state named [ {StateName} ]");
-                }
-
-                return Values[propertyName];
-            }
-        }
-        public void Add(string propertyName, object? value)
-        {
-            AddProperty(propertyName, value);
-            Calculators.TryRemove(propertyName, out _);
-        }
-        public void Add(string propertyName, object? value, InterpolationHandler calculator)
-        {
-            AddProperty(propertyName, value);
-            AddCalculator(propertyName, calculator);
-        }
         public void AddCalculator(string propertyName, InterpolationHandler value)
         {
             if (Calculators.TryGetValue(propertyName, out var ori))
@@ -68,17 +44,6 @@ namespace MinimalisticWPF.TransitionSystem.Basic
                 Values.TryAdd(propertyName, value);
             }
         }
-        public State Merge(ICollection<ITransitionMeta> metas)
-        {
-            foreach (var meta in metas)
-            {
-                foreach (var values in meta.PropertyState.Values)
-                {
-                    AddProperty(values.Key, values.Value);
-                }
-            }
-            return this;
-        }
         public State Merge(ITransitionMeta meta)
         {
             foreach (var values in meta.PropertyState.Values)
@@ -91,7 +56,6 @@ namespace MinimalisticWPF.TransitionSystem.Basic
             }
             return this;
         }
-
         internal State DeepCopy()
         {
             var newState = new State
@@ -112,7 +76,6 @@ namespace MinimalisticWPF.TransitionSystem.Basic
 
             return newState;
         }
-
         public object Clone()
         {
             return DeepCopy();

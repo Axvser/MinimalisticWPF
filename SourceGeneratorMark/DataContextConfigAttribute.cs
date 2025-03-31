@@ -1,7 +1,7 @@
 ﻿namespace MinimalisticWPF
 {
     /// <summary>
-    /// [ source generator ] apply this attribute to a control can generate dependency properties accroding to it's ViewModel
+    /// ✨ View >>>  Apply this attribute to a control can generate dependency properties accroding to it's ViewModel
     /// </summary>
     /// <param name="Name">the name of viewmodel's type</param>
     /// <param name="NameSpaceValidation">the namespace of viewmodel</param>

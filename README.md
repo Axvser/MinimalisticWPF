@@ -35,6 +35,7 @@
 | 版本 | 亮点 | 更新时间 |
 |---------|------------|--------------|
 | [v4.5.3](https://github.com/Axvser/MinimalisticWPF/wiki/Changes-v4.5.3)  | 系统主题跟随 | 2025-03-27 |
+| [v4.7.0](https://github.com/Axvser/MinimalisticWPF/wiki/Changes-v4.7.0)  | 提供View支持，不再局限于ViewModel | 2025-04-1 |
 
 ---
 
@@ -181,6 +182,7 @@ A minimalist development experience for WPF projects, enabling advanced frontend
 | Version | Highlights | Release Date |
 |---------|------------|--------------|
 | [v4.5.3](https://github.com/Axvser/MinimalisticWPF/wiki/Changes-v4.5.3)  | System topic following | 2025-03-27 |
+| [v4.7.0](https://github.com/Axvser/MinimalisticWPF/wiki/Changes-v4.7.0)  | Views are supported, not just the ViewModel | 2025-04-1 |
 
 ---
 

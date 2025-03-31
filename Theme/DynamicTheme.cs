@@ -8,7 +8,7 @@ using System.Reflection;
 using System.Windows;
 using System.Windows.Media;
 
-namespace MinimalisticWPF.Theme
+namespace MinimalisticWPF
 {
     public static class DynamicTheme
     {
@@ -95,8 +95,8 @@ namespace MinimalisticWPF.Theme
             {
                 AddSystemThemeEvent();
                 var Assemblies = AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.GetTypes());
-                var classes = Assemblies.Where(t => t.GetCustomAttribute<DynamicThemeAttribute>(true) != null);
-                Attributes = Assemblies.Where(t => typeof(IThemeAttribute).IsAssignableFrom(t) && typeof(Attribute).IsAssignableFrom(t) && !t.IsAbstract);
+                var classes = Assemblies.Where(t => typeof(IThemeApplied).IsAssignableFrom(t));
+                Attributes = Assemblies.Where(t => typeof(IThemeAttribute).IsAssignableFrom(t) && typeof(Attribute).IsAssignableFrom(t));
                 SharedGeneration(classes, Attributes);
                 _isloaded = true;
                 Application.Current.MainWindow.Closed += RemoveSystemThemeEvent;

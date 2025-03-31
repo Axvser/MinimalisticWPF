@@ -6,6 +6,11 @@ using System.Threading.Tasks;
 
 namespace MinimalisticWPF
 {
+    /// <summary>
+    /// ✨ ViewModel >> Map the view model to the model
+    /// </summary>
+    /// <param name="modelName">name of model</param>
+    /// <param name="nameSpace">namespace of model</param>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
     public class ModelConfigAttribute(string modelName, string nameSpace = "") : Attribute
     {

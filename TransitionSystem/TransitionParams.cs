@@ -23,6 +23,10 @@ namespace MinimalisticWPF.TransitionSystem
             FrameRate = DefaultFrameRate,
             Duration = 0.3
         };
+        public static TransitionParams Empty { get; private set; } = new()
+        {
+            Duration = 0
+        };
 
 #if NET
         internal double DeltaTime { get => 1000.0 / Math.Clamp(FrameRate, 1, TransitionScheduler.MaxFrameRate); }

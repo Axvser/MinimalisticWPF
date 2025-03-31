@@ -6,6 +6,10 @@ using System.Threading.Tasks;
 
 namespace MinimalisticWPF
 {
+    /// <summary>
+    /// ✨ ViewModel >> An alias in the model
+    /// </summary>
+    /// <param name="alias"></param>
     [AttributeUsage(AttributeTargets.Field, AllowMultiple = false, Inherited = true)]
     public class ModelAliasAttribute(string alias) : Attribute
     {

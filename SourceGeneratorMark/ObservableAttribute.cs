@@ -8,7 +8,7 @@
     }
 
     /// <summary>
-    /// [ Source Generator ] The corresponding observable Property is automatically generated
+    /// ✨ ViewModel >> The corresponding observable Property is automatically generated
     /// </summary>
     /// <param name="SetterValidation">Select how the property is validated when updates occur</param>
     /// <param name="CanOverride">Select whether the property is overwritable</param>
