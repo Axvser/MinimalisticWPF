@@ -25,6 +25,8 @@ namespace MinimalisticWPF
         private int b = 0;
         private int a = 255;
 
+        public static RGB Empty { get; private set; } = new(0, 0, 0, 0);
+
 #if NET
         public int R
         {

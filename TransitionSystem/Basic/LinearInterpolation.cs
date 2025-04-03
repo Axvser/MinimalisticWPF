@@ -7,10 +7,8 @@ namespace MinimalisticWPF.TransitionSystem.Basic
     {
         public static List<object?> DoubleComputing(object? start, object? end, int steps)
         {
-            if (start is not double d1 || end is not double d2)
-            {
-                throw new ArgumentException("TransitionSystem O01 : Both current and target must be of type double");
-            }
+            var d1 = (double)(start ?? 0);
+            var d2 = (double)(end ?? d1);
 
             List<object?> result = new(steps);
 
@@ -34,24 +32,40 @@ namespace MinimalisticWPF.TransitionSystem.Basic
         }
         public static List<object?> BrushComputing(object? start, object? end, int steps)
         {
-            if (start is not Brush brush1 || end is not Brush brush2)
-            {
-                throw new ArgumentException("TransitionSystem O01 : Both current and target must be of type Color");
-            }
+            var startBrush = start as Brush ?? Brushes.Transparent;
+            var endBrush = end as Brush ?? Brushes.Transparent;
 
-            var rgb1 = RGB.FromBrush(brush1);
-            var rgb2 = RGB.FromBrush(brush2);
+            // Solid ↔ Solid
+            if (startBrush is SolidColorBrush startSolid && endBrush is SolidColorBrush endSolid)
+                return InterpolateSolidColorBrush(startSolid, endSolid, steps);
 
-#pragma warning disable CS8602 // RGB 静态方法已处理异常
-            return rgb1.Interpolate(rgb1, rgb2, steps).Select(rgb => (object?)((rgb as RGB).Brush)).ToList();
-#pragma warning restore CS8602 
+            // Solid ↔ Linear
+            else if (startBrush is SolidColorBrush solidStart && endBrush is LinearGradientBrush linearEnd)
+                return InterpolateLinearGradientBrush(ConvertToLinearGradientBrush(solidStart, linearEnd), linearEnd, steps);
+            else if (startBrush is LinearGradientBrush linearStart && endBrush is SolidColorBrush solidEnd)
+                return InterpolateLinearGradientBrush(linearStart, ConvertToLinearGradientBrush(solidEnd, linearStart), steps, solidEnd);
+
+            // Solid ↔ Radial
+            else if (startBrush is SolidColorBrush solidStartRadial && endBrush is RadialGradientBrush radialEnd)
+                return InterpolateRadialGradientBrush(ConvertToRadialGradientBrush(solidStartRadial, radialEnd), radialEnd, steps);
+            else if (startBrush is RadialGradientBrush radialStart && endBrush is SolidColorBrush solidEndRadial)
+                return InterpolateRadialGradientBrush(radialStart, ConvertToRadialGradientBrush(solidEndRadial, radialStart), steps, solidEndRadial);
+
+            // Linear ↔ Linear
+            else if (startBrush is LinearGradientBrush startLinear && endBrush is LinearGradientBrush endLinear)
+                return InterpolateLinearGradientBrush(startLinear, endLinear, steps);
+
+            // Radial ↔ Radial
+            else if (startBrush is RadialGradientBrush startRadial && endBrush is RadialGradientBrush endRadial)
+                return InterpolateRadialGradientBrush(startRadial, endRadial, steps);
+
+            // 其他情况不处理过程,直接返回最终值
+            return [endBrush];
         }
         public static List<object?> TransformComputing(object? start, object? end, int steps)
         {
-            if (start is not Transform matrix1 || end is not Transform matrix2)
-            {
-                throw new ArgumentException("TransitionSystem O01 : Both current and target must be of type Transform");
-            }
+            var matrix1 = (Transform)(start ?? Transform.Identity);
+            var matrix2 = (Transform)(end ?? matrix1);
 
             List<object?> result = new(steps);
 
@@ -83,10 +97,8 @@ namespace MinimalisticWPF.TransitionSystem.Basic
         }
         public static List<object?> PointComputing(object? start, object? end, int steps)
         {
-            if (start is not Point point1 || end is not Point point2)
-            {
-                throw new ArgumentException("TransitionSystem O01 : Both current and target must be of type Point");
-            }
+            var point1 = (Point)(start ?? new Point(0, 0));
+            var point2 = (Point)(end ?? point1);
 
             List<object?> result = new(steps);
 
@@ -110,10 +122,8 @@ namespace MinimalisticWPF.TransitionSystem.Basic
         }
         public static List<object?> ThicknessComputing(object? start, object? end, int steps)
         {
-            if (start is not Thickness thickness1 || end is not Thickness thickness2)
-            {
-                throw new ArgumentException("TransitionSystem O01 : Both current and target must be of type Thickness");
-            }
+            var thickness1 = (Thickness)(start ?? new Thickness(0));
+            var thickness2 = (Thickness)(end ?? thickness1);
 
             List<object?> result = new(steps);
 
@@ -139,10 +149,8 @@ namespace MinimalisticWPF.TransitionSystem.Basic
         }
         public static List<object?> CornerRadiusComputing(object? start, object? end, int steps)
         {
-            if (start is not CornerRadius radius1 || end is not CornerRadius radius2)
-            {
-                throw new ArgumentException("TransitionSystem O01 : Both current and target must be of type CornerRadius");
-            }
+            var radius1 = (CornerRadius)(start ?? new CornerRadius(0));
+            var radius2 = (CornerRadius)(end ?? radius1);
 
             List<object?> result = new(steps);
 
@@ -165,6 +173,258 @@ namespace MinimalisticWPF.TransitionSystem.Basic
             result[steps - 1] = end;
 
             return result;
+        }
+
+        private static List<object?> InterpolateSolidColorBrush(SolidColorBrush start, SolidColorBrush end, int steps)
+        {
+            var rgb1 = RGB.FromBrush(start);
+            var rgb2 = RGB.FromBrush(end);
+            return [.. rgb1.Interpolate(rgb1, rgb2, steps).Select(rgb => (object?)(((rgb as RGB) ?? RGB.Empty)).Brush)];
+        }
+        private static LinearGradientBrush ConvertToLinearGradientBrush(SolidColorBrush solid, LinearGradientBrush template)
+        {
+            return new LinearGradientBrush(
+                [.. template.GradientStops.Select(gs =>
+                    new GradientStop(solid.Color, gs.Offset))],
+                template.StartPoint,
+                template.EndPoint)
+            {
+                SpreadMethod = template.SpreadMethod,
+                MappingMode = template.MappingMode,
+                ColorInterpolationMode = template.ColorInterpolationMode
+            };
+        }
+        private static RadialGradientBrush ConvertToRadialGradientBrush(SolidColorBrush solid, RadialGradientBrush template)
+        {
+            return new RadialGradientBrush
+            {
+                // 复制模板的几何属性
+                GradientOrigin = template.GradientOrigin,
+                Center = template.Center,
+                RadiusX = template.RadiusX,
+                RadiusY = template.RadiusY,
+
+                // 创建单色渐变集合
+                GradientStops = [.. template.GradientStops.Select(gs =>
+                        new GradientStop(solid.Color, gs.Offset)
+                    )],
+
+                // 复制其他画刷属性
+                SpreadMethod = template.SpreadMethod,
+                MappingMode = template.MappingMode,
+                ColorInterpolationMode = template.ColorInterpolationMode
+            };
+        }
+        private static List<object?> InterpolateLinearGradientBrush(LinearGradientBrush start, LinearGradientBrush end, int steps, SolidColorBrush? solidColorBrush = null)
+        {
+            // 统一两个画刷的渐变点位
+            var (normalizedStart, normalizedEnd) = NormalizeGradientStops(start, end);
+
+            List<object?> result = new(steps);
+            if (steps == 0) return result;
+
+            for (int i = 0; i < steps; i++)
+            {
+                double t = (double)(i + 1) / steps;
+
+                var newBrush = new LinearGradientBrush
+                {
+                    StartPoint = InterpolatePoint(normalizedStart.StartPoint, normalizedEnd.StartPoint, t),
+                    EndPoint = InterpolatePoint(normalizedStart.EndPoint, normalizedEnd.EndPoint, t),
+                    GradientStops = InterpolateStops(normalizedStart.GradientStops, normalizedEnd.GradientStops, t),
+                    SpreadMethod = t >= 1 ? normalizedEnd.SpreadMethod : normalizedStart.SpreadMethod,
+                    MappingMode = normalizedStart.MappingMode,
+                    ColorInterpolationMode = normalizedStart.ColorInterpolationMode
+                };
+
+                result.Add(newBrush);
+            }
+
+            if (steps > 1)
+            {
+                result[0] = start;
+                result[result.Count - 1] = solidColorBrush is null ? end : solidColorBrush;
+            }
+            return result;
+        }
+        private static List<object?> InterpolateRadialGradientBrush(RadialGradientBrush start, RadialGradientBrush end, int steps, SolidColorBrush? solidColorBrush = null)
+        {
+            // 统一两个画刷的渐变点位
+            var (normalizedStart, normalizedEnd) = NormalizeRadialGradientStops(start, end);
+
+            List<object?> result = new(steps);
+            if (steps == 0) return result;
+
+            for (int i = 0; i < steps; i++)
+            {
+                double t = (double)(i + 1) / steps;
+
+                var newBrush = new RadialGradientBrush
+                {
+                    GradientOrigin = InterpolatePoint(normalizedStart.GradientOrigin, normalizedEnd.GradientOrigin, t),
+                    Center = InterpolatePoint(normalizedStart.Center, normalizedEnd.Center, t),
+                    RadiusX = normalizedStart.RadiusX + t * (normalizedEnd.RadiusX - normalizedStart.RadiusX),
+                    RadiusY = normalizedStart.RadiusY + t * (normalizedEnd.RadiusY - normalizedStart.RadiusY),
+                    GradientStops = InterpolateStops(normalizedStart.GradientStops, normalizedEnd.GradientStops, t),
+                    SpreadMethod = t >= 1 ? normalizedEnd.SpreadMethod : normalizedStart.SpreadMethod,
+                    MappingMode = normalizedStart.MappingMode,
+                    ColorInterpolationMode = normalizedStart.ColorInterpolationMode
+                };
+
+                result.Add(newBrush);
+            }
+
+            if (steps > 1)
+            {
+                result[0] = start;
+                result[result.Count - 1] = solidColorBrush is null ? end : solidColorBrush;
+            }
+            return result;
+        }
+
+        private static (RadialGradientBrush, RadialGradientBrush) NormalizeRadialGradientStops(RadialGradientBrush a, RadialGradientBrush b)
+        {
+            if (a.GradientStops.Count == b.GradientStops.Count)
+                return (a, b);
+
+            int maxCount = Math.Max(a.GradientStops.Count, b.GradientStops.Count);
+
+            RadialGradientBrush normalizedA = a.GradientStops.Count < maxCount ? ExpandRadialGradientStops(a, maxCount) : a;
+            RadialGradientBrush normalizedB = b.GradientStops.Count < maxCount ? ExpandRadialGradientStops(b, maxCount) : b;
+
+            return (normalizedA, normalizedB);
+        }
+        private static RadialGradientBrush ExpandRadialGradientStops(RadialGradientBrush original, int targetCount)
+        {
+            if (original.GradientStops.Count >= targetCount)
+                return original;
+
+            List<GradientStop> newStops = new();
+            var orderedStops = original.GradientStops.OrderBy(s => s.Offset).ToList();
+
+            for (int i = 0; i < targetCount; i++)
+            {
+                double offset = (double)i / (targetCount - 1);
+                Color color = GetColorAtOffset(orderedStops, offset);
+                newStops.Add(new GradientStop(color, offset));
+            }
+
+            return new RadialGradientBrush
+            {
+                GradientOrigin = original.GradientOrigin,
+                Center = original.Center,
+                RadiusX = original.RadiusX,
+                RadiusY = original.RadiusY,
+                GradientStops = [.. newStops],
+                SpreadMethod = original.SpreadMethod,
+                MappingMode = original.MappingMode,
+                ColorInterpolationMode = original.ColorInterpolationMode
+            };
+        }
+        private static Color GetColorAtOffset(List<GradientStop> stops, double offset)
+        {
+            if (stops.Count == 0) return Colors.Transparent;
+            if (stops.Count == 1) return stops[0].Color;
+
+            // 找到相邻色标
+            var lower = stops.LastOrDefault(s => s.Offset <= offset);
+            var upper = stops.FirstOrDefault(s => s.Offset >= offset);
+
+            if (lower == null) return upper?.Color ?? Colors.Transparent;
+            if (upper == null) return lower.Color;
+            if (lower.Offset == upper.Offset) return lower.Color;
+
+            // 计算插值比例
+            double t = (offset - lower.Offset) / (upper.Offset - lower.Offset);
+            return InterpolateColor(lower.Color, upper.Color, t);
+        }
+
+        private static (LinearGradientBrush, LinearGradientBrush) NormalizeGradientStops(LinearGradientBrush a, LinearGradientBrush b)
+        {
+            if (a.GradientStops.Count == b.GradientStops.Count)
+                return (a, b);
+
+            // 确定目标点数
+            var maxCount = Math.Max(a.GradientStops.Count, b.GradientStops.Count);
+
+            // 标准化画刷A
+            var normalizedA = a.GradientStops.Count < maxCount ?
+                ExpandGradientStops(a, maxCount) : a;
+
+            // 标准化画刷B
+            var normalizedB = b.GradientStops.Count < maxCount ?
+                ExpandGradientStops(b, maxCount) : b;
+
+            return (normalizedA, normalizedB);
+        }
+        private static LinearGradientBrush ExpandGradientStops(LinearGradientBrush original, int targetCount)
+        {
+            if (original.GradientStops.Count >= targetCount)
+                return original;
+
+            // 生成新的均匀分布点
+            var newStops = new List<GradientStop>();
+            var existingStops = original.GradientStops.OrderBy(s => s.Offset).ToList();
+
+            // 插入中间点
+            for (int i = 0; i < targetCount; i++)
+            {
+                double targetOffset = (double)i / (targetCount - 1);
+                var color = GetColorAtOffset(original, targetOffset);
+                newStops.Add(new GradientStop(color, targetOffset));
+            }
+
+            return new LinearGradientBrush(new GradientStopCollection(newStops),
+                original.StartPoint,
+                original.EndPoint)
+            {
+                SpreadMethod = original.SpreadMethod,
+                MappingMode = original.MappingMode,
+                ColorInterpolationMode = original.ColorInterpolationMode
+            };
+        }
+        private static Color GetColorAtOffset(LinearGradientBrush brush, double offset)
+        {
+            var orderedStops = brush.GradientStops.OrderBy(s => s.Offset).ToList();
+
+            // 寻找相邻色标
+            GradientStop? lower = orderedStops.LastOrDefault(s => s.Offset <= offset);
+            GradientStop? upper = orderedStops.FirstOrDefault(s => s.Offset >= offset);
+
+            if (lower == null) return upper?.Color ?? Colors.Transparent;
+            if (upper == null) return lower.Color;
+            if (lower.Offset == upper.Offset) return lower.Color;
+
+            // 计算插值比例
+            double t = (offset - lower.Offset) / (upper.Offset - lower.Offset);
+            return InterpolateColor(lower.Color, upper.Color, t);
+        }
+        private static GradientStopCollection InterpolateStops(
+            GradientStopCollection startStops,
+            GradientStopCollection endStops,
+            double t)
+        {
+            return new GradientStopCollection(
+                startStops.Zip(endStops, (s, e) => new GradientStop(
+                    InterpolateColor(s.Color, e.Color, t),
+                    s.Offset + t * (e.Offset - s.Offset)
+                ))
+            );
+        }
+
+        private static Point InterpolatePoint(Point a, Point b, double t)
+        {
+            return new Point(
+                a.X + t * (b.X - a.X),
+                a.Y + t * (b.Y - a.Y));
+        }
+        private static Color InterpolateColor(Color a, Color b, double t)
+        {
+            return Color.FromArgb(
+                (byte)(a.A + t * (b.A - a.A)),
+                (byte)(a.R + t * (b.R - a.R)),
+                (byte)(a.G + t * (b.G - a.G)),
+                (byte)(a.B + t * (b.B - a.B)));
         }
     }
 }
