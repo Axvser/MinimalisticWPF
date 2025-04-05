@@ -44,7 +44,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="MinimalisticWPF.Generator" Version="3.0.2" />
+	  <PackageReference Include="MinimalisticWPF.Generator" Version="3.0.4" />
 	</ItemGroup>
 
 	<ItemGroup>
