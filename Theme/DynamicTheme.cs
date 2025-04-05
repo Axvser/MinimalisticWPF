@@ -94,16 +94,15 @@ namespace MinimalisticWPF
         {
             if (!_isloaded)
             {
+                _isloaded = true;
                 AddSystemThemeEvent();
                 var Assemblies = AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => a.GetTypes());
                 var classes = Assemblies.Where(t => typeof(IThemeApplied).IsAssignableFrom(t));
                 Attributes = Assemblies.Where(t => typeof(IThemeAttribute).IsAssignableFrom(t) && typeof(Attribute).IsAssignableFrom(t));
                 SharedGeneration(classes, Attributes);
-                _isloaded = true;
-                Application.Current.MainWindow.Closed += RemoveSystemThemeEvent;
                 if (_followSystem)
                 {
-                    Apply(GetSystemTheme(_alternativeTheme), TransitionParams.Theme);
+                    Apply(GetSystemTheme(_alternativeTheme), TransitionParams.Empty);
                 }
             }
         }
@@ -115,8 +114,7 @@ namespace MinimalisticWPF
             GlobalInstance.Clear();
             SharedSource.Clear();
             IsolatedSource.Clear();
-            RemoveSystemThemeEvent(null, EventArgs.Empty);
-            Application.Current.MainWindow.Closed -= RemoveSystemThemeEvent;
+            RemoveSystemThemeEvent();
         }
         public static void Apply(Type themeType, TransitionParams? param = null)
         {
@@ -208,7 +206,7 @@ namespace MinimalisticWPF
                 _issysthemeevenadded = true;
             }
         }
-        private static void RemoveSystemThemeEvent(object? sender, EventArgs e)
+        private static void RemoveSystemThemeEvent()
         {
             if (_issysthemeevenadded)
             {
@@ -327,6 +325,7 @@ namespace MinimalisticWPF
             foreach (var target in targets)
             {
                 GlobalInstance.Add(target);
+                target.CurrentTheme = CurrentTheme;
 
                 var unit = new ConcurrentDictionary<Type, State>();
 
