@@ -102,7 +102,7 @@ namespace MinimalisticWPF
                 SharedGeneration(classes, Attributes);
                 if (_followSystem)
                 {
-                    Apply(GetSystemTheme(_alternativeTheme), TransitionParams.Empty);
+                    Apply(GetSystemTheme(_alternativeTheme), TransitionParams.Empty.DeepCopy());
                 }
             }
         }
@@ -164,19 +164,6 @@ namespace MinimalisticWPF
             return null;
         }
 
-        public static void AddIsolatedValue<T>(T target, ConcurrentDictionary<Type, State> source) where T : IThemeApplied
-        {
-            Awake();
-
-            if (IsolatedSource.TryGetValue(target, out var old))
-            {
-                IsolatedSource.TryUpdate(target, source, old);
-            }
-            else
-            {
-                IsolatedSource.TryAdd(target, source);
-            }
-        }
         public static void SetIsolatedValue<T>(T target, Type themeType, string propertyName, object? newValue) where T : IThemeApplied
         {
             Awake();
@@ -218,7 +205,7 @@ namespace MinimalisticWPF
         {
             if (_followSystem)
             {
-                Apply(GetSystemTheme(_alternativeTheme), TransitionParams.Theme);
+                Apply(GetSystemTheme(_alternativeTheme), TransitionParams.Theme.DeepCopy());
             }
         }
         private static Type GetSystemTheme(Type alternativeTheme)

@@ -53,10 +53,10 @@ namespace MinimalisticWPF.TransitionSystem
         {
             var copy = new TransitionParams
             {
-                Start = Start,
-                Update = Update,
-                LateUpdate = LateUpdate,
-                Completed = Completed,
+                Start = Start?.Clone() as Action,
+                Update = Update?.Clone() as Action,
+                LateUpdate = LateUpdate?.Clone() as Action,
+                Completed = Completed?.Clone() as Action,
                 IsAutoReverse = IsAutoReverse,
                 LoopTime = LoopTime,
                 Duration = Duration,
