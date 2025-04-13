@@ -18,7 +18,7 @@
 		<NeutralLanguage>zh-CN</NeutralLanguage>
 		<Description>Using C# code to write front-end effects in a WPF project? This sounds crazy, but this library can help you. It not only has a completely independent transition system, but also has support for source code generators of the MVVM design pattern. For back-end developers, this can greatly reduce the learning cost of XAML. And you know, the C# syntax is concise and elegant.</Description>
 		<RepositoryType>git</RepositoryType>
-		<Version>4.7.2</Version>
+		<Version>4.7.5</Version>
 		<Authors>Axvser</Authors>
 		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
@@ -44,7 +44,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="MinimalisticWPF.Generator" Version="3.2.9-beta" />
+	  <PackageReference Include="MinimalisticWPF.Generator" Version="3.3.0" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -52,6 +52,14 @@
 	    <Pack>True</Pack>
 	    <PackagePath>\</PackagePath>
 	  </Resource>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <EditorConfigFiles Remove="E:\VisualStudio\Projects\WPF\MinimalisticWPF\MinimalisticWPF\.editorconfig" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Include="E:\VisualStudio\Projects\WPF\MinimalisticWPF\MinimalisticWPF\.editorconfig" />
 	</ItemGroup>
 
 </Project>
