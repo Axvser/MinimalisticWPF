@@ -262,7 +262,7 @@ namespace MinimalisticWPF
                                 ,
                                 (false, true, false, false, false, false) => () =>
                                 {
-                                    var value = ParseBrush(info.Context.Parameters);
+                                    var value = ParseBrush(cs, info.Context.Parameters.FirstOrDefault()?.ToString() ?? string.Empty);
                                     state.AddProperty(info.PropertyInfo.Name, value);
                                     return 2;
                                 }
@@ -348,7 +348,7 @@ namespace MinimalisticWPF
                                 ,
                                 (false, true, false, false, false, false) => () =>
                                 {
-                                    var value = ParseBrush(info.Context.Parameters);
+                                    var value = ParseBrush(target.GetType(), info.Context.Parameters.FirstOrDefault()?.ToString() ?? string.Empty);
                                     state.AddProperty(info.PropertyInfo.Name, value);
                                     return 2;
                                 }
@@ -394,155 +394,51 @@ namespace MinimalisticWPF
             }
         }
 
-        private static Brush ParseBrush(object?[] values)
+        public static Brush ParseBrush(Type target, string parameter)
         {
-            var list = values.ToList();
+            if (string.IsNullOrEmpty(parameter))
+                return Brushes.Transparent;
 
-            if (list.Count == 0) return Brushes.Transparent;
+            // 1. 尝试作为资源 Key 查找
+            if (Application.Current.TryFindResource(parameter) is Brush resourceBrush)
+                return resourceBrush;
 
-            // 纯色组
-            if (list.Count == 1) return ParseSolidColorBrush(list[0] as string ?? string.Empty);
+            // 2. 尝试作为 target 的静态字段或属性查找
+            Brush? memberBrush = GetStaticBrushFromType(target, parameter);
+            if (memberBrush != null)
+                return memberBrush;
 
-            var g = (GradientSpreadMethod)(list.FirstOrDefault(x => x is GradientSpreadMethod) ?? GradientSpreadMethod.Pad);
-            // 线性渐变组
-            var s = list.FindIndex(x => x is string str && (str == "S" || str == "s"));
-            var e = list.FindIndex(x => x is string str && (str == "E" || str == "e"));
-            if (s != -1 && e != -1) return ParseLinear(s, e, g, list);
-            // 径向渐变组
-            var c = list.FindIndex(x => x is string str && (str == "C" || str == "c"));
-            var o = list.FindIndex(x => x is string str && (str == "O" || str == "o"));
-            var x = list.FindIndex(x => x is string str && (str == "X" || str == "x"));
-            var y = list.FindIndex(x => x is string str && (str == "Y" || str == "y"));
-            if (c != -1 && o != -1 && x != -1 && y != -1) return ParseRadial(c, o, x, y, g, list);
-
-            return Brushes.Transparent;
-        }
-
-        private static Brush ParseSolidColorBrush(string str)
-        {
+            // 3. 尝试解析为颜色字符串
             try
             {
-                return new SolidColorBrush((Color)ColorConverter.ConvertFromString(str));
+                return new SolidColorBrush(
+                    (Color)ColorConverter.ConvertFromString(parameter)
+                );
             }
-            catch (FormatException e)
+            catch (FormatException)
             {
-                Debug.WriteLine(e.Message);
                 return Brushes.Transparent;
             }
         }
-        private static Brush ParseLinear(int s, int e, GradientSpreadMethod spreadMethod, List<object?> values)
+        private static Brush? GetStaticBrushFromType(Type type, string memberName)
         {
-            // 提取起点和终点的坐标参数（最多取2个，不足补0）
-            var startPoint = ExtractParameters(values, s + 1, 2).Select(Convert.ToDouble).ToArray();
-            var endPoint = ExtractParameters(values, e + 1, 2).Select(Convert.ToDouble).ToArray();
+            // 查找静态字段
+            FieldInfo? field = type.GetField(
+                memberName,
+                BindingFlags.Public | BindingFlags.Static
+            );
+            if (field?.GetValue(null) is Brush fieldBrush)
+                return fieldBrush;
 
-            var brush = new LinearGradientBrush
-            {
-                StartPoint = new Point(
-                    startPoint.Length >= 1 ? startPoint[0] : 0,
-                    startPoint.Length >= 2 ? startPoint[1] : 0
-                ),
-                EndPoint = new Point(
-                    endPoint.Length >= 1 ? endPoint[0] : 0,
-                    endPoint.Length >= 2 ? endPoint[1] : 0
-                ),
-                SpreadMethod = spreadMethod
-            };
+            // 查找静态属性
+            PropertyInfo? property = type.GetProperty(
+                memberName,
+                BindingFlags.Public | BindingFlags.Static
+            );
+            if (property?.GetValue(null) is Brush propertyBrush)
+                return propertyBrush;
 
-            // 添加渐变停止点
-            ExtractStops(values).ForEach(stop => brush.GradientStops.Add(stop));
-            return brush;
-        }
-        private static Brush ParseRadial(int c, int o, int x, int y, GradientSpreadMethod spreadMethod, List<object?> values)
-        {
-            // 提取中心、原点、半径X/Y参数（最多取2个，不足补0）
-            var center = ExtractParameters(values, c + 1, 2).Select(Convert.ToDouble).ToArray();
-            var origin = ExtractParameters(values, o + 1, 2).Select(Convert.ToDouble).ToArray();
-            var radiusX = ExtractParameters(values, x + 1, 1).Select(Convert.ToDouble).FirstOrDefault();
-            var radiusY = ExtractParameters(values, y + 1, 1).Select(Convert.ToDouble).FirstOrDefault();
-
-            var brush = new RadialGradientBrush
-            {
-                Center = new Point(
-                    center.Length >= 1 ? center[0] : 0,
-                    center.Length >= 2 ? center[1] : 0
-                ),
-                GradientOrigin = new Point(
-                    origin.Length >= 1 ? origin[0] : 0,
-                    origin.Length >= 2 ? origin[1] : 0
-                ),
-                RadiusX = radiusX,
-                RadiusY = radiusY,
-                SpreadMethod = spreadMethod
-            };
-
-            // 添加渐变停止点
-            ExtractStops(values).ForEach(stop => brush.GradientStops.Add(stop));
-            return brush;
-        }
-        private static IEnumerable<object> ExtractParameters(List<object?> values, int startIndex, int maxCount)
-        {
-            var parameters = new List<object>();
-            for (int i = startIndex; i < values.Count && parameters.Count < maxCount; i++)
-            {
-                if (values[i] is double || values[i] is int) // 支持 int 和 double
-                {
-#pragma warning disable CS8604
-                    parameters.Add(values[i]);
-#pragma warning restore CS8604
-                }
-                else if (values[i] is string n) // 如果参数是字符串但可以转换为数字
-                {
-                    if (double.TryParse(n, out double num))
-                    {
-                        parameters.Add(num);
-                    }
-                }
-                else
-                {
-                    break; // 遇到非数字类型，停止提取
-                }
-            }
-            return parameters;
-        }
-        private static List<GradientStop> ExtractStops(List<object?> values)
-        {
-            var stops = new List<GradientStop>();
-            for (int i = 0; i < values.Count; i++)
-            {
-                if (values[i] is string colorStr)
-                {
-                    if (ParseSolidColorBrush(colorStr) is SolidColorBrush color && i + 1 < values.Count)
-                    {
-                        // 检查下一个元素是否是数字（double 或 int）
-                        if (TryConvertToDouble(values[i + 1], out double offset))
-                        {
-                            stops.Add(new GradientStop(color.Color, offset));
-                            i++; // 跳过已处理的偏移量
-                        }
-                    }
-                }
-            }
-            return stops;
-        }
-        private static bool TryConvertToDouble(object? value, out double result)
-        {
-            result = 0;
-            if (value is double d)
-            {
-                result = d;
-                return true;
-            }
-            else if (value is int i)
-            {
-                result = i;
-                return true;
-            }
-            else if (value is string s)
-            {
-                return double.TryParse(s, out result);
-            }
-            return false;
+            return null;
         }
     }
 }

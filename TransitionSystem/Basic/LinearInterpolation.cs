@@ -219,35 +219,32 @@ namespace MinimalisticWPF.TransitionSystem.Basic
             List<object?> result = new(steps);
             if (steps <= 0) return [oriEnd];
 
+            if (start.SpreadMethod != end.SpreadMethod ||
+                start.Center != end.Center ||
+                start.GradientOrigin != end.GradientOrigin)
+            {
+                return InterpolateBrushOpacity(start, end, steps, oriEnd);
+            }
+
             try
             {
-                // 对齐 GradientStops（复用线性渐变的逻辑）
                 var stopPairs = GetStopPairs(start, end);
-
-                // SpreadMethod 不同时，仅警告但仍尝试插值
-                bool spreadMismatch = start.SpreadMethod != end.SpreadMethod;
-                if (spreadMismatch)
-                {
-                    System.Diagnostics.Debug.WriteLine("Warning: RadialGradientBrush SpreadMethod mismatch. Proceeding with interpolation.");
-                }
 
                 for (int i = 0; i < steps; i++)
                 {
                     double t = (double)(i + 1) / steps;
 
-                    // 插值所有几何属性
                     var brush = new RadialGradientBrush
                     {
                         GradientOrigin = Lerp(start.GradientOrigin, end.GradientOrigin, t),
                         Center = Lerp(start.Center, end.Center, t),
                         RadiusX = Lerp(start.RadiusX, end.RadiusX, t),
                         RadiusY = Lerp(start.RadiusY, end.RadiusY, t),
-                        SpreadMethod = spreadMismatch ? start.SpreadMethod : end.SpreadMethod, // 优先取一致值
+                        SpreadMethod = start.SpreadMethod,
                         MappingMode = start.MappingMode,
                         Opacity = Lerp(start.Opacity, end.Opacity, t)
                     };
 
-                    // 插值每个 GradientStop
                     foreach (var pair in stopPairs)
                     {
                         var startStop = pair.Item1;
@@ -268,7 +265,6 @@ namespace MinimalisticWPF.TransitionSystem.Basic
             }
             catch
             {
-                // 异常时降级为透明度混合
                 return InterpolateBrushOpacity(start, end, steps, oriEnd);
             }
 
