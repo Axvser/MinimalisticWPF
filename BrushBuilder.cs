@@ -8,7 +8,16 @@ namespace MinimalisticWPF
     public static class BrushBuilder
     {
         public static TempLinearColorBrush Linear() => new();
+        public static LinearGradientBrush Linear(GradientStopCollection stops) => new(stops);
+        public static LinearGradientBrush Linear(GradientStopCollection stops, double angle) => new(stops, angle);
+        public static LinearGradientBrush Linear(Color startColor, Color endColor, double angle) => new(startColor, endColor, angle);
+        public static LinearGradientBrush Linear(GradientStopCollection stops, Point startPoint, Point endPoint) => new(stops, startPoint, endPoint);
+        public static LinearGradientBrush Linear(Color startColor, Color endColor, Point startPoint, Point endPoint) => new(startColor, endColor, startPoint, endPoint);
+
         public static TempRadialColorBrush Radial() => new();
+        public static RadialGradientBrush Radial(GradientStopCollection stops) => new(stops);
+        public static RadialGradientBrush Radial(Color startColor, Color endColor) => new(startColor, endColor);
+
         public static TempSolidColorBrush Solid() => new();
     }
 
@@ -17,6 +26,18 @@ namespace MinimalisticWPF
         private bool _isMappingModeManuallySet;
         public Point StartPoint { get; private set; } = new Point(0, 0);
         public Point EndPoint { get; private set; } = new Point(1, 1);
+        public TempLinearColorBrush Absolute()
+        {
+            MappingMode = BrushMappingMode.Absolute;
+            _isMappingModeManuallySet = true;
+            return this;
+        }
+        public TempLinearColorBrush RelativeToBoundingBox()
+        {
+            MappingMode = BrushMappingMode.RelativeToBoundingBox;
+            _isMappingModeManuallySet = true;
+            return this;
+        }
         public TempLinearColorBrush Repeat()
         {
             SpreadMethod = GradientSpreadMethod.Repeat;
@@ -85,6 +106,21 @@ namespace MinimalisticWPF
         public Point GradientOrigin { get; private set; } = new Point(0.5, 0.5);
         public double RadiusX { get; private set; } = 0.5;
         public double RadiusY { get; private set; } = 0.5;
+
+        private bool _isMappingModeManuallySet;
+
+        public TempRadialColorBrush Absolute()
+        {
+            MappingMode = BrushMappingMode.Absolute;
+            _isMappingModeManuallySet = true;
+            return this;
+        }
+        public TempRadialColorBrush RelativeToBoundingBox()
+        {
+            MappingMode = BrushMappingMode.RelativeToBoundingBox;
+            _isMappingModeManuallySet = true;
+            return this;
+        }
         public TempRadialColorBrush Repeat()
         {
             SpreadMethod = GradientSpreadMethod.Repeat;
@@ -103,17 +139,26 @@ namespace MinimalisticWPF
         public TempRadialColorBrush Center(double x, double y)
         {
             CenterPoint = new Point(x, y);
+            UpdateAutoMappingMode();
             return this;
         }
         public TempRadialColorBrush Origin(double x, double y)
         {
             GradientOrigin = new Point(x, y);
+            UpdateAutoMappingMode();
+            return this;
+        }
+        public TempRadialColorBrush Radius(double radius)
+        {
+            RadiusX = RadiusY = radius;
+            UpdateAutoMappingMode();
             return this;
         }
         public TempRadialColorBrush Radius(double x, double y)
         {
             RadiusX = x;
             RadiusY = y;
+            UpdateAutoMappingMode();
             return this;
         }
         public TempRadialColorBrush Stop(Color color, double offset)
@@ -136,16 +181,28 @@ namespace MinimalisticWPF
             GradientStops.Add(new GradientStop(RGB.FromBrush(brush).Color, offset));
             return this;
         }
-        public RadialGradientBrush Build() => new()
+
+        private void UpdateAutoMappingMode()
         {
-            Center = CenterPoint,
-            GradientOrigin = GradientOrigin,
-            RadiusX = RadiusX,
-            RadiusY = RadiusY,
-            GradientStops = new GradientStopCollection(GradientStops),
-            SpreadMethod = SpreadMethod,
-            MappingMode = MappingMode
-        };
+            if (_isMappingModeManuallySet) return;
+            bool isAbsolute = CenterPoint.X > 1 || CenterPoint.Y > 1 ||
+                             GradientOrigin.X > 1 || GradientOrigin.Y > 1 ||
+                             RadiusX > 1 || RadiusY > 1;
+            MappingMode = isAbsolute ? BrushMappingMode.Absolute : BrushMappingMode.RelativeToBoundingBox;
+        }
+
+        public RadialGradientBrush Build()
+        {
+            return new RadialGradientBrush(new GradientStopCollection(GradientStops))
+            {
+                Center = CenterPoint,
+                GradientOrigin = GradientOrigin,
+                RadiusX = RadiusX,
+                RadiusY = RadiusY,
+                MappingMode = MappingMode,
+                SpreadMethod = SpreadMethod
+            };
+        }
     }
     public abstract class TempGradientBrush
     {
