@@ -46,7 +46,7 @@
 
 #### 1. 安装NuGet包
 ```bash
-dotnet add package MinimalisticWPF --version 4.4.0-pre
+dotnet add package MinimalisticWPF --version 4.7.5
 ```
 
 #### 2. 基础过渡动画
@@ -208,7 +208,7 @@ A minimalist development experience for WPF projects, enabling advanced frontend
 
 #### 1. Install NuGet Package  
 ```bash  
-dotnet add package MinimalisticWPF --version 4.4.0-pre  
+dotnet add package MinimalisticWPF --version 4.7.5 
 ```  
 
 #### 2. Basic Transition Animation  
