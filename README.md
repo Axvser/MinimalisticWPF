@@ -38,6 +38,7 @@
 | [v4.5.3](https://github.com/Axvser/MinimalisticWPF/wiki/Changes-v4.5.3)  | 系统主题跟随 | 2025-03-27 |
 | [v4.7.0](https://github.com/Axvser/MinimalisticWPF/wiki/View-Enhancements)  | 提供View支持，不再局限于ViewModel | 2025-04-05 |
 | [v4.7.2](https://github.com/Axvser/MinimalisticWPF/wiki/Changes-v4.7.2)  | 渐变画刷过渡支持 & Click功能块生成 | 2025-04-13 |
+| [v4.7.5](https://github.com/Axvser/MinimalisticWPF/wiki/Changes-v4.7.5)  | 优化画刷过渡 & 新增BrushBuilder & 优化Theme特性中的Brush表达式支持 | 2025-04-14 |
 
 ---
 
@@ -199,6 +200,7 @@ A minimalist development experience for WPF projects, enabling advanced frontend
 | [v4.5.3](https://github.com/Axvser/MinimalisticWPF/wiki/Changes-v4.5.3)  | System topic following | 2025-03-27 |
 | [v4.7.0](https://github.com/Axvser/MinimalisticWPF/wiki/View-Enhancements)  | Views are supported, not just the ViewModel | 2025-04-05 |
 | [v4.7.2](https://github.com/Axvser/MinimalisticWPF/wiki/Changes-v4.7.2)  | Gradient brush transition support & Click function block generation | 2025-04-13 |
+| [v4.7.5](https://github.com/Axvser/MinimalisticWPF/wiki/Changes-v4.7.5)  | Optimized Brush Transitions & Added BrushBuilder & Optimized Brush expression support in Theme feature | 2025-04-14 |
 
 ---
 
