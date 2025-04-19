@@ -6,7 +6,7 @@
 ## 中文版
 
 ### 简介 📖
-为WPF项目提供极简化的开发体验，通过C#代码直接实现前端动画、MVVM模式、路径运动等高级功能。支持源码生成器、独立过渡系统、主题切换等特性，大幅降低XAML学习成本。
+为WPF项目提供极简化的开发体验，以C#实现过渡、悬停、主题、MonoBehaviour等功能。在一些场景中，它的可读性优于使用XAML。
 
 [![GitHub](https://img.shields.io/badge/GitHub-Repository-blue?logo=github)](https://github.com/Axvser/MinimalisticWPF)  
 [![NuGet](https://img.shields.io/nuget/v/MinimalisticWPF?color=green&logo=nuget)](https://www.nuget.org/packages/MinimalisticWPF/)
@@ -14,12 +14,9 @@
 ---
 
 ### 核心功能导航 🚀
-1. **[过渡系统](#过渡系统)** - 属性动画与复合过渡  
+1. **[过渡](#过渡系统)** - 属性动画与复合过渡  
 2. **[V增强](#v增强)** - 源码生成器驱动的View
-3. **[VM增强](#vm增强)** - 源码生成器驱动的ViewModel  
-4. **[路径运动](#路径运动)** - 可视化轨迹设计与控件运动  
-5. **[粒子特效](#粒子特效)** - 可视化粒子发射器与消散边界
-6. **[扩展工具](#扩展工具)** - 字符串处理/颜色管理/AOP 
+3. **[VM增强](#vm增强)** - 源码生成器驱动的ViewModel
 
 ### 完整文档 📚
 [查看Wiki获取完整API参考](https://github.com/Axvser/MinimalisticWPF/wiki)
@@ -39,6 +36,7 @@
 | [v4.7.0](https://github.com/Axvser/MinimalisticWPF/wiki/View-Enhancements)  | 提供View支持，不再局限于ViewModel | 2025-04-05 |
 | [v4.7.2](https://github.com/Axvser/MinimalisticWPF/wiki/Changes-v4.7.2)  | 渐变画刷过渡支持 & Click功能块生成 | 2025-04-13 |
 | [v4.7.5](https://github.com/Axvser/MinimalisticWPF/wiki/Changes-v4.7.5)  | 优化画刷过渡 & 新增BrushBuilder & 优化Theme特性中的Brush表达式支持 | 2025-04-14 |
+| [v4.8.0](https://github.com/Axvser/MinimalisticWPF/wiki/Changes-v4.8.0)  | 优化初始值设定逻辑 & 新增类似于Unity3D的MonoBehaviour | 2025-04-19 |
 
 ---
 
@@ -46,7 +44,7 @@
 
 #### 1. 安装NuGet包
 ```bash
-dotnet add package MinimalisticWPF --version 4.7.5
+dotnet add package MinimalisticWPF --version 4.8.0
 ```
 
 #### 2. 基础过渡动画
@@ -152,12 +150,6 @@ DynamicTheme.Apply(typeof(Light));
 | **RGB**             | 颜色值转换与管理              |
 | **AOP**             | 动态方法拦截与扩展            |
 
-```csharp
-// 示例：中文提取
-var text = "Hello世界";
-var result = StringCatcher.Chinese(text); // ["世界"]
-```
-
 ---
 
 ### 完整文档 📚
@@ -171,7 +163,7 @@ var result = StringCatcher.Chinese(text); // ["世界"]
 ## English Version  
 
 ### Introduction 📖  
-A minimalist development experience for WPF projects, enabling advanced frontend animations, MVVM patterns, path-based motion, and particle effects through pure C# code. Features include source generators, an independent transition system, theme switching, and more—significantly reducing the learning curve for XAML.  
+Provide an extremely simplified development experience for WPF projects, implementing functions such as transition, hover, themes, and MonoBehaviour in C#. In some scenarios, its readability is superior to that of XAML.
 
 [![GitHub](https://img.shields.io/badge/GitHub-Repository-blue?logo=github)](https://github.com/Axvser/MinimalisticWPF)  
 [![NuGet](https://img.shields.io/nuget/v/MinimalisticWPF?color=green&logo=nuget)](https://www.nuget.org/packages/MinimalisticWPF/)  
@@ -182,9 +174,6 @@ A minimalist development experience for WPF projects, enabling advanced frontend
 1. **[Transition System](#transition-system)** - Property animations & composite transitions  
 2. **[V Enhancements](#v-enhancements)** - Source generator-driven View
 3. **[VM Enhancements](#vm-enhancements)** - Source generator-driven ViewModel  
-4. **[Path Animation](#path-animation)** - Visual trajectory design & control motion  
-5. **[Particle Effects](#particle-effects)** - Shape-based emitters & dissipation boundaries  
-6. **[Utilities](#utilities)** - String processing/color management/AOP  
 
 ---
 
@@ -201,6 +190,7 @@ A minimalist development experience for WPF projects, enabling advanced frontend
 | [v4.7.0](https://github.com/Axvser/MinimalisticWPF/wiki/View-Enhancements)  | Views are supported, not just the ViewModel | 2025-04-05 |
 | [v4.7.2](https://github.com/Axvser/MinimalisticWPF/wiki/Changes-v4.7.2)  | Gradient brush transition support & Click function block generation | 2025-04-13 |
 | [v4.7.5](https://github.com/Axvser/MinimalisticWPF/wiki/Changes-v4.7.5)  | Optimized Brush Transitions & Added BrushBuilder & Optimized Brush expression support in Theme feature | 2025-04-14 |
+| [v4.8.0](https://github.com/Axvser/MinimalisticWPF/wiki/Changes-v4.8.0)  | Optimize the initial value setting logic & add MonoBehaviour similar to Unity3D | 2025-04-19 |
 
 ---
 
@@ -208,7 +198,7 @@ A minimalist development experience for WPF projects, enabling advanced frontend
 
 #### 1. Install NuGet Package  
 ```bash  
-dotnet add package MinimalisticWPF --version 4.7.5 
+dotnet add package MinimalisticWPF --version 4.8.0 
 ```  
 
 #### 2. Basic Transition Animation  
@@ -260,7 +250,7 @@ grid2.BeginTransition(template);
 - **Theme Switching** - One-click Light/Dark mode toggle  
 - **Hover Interaction** - Built-in mouse hover animations  
 
-### 示例：主题切换
+### Example：Theme
 
 ![](https://s3.bmp.ovh/imgs/2025/04/01/82c5b3d196f1ba1b.png)
 
@@ -313,12 +303,6 @@ Use Shapes as particle emitters OR dissipation boundaries to create stunning vis
 | **StringCatcher**  | Structured text extraction (CN/EN/digits/hierarchy) |  
 | **RGB**            | Color conversion & management  |  
 | **AOP**            | Dynamic method interception & extension |  
-
-```csharp  
-// Example: Chinese text extraction  
-var text = "Hello世界";  
-var result = StringCatcher.Chinese(text); // ["世界"]  
-```  
 
 ---
 
