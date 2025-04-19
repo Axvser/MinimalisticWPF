@@ -1,9 +1,8 @@
 ﻿using System.Windows.Threading;
-using System.Windows;
 
 namespace MinimalisticWPF.TransitionSystem
 {
-    public sealed class TransitionParams : DependencyObject, ICloneable
+    public sealed class TransitionParams : ICloneable
     {
         public TransitionParams() { }
 
@@ -14,7 +13,6 @@ namespace MinimalisticWPF.TransitionSystem
 
         public static int DefaultFrameRate { get; set; } = 60;
         public static DispatcherPriority DefaultPriority { get; set; } = DispatcherPriority.Normal;
-
         public static TransitionParams Theme { get; set; } = new()
         {
             FrameRate = DefaultFrameRate,
@@ -43,83 +41,13 @@ namespace MinimalisticWPF.TransitionSystem
         public event Action? LateUpdate;
         public event Action? Completed;
 
-        /// <summary>
-        /// 过渡执行完毕后,是否加载反转过渡以回复到起始状态
-        /// </summary>
-        public bool IsAutoReverse
-        {
-            get { return (bool)GetValue(IsAutoReverseProperty); }
-            set { SetValue(IsAutoReverseProperty, value); }
-        }
-        public static readonly DependencyProperty IsAutoReverseProperty =
-            DependencyProperty.Register("IsAutoReverse", typeof(bool), typeof(TransitionParams), new PropertyMetadata(false));
-
-        /// <summary>
-        /// 循环次数
-        /// </summary>
-        public int LoopTime
-        {
-            get { return (int)GetValue(LoopTimeProperty); }
-            set { SetValue(LoopTimeProperty, value); }
-        }
-        public static readonly DependencyProperty LoopTimeProperty =
-            DependencyProperty.Register("LoopTime", typeof(int), typeof(TransitionParams), new PropertyMetadata(0));
-
-        /// <summary>
-        /// 过渡持续时间 S
-        /// </summary>
-        public double Duration
-        {
-            get { return (double)GetValue(DurationProperty); }
-            set { SetValue(DurationProperty, value); }
-        }
-        public static readonly DependencyProperty DurationProperty =
-            DependencyProperty.Register("Duration", typeof(double), typeof(TransitionParams), new PropertyMetadata(0d));
-
-        /// <summary>
-        /// 每秒加载的帧数
-        /// </summary>
-        public double FrameRate
-        {
-            get { return (double)GetValue(FrameRateProperty); }
-            set { SetValue(FrameRateProperty, value); }
-        }
-        public static readonly DependencyProperty FrameRateProperty =
-            DependencyProperty.Register("FrameRate", typeof(double), typeof(TransitionParams), new PropertyMetadata(DefaultFrameRate));
-
-        /// <summary>
-        /// 加速度a,使时间变化率在xy图呈现斜率为a的直线
-        /// </summary>
-        public double Acceleration
-        {
-            get { return (double)GetValue(AccelerationProperty); }
-            set { SetValue(AccelerationProperty, value); }
-        }
-        public static readonly DependencyProperty AccelerationProperty =
-            DependencyProperty.Register("Acceleration", typeof(double), typeof(TransitionParams), new PropertyMetadata(0d));
-
-        /// <summary>
-        /// 属性更新操作的优先级
-        /// </summary>
-        public DispatcherPriority Priority
-        {
-            get { return (DispatcherPriority)GetValue(PriorityProperty); }
-            set { SetValue(PriorityProperty, value); }
-        }
-        public static readonly DependencyProperty PriorityProperty =
-            DependencyProperty.Register("Priority", typeof(DispatcherPriority), typeof(TransitionParams), new PropertyMetadata(DefaultFrameRate));
-
-        /// <summary>
-        /// 是否使用InvokeAsync调度属性更新操作
-        /// <para>通常,这由库自动判断,但是如果您希望以指定的Priority在InvokeAsync执行更新操作,那么此项需要改为true</para>
-        /// </summary>
-        public bool IsAsync
-        {
-            get { return (bool)GetValue(IsAsyncProperty); }
-            set { SetValue(IsAsyncProperty, value); }
-        }
-        public static readonly DependencyProperty IsAsyncProperty =
-            DependencyProperty.Register("IsAsync", typeof(bool), typeof(TransitionParams), new PropertyMetadata(false));
+        public bool IsAutoReverse { get; set; } = false;
+        public int LoopTime { get; set; } = 0;
+        public double Duration { get; set; } = 0;
+        public int FrameRate { get; set; } = DefaultFrameRate;
+        public double Acceleration { get; set; } = 0;
+        public DispatcherPriority Priority { get; set; } = DefaultPriority;
+        public bool IsAsync { get; set; } = false;
 
         internal TransitionParams DeepCopy()
         {
