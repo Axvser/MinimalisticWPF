@@ -16,9 +16,9 @@
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<RepositoryUrl>https://github.com/Axvser/MinimalisticWPF</RepositoryUrl>
 		<NeutralLanguage>zh-CN</NeutralLanguage>
-		<Description>Using C# code to write front-end effects in a WPF project? This sounds crazy, but this library can help you. It not only has a completely independent transition system, but also has support for source code generators of the MVVM design pattern. For back-end developers, this can greatly reduce the learning cost of XAML. And you know, the C# syntax is concise and elegant.</Description>
+		<Description>Provide an extremely simplified development experience for WPF projects, implementing functions such as transition, hover, themes, and MonoBehaviour in C#. In some scenarios, its readability is superior to that of XAML.</Description>
 		<RepositoryType>git</RepositoryType>
-		<Version>4.8.0-beta</Version>
+		<Version>4.8.0</Version>
 		<Authors>Axvser</Authors>
 		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
@@ -44,7 +44,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="MinimalisticWPF.Generator" Version="3.4.0-beta" />
+	  <PackageReference Include="MinimalisticWPF.Generator" Version="3.4.5" />
 	</ItemGroup>
 
 	<ItemGroup>
