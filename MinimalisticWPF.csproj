@@ -18,7 +18,7 @@
 		<NeutralLanguage>zh-CN</NeutralLanguage>
 		<Description>Provide an extremely simplified development experience for WPF projects, implementing functions such as transition, hover, themes, and MonoBehaviour in C#. In some scenarios, its readability is superior to that of XAML.</Description>
 		<RepositoryType>git</RepositoryType>
-		<Version>4.8.0</Version>
+		<Version>4.8.1</Version>
 		<Authors>Axvser</Authors>
 		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
@@ -44,7 +44,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="MinimalisticWPF.Generator" Version="3.4.5" />
+	  <PackageReference Include="MinimalisticWPF.Generator" Version="3.5.0" />
 	</ItemGroup>
 
 	<ItemGroup>
