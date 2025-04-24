@@ -255,7 +255,7 @@ namespace MinimalisticWPF
                             {
                                 (true, false, false, false, false, false) => () =>
                                 {
-                                    var value = Convert.ToDouble(info.Context.Parameters.FirstOrDefault() ?? 0);
+                                    var value = Convert.ToDouble(info.Context.Parameters.FirstOrDefault() ?? 0d);
                                     state.AddProperty(info.PropertyInfo.Name, value);
                                     return 1;
                                 }
@@ -276,21 +276,21 @@ namespace MinimalisticWPF
                                 ,
                                 (false, false, false, true, false, false) => () =>
                                 {
-                                    var value = Activator.CreateInstance(typeof(Point), info.Context.Parameters);
+                                    var value = Activator.CreateInstance(typeof(Point), info.Context.Parameters.Length > 0 ? info.Context.Parameters : [0d, 0d]);
                                     state.AddProperty(info.PropertyInfo.Name, value);
                                     return 4;
                                 }
                                 ,
                                 (false, false, false, false, true, false) => () =>
                                 {
-                                    var value = Activator.CreateInstance(typeof(CornerRadius), info.Context.Parameters);
+                                    var value = Activator.CreateInstance(typeof(CornerRadius), info.Context.Parameters.Length > 0 ? info.Context.Parameters : [0d]);
                                     state.AddProperty(info.PropertyInfo.Name, value);
                                     return 5;
                                 }
                                 ,
                                 (false, false, false, false, false, true) => () =>
                                 {
-                                    var value = Activator.CreateInstance(typeof(Thickness), info.Context.Parameters);
+                                    var value = Activator.CreateInstance(typeof(Thickness), info.Context.Parameters.Length > 0 ? info.Context.Parameters : [0d]);
                                     state.AddProperty(info.PropertyInfo.Name, value);
                                     return 6;
                                 }
@@ -341,7 +341,7 @@ namespace MinimalisticWPF
                             {
                                 (true, false, false, false, false, false) => () =>
                                 {
-                                    var value = Convert.ToDouble(info.Context.Parameters.FirstOrDefault() ?? 0);
+                                    var value = Convert.ToDouble(info.Context.Parameters.FirstOrDefault() ?? 0d);
                                     state.AddProperty(info.PropertyInfo.Name, value);
                                     return 1;
                                 }
@@ -362,21 +362,21 @@ namespace MinimalisticWPF
                                 ,
                                 (false, false, false, true, false, false) => () =>
                                 {
-                                    var value = Activator.CreateInstance(typeof(Point), info.Context.Parameters);
+                                    var value = Activator.CreateInstance(typeof(Point), info.Context.Parameters.Length > 0 ? info.Context.Parameters : [0d, 0d]);
                                     state.AddProperty(info.PropertyInfo.Name, value);
                                     return 4;
                                 }
                                 ,
                                 (false, false, false, false, true, false) => () =>
                                 {
-                                    var value = Activator.CreateInstance(typeof(CornerRadius), info.Context.Parameters);
+                                    var value = Activator.CreateInstance(typeof(CornerRadius), info.Context.Parameters.Length > 0 ? info.Context.Parameters : [0d]);
                                     state.AddProperty(info.PropertyInfo.Name, value);
                                     return 5;
                                 }
                                 ,
                                 (false, false, false, false, false, true) => () =>
                                 {
-                                    var value = Activator.CreateInstance(typeof(Thickness), info.Context.Parameters);
+                                    var value = Activator.CreateInstance(typeof(Thickness), info.Context.Parameters.Length > 0 ? info.Context.Parameters : [0d]);
                                     state.AddProperty(info.PropertyInfo.Name, value);
                                     return 6;
                                 }

@@ -24,25 +24,11 @@ namespace MinimalisticWPF.TransitionSystem.Basic
         public List<List<Tuple<PropertyInfo, List<object?>>>> FrameSequence => [];
         public void AddCalculator(string propertyName, InterpolationHandler value)
         {
-            if (Calculators.TryGetValue(propertyName, out var ori))
-            {
-                Calculators.TryUpdate(propertyName, value, ori);
-            }
-            else
-            {
-                Calculators.TryAdd(propertyName, value);
-            }
+            Calculators.AddOrUpdate(propertyName, value, (key, old) => value);
         }
         public void AddProperty(string propertyName, object? value)
         {
-            if (Values.TryGetValue(propertyName, out var ori))
-            {
-                Values.TryUpdate(propertyName, value, ori);
-            }
-            else
-            {
-                Values.TryAdd(propertyName, value);
-            }
+            Values.AddOrUpdate(propertyName, value, (key, old) => value);
         }
         public State Merge(ITransitionMeta meta)
         {
