@@ -62,8 +62,4 @@
 	  <None Include="E:\VisualStudio\Projects\WPF\MinimalisticWPF\MinimalisticWPF\.editorconfig" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="HotKey\" />
-	</ItemGroup>
-
 </Project>

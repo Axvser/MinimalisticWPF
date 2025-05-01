@@ -3,6 +3,15 @@ namespace MinimalisticWPF.FrameworkSupport
 {
     internal static class HashCodeExtensions
     {
+        internal static int Combine(uint h1, uint h2)
+        {
+            unchecked
+            {
+                uint rol5 = (h1 << 5) | (h1 >> 27);
+                return ((int)rol5 + (int)h1) ^ (int)h2;
+            }
+        }
+
         internal static int Combine(int h1, int h2)
         {
             uint rol5 = ((uint)h1 << 5) | ((uint)h1 >> 27);
