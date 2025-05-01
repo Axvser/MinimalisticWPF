@@ -1,5 +1,8 @@
 ﻿using System.Windows;
 using System.Windows.Media;
+#if NETFRAMEWORK
+using MinimalisticWPF.FrameworkSupport;
+#endif
 
 namespace MinimalisticWPF.TransitionSystem.Basic
 {

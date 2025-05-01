@@ -1,11 +1,17 @@
 ﻿#if NET
-
 using System.Reflection;
 
 namespace MinimalisticWPF.AspectOriented
 {
-    public delegate object? ProxyHandler(object?[]? args, object? lastResult);
-    public class ProxyInstance : DispatchProxy
+    /// <summary>
+    /// 🧰 > This delegate is used for the processing of the proxy method
+    /// </summary>
+    /// <param name="parameters">The parameters accepted for this method call</param>
+    /// <param name="previous">The parameters returned from the previous step</param>
+    /// <returns>object? > Your custom interception or overwrite method is required to return a result</returns>参数
+    public delegate object? ProxyHandler(object?[]? parameters, object? previous);
+
+    public sealed class ProxyInstance : DispatchProxy
     {
         internal static int _id = 0;
         public static Dictionary<int, ProxyInstance> ProxyInstances { get; internal set; } = new Dictionary<int, ProxyInstance>();

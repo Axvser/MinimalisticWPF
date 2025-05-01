@@ -4,6 +4,9 @@ using System.Windows.Media;
 using System.Windows;
 using MinimalisticWPF.StructuralDesign.Animator;
 using MinimalisticWPF.TransitionSystem.Basic;
+#if NETFRAMEWORK
+using MinimalisticWPF.FrameworkSupport;
+#endif
 
 namespace MinimalisticWPF.TransitionSystem
 {

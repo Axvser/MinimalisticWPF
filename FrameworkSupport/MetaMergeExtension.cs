@@ -1,10 +1,9 @@
 ﻿#if NETFRAMEWORK
-
+using MinimalisticWPF;
 using MinimalisticWPF.StructuralDesign.Animator;
 using MinimalisticWPF.TransitionSystem;
 using MinimalisticWPF.TransitionSystem.Basic;
-
-namespace MinimalisticWPF
+namespace MinimalisticWPF.FrameworkSupport
 {
     internal class MetaMergeExtension
     {
@@ -22,5 +21,4 @@ namespace MinimalisticWPF
         }
     }
 }
-
 #endif

@@ -1,6 +1,5 @@
 ﻿#if NETFRAMEWORK
-
-namespace MinimalisticWPF
+namespace MinimalisticWPF.FrameworkSupport
 {
     public static class FrameworkMathExtension
     {
@@ -24,5 +23,4 @@ namespace MinimalisticWPF
         }
     }
 }
-
 #endif

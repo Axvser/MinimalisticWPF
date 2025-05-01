@@ -1,6 +1,9 @@
 ﻿using MinimalisticWPF.StructuralDesign.Animator;
 using System.Reflection;
 using System.Windows;
+#if NETFRAMEWORK
+using MinimalisticWPF.FrameworkSupport;
+#endif
 
 namespace MinimalisticWPF.TransitionSystem
 {
