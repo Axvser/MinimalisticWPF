@@ -4,21 +4,16 @@ namespace MinimalisticWPF.HotKey
 {
     internal class InvisibleHotkeyComponent(uint modifierKeys, uint triggerKeys) : IHotKeyComponent
     {
-        public uint VirtualModifiers { get; set; } = modifierKeys;
-        public uint VirtualKeys { get; set; } = triggerKeys;
+        public uint RecordedModifiers { get; set; } = modifierKeys;
+        public uint RecordedKey { get; set; } = triggerKeys;
 
-        private event HotKeyEventHandler? handlers;
-        public virtual event HotKeyEventHandler Handler
-        {
-            add { handlers += value; }
-            remove { handlers -= value; }
-        }
+        public virtual event HotKeyEventHandler? HotKeyInvoked;
 
-        public void Invoke()
+        public void InvokeHotKey()
         {
-            handlers?.Invoke(null, new HotKeyEventArgs(VirtualModifiers, VirtualKeys));
+            HotKeyInvoked?.Invoke(null, new HotKeyEventArgs(RecordedModifiers, RecordedKey));
         }
-        public void Covered()
+        public void CoverHotKey()
         {
 
         }

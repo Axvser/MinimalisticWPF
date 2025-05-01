@@ -11,11 +11,11 @@ namespace MinimalisticWPF.AspectOriented
     /// <returns>object? > Your custom interception or overwrite method is required to return a result</returns>参数
     public delegate object? ProxyHandler(object?[]? parameters, object? previous);
 
-    public sealed class ProxyInstance : DispatchProxy
+    public class ProxyInstance : DispatchProxy
     {
         internal static int _id = 0;
-        public static Dictionary<int, ProxyInstance> ProxyInstances { get; internal set; } = new Dictionary<int, ProxyInstance>();
-        public static Dictionary<object, int> ProxyIDs { get; internal set; } = new Dictionary<object, int>();
+        public static Dictionary<int, ProxyInstance> ProxyInstances { get; internal set; } = [];
+        public static Dictionary<object, int> ProxyIDs { get; internal set; } = [];
 
         public ProxyInstance() { _localid = _id; _id++; ProxyInstances.Add(_localid, this); }
 
@@ -23,9 +23,9 @@ namespace MinimalisticWPF.AspectOriented
         internal Type? _targetType;
         internal int _localid = 0;
 
-        internal Dictionary<string, Tuple<ProxyHandler?, ProxyHandler?, ProxyHandler?>> GetterActions { get; set; } = new Dictionary<string, Tuple<ProxyHandler?, ProxyHandler?, ProxyHandler?>>();
-        internal Dictionary<string, Tuple<ProxyHandler?, ProxyHandler?, ProxyHandler?>> SetterActions { get; set; } = new Dictionary<string, Tuple<ProxyHandler?, ProxyHandler?, ProxyHandler?>>();
-        internal Dictionary<string, Tuple<ProxyHandler?, ProxyHandler?, ProxyHandler?>> MethodActions { get; set; } = new Dictionary<string, Tuple<ProxyHandler?, ProxyHandler?, ProxyHandler?>>();
+        internal Dictionary<string, Tuple<ProxyHandler?, ProxyHandler?, ProxyHandler?>> GetterActions { get; set; } = [];
+        internal Dictionary<string, Tuple<ProxyHandler?, ProxyHandler?, ProxyHandler?>> SetterActions { get; set; } = [];
+        internal Dictionary<string, Tuple<ProxyHandler?, ProxyHandler?, ProxyHandler?>> MethodActions { get; set; } = [];
 
         protected override object? Invoke(MethodInfo? targetMethod, object?[]? args)
         {

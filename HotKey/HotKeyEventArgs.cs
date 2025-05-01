@@ -1,30 +1,33 @@
-﻿public delegate void HotKeyEventHandler(object? sender, HotKeyEventArgs e);
-
-public class HotKeyEventArgs(uint modifiers, uint triggers) : EventArgs
+﻿namespace MinimalisticWPF.HotKey
 {
-    public uint Modifiers => modifiers;
-    public uint Keys => triggers;
+    public delegate void HotKeyEventHandler(object? sender, HotKeyEventArgs e);
 
-    public IEnumerable<VirtualModifiers> GetModifierKeys()
+    public class HotKeyEventArgs(uint modifiers, uint triggers) : EventArgs
     {
-        foreach (VirtualModifiers flag in Enum.GetValues(typeof(VirtualModifiers)))
+        public uint Modifiers => modifiers;
+        public uint Keys => triggers;
+
+        public IEnumerable<VirtualModifiers> GetModifierKeys()
         {
-            if ((Modifiers & (uint)flag) == (uint)flag && (uint)flag != 0x0000)
+            foreach (VirtualModifiers flag in Enum.GetValues(typeof(VirtualModifiers)))
             {
-                yield return flag;
+                if ((Modifiers & (uint)flag) == (uint)flag && (uint)flag != 0x0000)
+                {
+                    yield return flag;
+                }
             }
         }
-    }
-    public VirtualKeys GetVirtualKey()
-    {
-        VirtualKeys key = 0x0000;
-        foreach (VirtualKeys flag in Enum.GetValues(typeof(VirtualKeys)))
+        public VirtualKeys GetVirtualKey()
         {
-            if ((Keys & (uint)flag) == (uint)flag && (uint)flag != 0x0000 && flag > key)
+            VirtualKeys key = 0x0000;
+            foreach (VirtualKeys flag in Enum.GetValues(typeof(VirtualKeys)))
             {
-                key = flag;
+                if ((Keys & (uint)flag) == (uint)flag && (uint)flag != 0x0000 && flag > key)
+                {
+                    key = flag;
+                }
             }
+            return key;
         }
-        return key;
     }
 }
