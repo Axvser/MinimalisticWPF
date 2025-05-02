@@ -23,7 +23,10 @@ namespace MinimalisticWPF.Tools.String
             TimeSpan.FromMilliseconds(500)
         );
 
-        private static readonly Regex ChineseRegex = MyRegex();
+        private static readonly Regex ChineseRegex = new(
+            @"[\u4e00-\u9fff]+",
+            RegexOptions.Compiled
+        );
 
         private static readonly Regex WordsRegex = new(
             @"\b[A-Za-z]+\b",
@@ -377,9 +380,6 @@ namespace MinimalisticWPF.Tools.String
                     yield return input.Substring(start, length);
             }
         }
-
-        [GeneratedRegex(@"[\u4e00-\u9fff]+", RegexOptions.Compiled)]
-        private static partial Regex MyRegex();
         #endregion
     }
 }
