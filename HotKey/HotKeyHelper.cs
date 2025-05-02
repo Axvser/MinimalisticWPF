@@ -123,7 +123,6 @@ namespace MinimalisticWPF.HotKey
     /// <para>Core</para>
     /// <para>- <see cref="Test(VirtualModifiers)"/></para>
     /// <para>- <see cref="GetModifiers(uint)"/></para>
-    /// <para>- <see cref="GetUint(ICollection{VirtualModifiers})"/></para>
     /// <para>- <see cref="GetNames(ICollection{VirtualModifiers})"/></para>
     /// </summary>
     public static class HotKeyHelper

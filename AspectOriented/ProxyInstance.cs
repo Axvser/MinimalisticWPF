@@ -19,8 +19,8 @@ namespace MinimalisticWPF.AspectOriented
 
         public ProxyInstance() { _localid = _id; _id++; ProxyInstances.Add(_localid, this); }
 
-        internal object? _target;
-        internal Type? _targetType;
+        internal object? _target = null;
+        internal Type? _targetType = null;
         internal int _localid = 0;
 
         internal Dictionary<string, Tuple<ProxyHandler?, ProxyHandler?, ProxyHandler?>> GetterActions { get; set; } = [];
