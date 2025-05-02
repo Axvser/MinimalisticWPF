@@ -7,7 +7,7 @@ namespace MinimalisticWPF.Tools.SVG
 {
     public static class SVGExtension
     {
-        public static Geometry FromFile(this string filePath)
+        public static Geometry FromFile(string filePath)
         {
             return Geometry.Parse(ReadDataFromPath(filePath));
         }
