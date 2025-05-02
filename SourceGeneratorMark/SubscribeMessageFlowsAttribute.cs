@@ -5,7 +5,7 @@
     /// </summary>
     /// <param name="flowNames">names of message flows</param>
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
-    public class SubscribeMessageFlowsAttribute(params string[] flowNames) : Attribute
+    public class SubscribeMessageFlowsAttribute(string[] flowNames) : Attribute
     {
         public string[] FlowNames { get; internal set; } = flowNames;
     }

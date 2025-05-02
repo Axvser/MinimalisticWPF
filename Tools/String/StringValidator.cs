@@ -1,4 +1,4 @@
-﻿namespace MinimalisticWPF.Tools
+﻿namespace MinimalisticWPF.Tools.String
 {
     /// <summary>
     /// 🧰 > StringValidator is a class that provides a fluent interface for validating strings.
@@ -116,14 +116,13 @@
             return this;
         }
 
-        public bool AddRule(Func<string, bool> rule)
+        public StringValidator AddRule(Func<string, bool> rule)
         {
             if (rule != null)
             {
                 _validationRules.Add(rule);
-                return true;
             }
-            return false;
+            return this;
         }
         public bool Validate(string input)
         {
