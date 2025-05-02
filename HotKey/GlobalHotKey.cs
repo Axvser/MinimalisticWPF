@@ -7,13 +7,13 @@ using MinimalisticWPF.HotKey;
 #if NETFRAMEWORK
 using MinimalisticWPF.FrameworkSupport;
 #endif
+
 namespace MinimalisticWPF.HotKey
 {
     /// <summary>
     /// 🧰 > Global hotkey registration
     /// <para>Core</para>
     /// <para>- <see cref="Register(IHotKeyComponent)"/></para>
-    /// <para>- <see cref="RegisterHotKey(nint, int, uint, uint)"/></para>
     /// <para>- <see cref="Register(VirtualModifiers, VirtualKeys, HotKeyEventHandler[])"/></para>
     /// <para>- <see cref="Unregister(IHotKeyComponent)"/></para>
     /// <para>- <see cref="Unregister(uint, uint)"/></para>
