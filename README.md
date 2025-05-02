@@ -155,7 +155,8 @@ grid.Transition()
     {
         partial void Awake()
         {
-            SetIsActive(false); // 默认是开启的,但这里可以设置初始状态为关闭
+            // 默认开启,但这里可以设置初始状态为关闭
+            // CanMonoBehaviour = false;
         }
         partial void Start()
         {
@@ -169,8 +170,12 @@ grid.Transition()
         {
 
         }
+        partial void ExistMonoBehaviour()
+        {
+            
+        }
 
-        [AspectOriented] // 产生一个Proxy属性,通过它访问SaveData()可以触发自定义的拦截/扩展/覆盖
+        [AspectOriented] // 产生一个Proxy属性,Proxy.SaveData()可以触发自定义的拦截/扩展/覆盖,SaveData()则不触发
         public void SaveData()
         {
 
