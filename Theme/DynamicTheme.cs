@@ -36,6 +36,10 @@ namespace MinimalisticWPF.Theme
     public static HashSet<IThemeApplied> GlobalInstance { get; internal set; } = [];
 #endif
 
+        public static event Action? SharedValueInitialized;
+        public static event Action<Type, Type>? ThemeChangeLoading;
+        public static event Action<Type, Type>? ThemeChangeLoaded;
+
         /// <summary>
         /// [ App.cs ] Call before anything happens to make sure it works
         /// <para>
@@ -100,10 +104,7 @@ namespace MinimalisticWPF.Theme
                 var classes = Assemblies.Where(t => typeof(IThemeApplied).IsAssignableFrom(t));
                 Attributes = Assemblies.Where(t => typeof(IThemeAttribute).IsAssignableFrom(t) && typeof(Attribute).IsAssignableFrom(t));
                 SharedGeneration(classes, Attributes);
-                if (_followSystem)
-                {
-                    Apply(GetSystemTheme(_alternativeTheme), TransitionParams.Empty.DeepCopy());
-                }
+                SharedValueInitialized?.Invoke();
             }
         }
         public static void Dispose()
@@ -118,6 +119,8 @@ namespace MinimalisticWPF.Theme
         }
         public static void Apply(Type themeType, TransitionParams? param = null)
         {
+            var oldTheme = CurrentTheme;
+            ThemeChangeLoading?.Invoke(oldTheme, themeType);
             Awake();
             _currentTheme = themeType;
             foreach (var item in GlobalInstance)
@@ -141,6 +144,7 @@ namespace MinimalisticWPF.Theme
                     item.BeginTransition(meta, param);
                 }
             }
+            ThemeChangeLoaded?.Invoke(oldTheme, themeType);
         }
 
         public static void SetSharedValue(Type classType, Type themeType, string propertyName, object? newValue)
@@ -245,57 +249,67 @@ namespace MinimalisticWPF.Theme
                     {
                         if (info.PropertyInfo.CanWrite && info.PropertyInfo.CanRead && info.Context != null)
                         {
-                            Func<int> func = (group.Item1.TryGetValue(info.PropertyInfo.Name, out _),
-                                              group.Item2.TryGetValue(info.PropertyInfo.Name, out _),
-                                              group.Item3.TryGetValue(info.PropertyInfo.Name, out _),
-                                              group.Item4.TryGetValue(info.PropertyInfo.Name, out _),
-                                              group.Item5.TryGetValue(info.PropertyInfo.Name, out _),
-                                              group.Item6.TryGetValue(info.PropertyInfo.Name, out _))
+                            Action func = (group.Item1.TryGetValue(info.PropertyInfo.Name, out _),
+                                           group.Item2.TryGetValue(info.PropertyInfo.Name, out _),
+                                           group.Item3.TryGetValue(info.PropertyInfo.Name, out _),
+                                           group.Item4.TryGetValue(info.PropertyInfo.Name, out _),
+                                           group.Item5.TryGetValue(info.PropertyInfo.Name, out _),
+                                           group.Item6.TryGetValue(info.PropertyInfo.Name, out _))
                             switch
                             {
                                 (true, false, false, false, false, false) => () =>
                                 {
-                                    var value = Convert.ToDouble(info.Context.Parameters.FirstOrDefault() ?? 0d);
+                                    var context = info.Context.Parameters.FirstOrDefault();
+                                    if (context is null) return;
+                                    var value = Convert.ToDouble(context);
                                     state.AddProperty(info.PropertyInfo.Name, value);
-                                    return 1;
+                                    return;
                                 }
                                 ,
                                 (false, true, false, false, false, false) => () =>
                                 {
-                                    var value = ParseBrush(cs, info.Context.Parameters.FirstOrDefault()?.ToString() ?? string.Empty);
+                                    var context = info.Context.Parameters.FirstOrDefault();
+                                    if (context is null) return;
+                                    var value = ParseBrush(cs, context.ToString() ?? string.Empty);
                                     state.AddProperty(info.PropertyInfo.Name, value);
-                                    return 2;
+                                    return;
                                 }
                                 ,
                                 (false, false, true, false, false, false) => () =>
                                 {
-                                    var value = Transform.Parse(info.Context.Parameters.FirstOrDefault()?.ToString() ?? Transform.Identity.ToString());
+                                    var context = info.Context.Parameters.FirstOrDefault();
+                                    if (context is null) return;
+                                    var text = context.ToString();
+                                    var value = text == null ? Transform.Identity : Transform.Parse(text);
                                     state.AddProperty(info.PropertyInfo.Name, value);
-                                    return 3;
+                                    return;
                                 }
                                 ,
                                 (false, false, false, true, false, false) => () =>
                                 {
-                                    var value = Activator.CreateInstance(typeof(Point), info.Context.Parameters.Length > 0 ? info.Context.Parameters : [0d, 0d]);
+                                    if (info.Context.Parameters.Length == 0) return;
+                                    var value = Activator.CreateInstance(typeof(Point), (info.Context.Parameters.Length == 2) ? info.Context.Parameters : [0d, 0d]);
                                     state.AddProperty(info.PropertyInfo.Name, value);
-                                    return 4;
+                                    return;
                                 }
                                 ,
                                 (false, false, false, false, true, false) => () =>
                                 {
-                                    var value = Activator.CreateInstance(typeof(CornerRadius), info.Context.Parameters.Length > 0 ? info.Context.Parameters : [0d]);
+                                    if (info.Context.Parameters.Length == 0) return;
+                                    var value = Activator.CreateInstance(typeof(CornerRadius), (info.Context.Parameters.Length == 1 || info.Context.Parameters.Length == 4) ? info.Context.Parameters : [0d]);
                                     state.AddProperty(info.PropertyInfo.Name, value);
-                                    return 5;
+                                    return;
                                 }
                                 ,
                                 (false, false, false, false, false, true) => () =>
                                 {
-                                    var value = Activator.CreateInstance(typeof(Thickness), info.Context.Parameters.Length > 0 ? info.Context.Parameters : [0d]);
+                                    if (info.Context.Parameters.Length == 0) return;
+                                    var value = Activator.CreateInstance(typeof(Thickness), (info.Context.Parameters.Length == 1 || info.Context.Parameters.Length == 4) ? info.Context.Parameters : [0d]);
                                     state.AddProperty(info.PropertyInfo.Name, value);
-                                    return 6;
+                                    return;
                                 }
                                 ,
-                                _ => () => { return -1; }
+                                _ => () => { return; }
                             };
                             func.Invoke();
                         }
@@ -313,9 +327,8 @@ namespace MinimalisticWPF.Theme
             {
                 GlobalInstance.Add(target);
                 target.CurrentTheme = CurrentTheme;
-
+                if (!TransitionScheduler.SplitedPropertyInfos.TryGetValue(target.GetType(), out var group)) break;
                 var unit = new ConcurrentDictionary<Type, State>();
-
                 foreach (var attribute in Attributes)
                 {
                     var properties = target.GetType().GetProperties()
@@ -331,57 +344,67 @@ namespace MinimalisticWPF.Theme
                     {
                         if (info.PropertyInfo.CanWrite && info.PropertyInfo.CanRead && info.Context != null)
                         {
-                            Func<int> func = (info.PropertyInfo.PropertyType == typeof(double),
-                                          info.PropertyInfo.PropertyType == typeof(Brush),
-                                          info.PropertyInfo.PropertyType == typeof(Transform),
-                                          info.PropertyInfo.PropertyType == typeof(Point),
-                                          info.PropertyInfo.PropertyType == typeof(CornerRadius),
-                                          info.PropertyInfo.PropertyType == typeof(Thickness))
+                            Action func = (group.Item1.TryGetValue(info.PropertyInfo.Name, out _),
+                                           group.Item2.TryGetValue(info.PropertyInfo.Name, out _),
+                                           group.Item3.TryGetValue(info.PropertyInfo.Name, out _),
+                                           group.Item4.TryGetValue(info.PropertyInfo.Name, out _),
+                                           group.Item5.TryGetValue(info.PropertyInfo.Name, out _),
+                                           group.Item6.TryGetValue(info.PropertyInfo.Name, out _))
                             switch
                             {
                                 (true, false, false, false, false, false) => () =>
                                 {
-                                    var value = Convert.ToDouble(info.Context.Parameters.FirstOrDefault() ?? 0d);
+                                    var context = info.Context.Parameters.FirstOrDefault();
+                                    if (context is null) return;
+                                    var value = Convert.ToDouble(context);
                                     state.AddProperty(info.PropertyInfo.Name, value);
-                                    return 1;
+                                    return;
                                 }
                                 ,
                                 (false, true, false, false, false, false) => () =>
                                 {
-                                    var value = ParseBrush(target.GetType(), info.Context.Parameters.FirstOrDefault()?.ToString() ?? string.Empty);
+                                    var context = info.Context.Parameters.FirstOrDefault();
+                                    if (context is null) return;
+                                    var value = ParseBrush(target.GetType(), context.ToString() ?? string.Empty);
                                     state.AddProperty(info.PropertyInfo.Name, value);
-                                    return 2;
+                                    return;
                                 }
                                 ,
                                 (false, false, true, false, false, false) => () =>
                                 {
-                                    var value = Transform.Parse(info.Context.Parameters.FirstOrDefault()?.ToString() ?? Transform.Identity.ToString());
+                                    var context = info.Context.Parameters.FirstOrDefault();
+                                    if (context is null) return;
+                                    var text = context.ToString();
+                                    var value = text == null ? Transform.Identity : Transform.Parse(text);
                                     state.AddProperty(info.PropertyInfo.Name, value);
-                                    return 3;
+                                    return;
                                 }
                                 ,
                                 (false, false, false, true, false, false) => () =>
                                 {
-                                    var value = Activator.CreateInstance(typeof(Point), info.Context.Parameters.Length > 0 ? info.Context.Parameters : [0d, 0d]);
+                                    if (info.Context.Parameters.Length == 0) return;
+                                    var value = Activator.CreateInstance(typeof(Point), (info.Context.Parameters.Length == 2) ? info.Context.Parameters : [0d, 0d]);
                                     state.AddProperty(info.PropertyInfo.Name, value);
-                                    return 4;
+                                    return;
                                 }
                                 ,
                                 (false, false, false, false, true, false) => () =>
                                 {
-                                    var value = Activator.CreateInstance(typeof(CornerRadius), info.Context.Parameters.Length > 0 ? info.Context.Parameters : [0d]);
+                                    if (info.Context.Parameters.Length == 0) return;
+                                    var value = Activator.CreateInstance(typeof(CornerRadius), (info.Context.Parameters.Length == 1 || info.Context.Parameters.Length == 4) ? info.Context.Parameters : [0d]);
                                     state.AddProperty(info.PropertyInfo.Name, value);
-                                    return 5;
+                                    return;
                                 }
                                 ,
                                 (false, false, false, false, false, true) => () =>
                                 {
-                                    var value = Activator.CreateInstance(typeof(Thickness), info.Context.Parameters.Length > 0 ? info.Context.Parameters : [0d]);
+                                    if (info.Context.Parameters.Length == 0) return;
+                                    var value = Activator.CreateInstance(typeof(Thickness), (info.Context.Parameters.Length == 1 || info.Context.Parameters.Length == 4) ? info.Context.Parameters : [0d]);
                                     state.AddProperty(info.PropertyInfo.Name, value);
-                                    return 6;
+                                    return;
                                 }
                                 ,
-                                _ => () => { return -1; }
+                                _ => () => { return; }
                             };
                             func.Invoke();
                         }
