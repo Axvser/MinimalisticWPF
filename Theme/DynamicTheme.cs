@@ -4,7 +4,6 @@ using MinimalisticWPF.StructuralDesign.Theme;
 using MinimalisticWPF.TransitionSystem;
 using MinimalisticWPF.TransitionSystem.Basic;
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Media;
@@ -33,7 +32,7 @@ namespace MinimalisticWPF.Theme
 #if NET
         public static HashSet<IThemeApplied> GlobalInstance { get; internal set; } = new(64);
 #elif NETFRAMEWORK
-    public static HashSet<IThemeApplied> GlobalInstance { get; internal set; } = [];
+        public static HashSet<IThemeApplied> GlobalInstance { get; internal set; } = [];
 #endif
 
         public static event Action? SharedValueInitialized;

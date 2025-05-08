@@ -1,5 +1,4 @@
-﻿using MinimalisticWPF.TransitionSystem;
-using System.Windows.Threading;
+﻿using System.Windows.Threading;
 #if NETFRAMEWORK
 using MinimalisticWPF.FrameworkSupport;
 #endif
@@ -56,8 +55,8 @@ namespace MinimalisticWPF.TransitionSystem
         internal double DeltaTime { get => 1000.0 / Math.Clamp(FrameRate, 1, TransitionScheduler.MaxFrameRate); }
         internal double FrameCount { get => Math.Clamp(Duration * Math.Clamp(FrameRate, 1, TransitionScheduler.MaxFrameRate), 1, int.MaxValue); }
 #elif NETFRAMEWORK
-    internal double DeltaTime { get => 1000.0 / FrameRate.Clamp(1, TransitionScheduler.MaxFrameRate); }
-    internal double FrameCount { get => (Duration * FrameRate.Clamp(1, TransitionScheduler.MaxFrameRate)).Clamp(1, int.MaxValue); }
+        internal double DeltaTime { get => 1000.0 / FrameRate.Clamp(1, TransitionScheduler.MaxFrameRate); }
+        internal double FrameCount { get => (Duration * FrameRate.Clamp(1, TransitionScheduler.MaxFrameRate)).Clamp(1, int.MaxValue); }
 #endif
 
         public event Action? Start;

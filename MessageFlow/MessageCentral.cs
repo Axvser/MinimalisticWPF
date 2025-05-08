@@ -1,6 +1,5 @@
-﻿using System.Collections.Concurrent;
-using System.Windows;
-using MinimalisticWPF.StructuralDesign.Message;
+﻿using MinimalisticWPF.StructuralDesign.Message;
+using System.Collections.Concurrent;
 
 namespace MinimalisticWPF.MessageFlow
 {

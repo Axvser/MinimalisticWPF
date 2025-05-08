@@ -45,7 +45,7 @@ namespace MinimalisticWPF.HotKey
 
             Invoke(e);
         }
-        internal void MouseLeave(object sender,RoutedEventArgs e)
+        internal void MouseLeave(object sender, RoutedEventArgs e)
         {
             _pressedKeys.Clear();
         }

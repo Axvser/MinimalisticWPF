@@ -1,6 +1,5 @@
-﻿using System.Windows.Input;
-using System.Windows;
-using MinimalisticWPF.HotKey;
+﻿using System.Windows;
+using System.Windows.Input;
 
 namespace MinimalisticWPF.HotKey
 {

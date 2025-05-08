@@ -5,7 +5,7 @@ using MinimalisticWPF.FrameworkSupport;
 #endif
 
 namespace MinimalisticWPF.Tools.SolidColor
-{   
+{
     /// <summary>
     /// 🖌️ > Use reference types to represent colors
     /// <para>Core</para>
@@ -69,26 +69,26 @@ namespace MinimalisticWPF.Tools.SolidColor
             set => a = Math.Clamp(value, 0, 255);
         }
 #elif NETFRAMEWORK
-    public int R
-    {
-        get => r;
-        set => r = value.Clamp(0, 255);
-    }
-    public int G
-    {
-        get => g;
-        set => g = value.Clamp(0, 255);
-    }
-    public int B
-    {
-        get => b;
-        set => b = value.Clamp(0, 255);
-    }
-    public int A
-    {
-        get => a;
-        set => a = value.Clamp(0, 255);
-    }
+        public int R
+        {
+            get => r;
+            set => r = value.Clamp(0, 255);
+        }
+        public int G
+        {
+            get => g;
+            set => g = value.Clamp(0, 255);
+        }
+        public int B
+        {
+            get => b;
+            set => b = value.Clamp(0, 255);
+        }
+        public int A
+        {
+            get => a;
+            set => a = value.Clamp(0, 255);
+        }
 #endif
 
         public double Opacity
@@ -99,7 +99,7 @@ namespace MinimalisticWPF.Tools.SolidColor
 #if NET
                 A = (int)(255 * Math.Clamp(value, 0, 1));
 #elif NETFRAMEWORK
-            A = (int)(255 * value.Clamp(0, 1));
+                A = (int)(255 * value.Clamp(0, 1));
 #endif
             }
         }
@@ -178,10 +178,10 @@ namespace MinimalisticWPF.Tools.SolidColor
             return HashCode.Combine(R, G, B, A);
         }
 #elif NETFRAMEWORK
-    public override int GetHashCode()
-    {
-        return HashCodeExtensions.Combine(R, G, B, A);
-    }
+        public override int GetHashCode()
+        {
+            return HashCodeExtensions.Combine(R, G, B, A);
+        }
 #endif
     }
 }

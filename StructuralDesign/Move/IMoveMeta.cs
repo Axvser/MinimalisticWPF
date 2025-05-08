@@ -1,6 +1,6 @@
-﻿using System.Reflection;
+﻿using MinimalisticWPF.TransitionSystem;
+using System.Reflection;
 using System.Windows;
-using MinimalisticWPF.TransitionSystem;
 
 namespace MinimalisticWPF.StructuralDesign.Move
 {

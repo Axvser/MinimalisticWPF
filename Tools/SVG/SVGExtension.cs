@@ -1,7 +1,7 @@
-﻿using System.IO;
-using System.Windows.Media;
+﻿using MinimalisticWPF.Tools.String;
+using System.IO;
 using System.Windows;
-using MinimalisticWPF.Tools.String;
+using System.Windows.Media;
 
 namespace MinimalisticWPF.Tools.SVG
 {

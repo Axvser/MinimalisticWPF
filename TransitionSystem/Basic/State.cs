@@ -1,6 +1,6 @@
-﻿using System.Reflection;
+﻿using MinimalisticWPF.StructuralDesign.Animator;
 using System.Collections.Concurrent;
-using MinimalisticWPF.StructuralDesign.Animator;
+using System.Reflection;
 
 namespace MinimalisticWPF.TransitionSystem.Basic
 {

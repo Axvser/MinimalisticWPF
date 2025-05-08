@@ -3,7 +3,6 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
 using MinimalisticWPF.StructuralDesign.HotKey;
-using MinimalisticWPF.HotKey;
 #if NETFRAMEWORK
 using MinimalisticWPF.FrameworkSupport;
 #endif

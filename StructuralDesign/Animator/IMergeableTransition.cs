@@ -1,5 +1,5 @@
-﻿using MinimalisticWPF.TransitionSystem.Basic;
-using MinimalisticWPF.TransitionSystem;
+﻿using MinimalisticWPF.TransitionSystem;
+using MinimalisticWPF.TransitionSystem.Basic;
 
 namespace MinimalisticWPF.StructuralDesign.Animator
 {
