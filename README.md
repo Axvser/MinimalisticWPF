@@ -244,3 +244,4 @@ grid.Transition()
       - 使用过`MonoBehaviour`的UIElement会被识别为增强版View
       - 使用过`AspectOriented`特性的UIElement会被识别为增强版View
     - 不过,你也不需要担心GlobalHotKey.Awake()方法没能及时调用,因为GlobalHotKey的注册行为具备缓冲机制,如果注册发生在Awake()之前,那么它会被暂存然后在Awake()成功后立即执行
+  - 局部快捷方式需要保证UIElement可聚焦,即 `Focusable = true`,可通过为类标注`FocusModule`特性一键配置
