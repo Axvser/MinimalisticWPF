@@ -1,9 +1,9 @@
-﻿using System.Linq.Expressions;
-using System.Reflection;
-using System.Windows.Media;
-using System.Windows;
-using MinimalisticWPF.StructuralDesign.Animator;
+﻿using MinimalisticWPF.StructuralDesign.Animator;
 using MinimalisticWPF.TransitionSystem.Basic;
+using System.Linq.Expressions;
+using System.Reflection;
+using System.Windows;
+using System.Windows.Media;
 #if NETFRAMEWORK
 using MinimalisticWPF.FrameworkSupport;
 #endif

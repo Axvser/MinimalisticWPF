@@ -1,10 +1,10 @@
-﻿using System.Reflection;
-using System.Windows;
-using System.Data;
-using System.Windows.Media;
-using System.Collections.Concurrent;
-using MinimalisticWPF.StructuralDesign.Animator;
+﻿using MinimalisticWPF.StructuralDesign.Animator;
 using MinimalisticWPF.TransitionSystem.Basic;
+using System.Collections.Concurrent;
+using System.Data;
+using System.Reflection;
+using System.Windows;
+using System.Windows.Media;
 #if NETFRAMEWORK
 using MinimalisticWPF.FrameworkSupport;
 #endif

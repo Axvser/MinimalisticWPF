@@ -1,8 +1,8 @@
-﻿using System.Collections.Concurrent;
+﻿using MinimalisticWPF.StructuralDesign.HotKey;
+using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
-using MinimalisticWPF.StructuralDesign.HotKey;
 #if NETFRAMEWORK
 using MinimalisticWPF.FrameworkSupport;
 #endif

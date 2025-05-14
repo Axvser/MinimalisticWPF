@@ -1,6 +1,6 @@
-﻿using System.Windows;
+﻿using MinimalisticWPF.Tools.SolidColor;
+using System.Windows;
 using System.Windows.Media;
-using MinimalisticWPF.Tools.SolidColor;
 #if NETFRAMEWORK
 using MinimalisticWPF.FrameworkSupport;
 #endif
