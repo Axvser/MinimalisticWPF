@@ -20,8 +20,8 @@ namespace MinimalisticWPF.HotKey
             _target = target;
             _targetKeys = keys;
             keyEventHandler = keyevent;
-            target.KeyDown += Receiver;
-            target.KeyUp += ReleaseReceiver;
+            target.PreviewKeyDown += Receiver;
+            target.PreviewKeyUp += ReleaseReceiver;
             target.MouseLeave += MouseLeave;
         }
 

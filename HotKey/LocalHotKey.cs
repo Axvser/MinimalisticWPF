@@ -36,8 +36,8 @@ namespace MinimalisticWPF.HotKey
                 {
                     if (keys.IsSupersetOf(injector._targetKeys))
                     {
-                        target.KeyDown -= injector.Receiver;
-                        target.KeyUp -= injector.ReleaseReceiver;
+                        target.PreviewKeyDown -= injector.Receiver;
+                        target.PreviewKeyUp -= injector.ReleaseReceiver;
                         target.MouseLeave -= injector.MouseLeave;
                         removed.Add(injector);
                     }
@@ -64,8 +64,8 @@ namespace MinimalisticWPF.HotKey
             {
                 foreach (var injector in injectorSet)
                 {
-                    target.KeyDown -= injector.Receiver;
-                    target.KeyUp -= injector.ReleaseReceiver;
+                    target.PreviewKeyDown -= injector.Receiver;
+                    target.PreviewKeyUp -= injector.ReleaseReceiver;
                     target.MouseLeave -= injector.MouseLeave;
                     count++;
                 }
