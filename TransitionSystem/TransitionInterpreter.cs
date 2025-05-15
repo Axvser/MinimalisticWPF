@@ -1,68 +1,70 @@
 ﻿using MinimalisticWPF.StructuralDesign.Animator;
 using System.Reflection;
 using System.Windows;
-#if NETFRAMEWORK
 using MinimalisticWPF.FrameworkSupport;
-#endif
+using MinimalisticWPF.TransitionSystem.Basic;
 
 namespace MinimalisticWPF.TransitionSystem
 {
     public sealed class TransitionInterpreter : IExecutableTransition
     {
-        internal TransitionInterpreter(TransitionScheduler machine, TransitionParams transitionParams)
+        internal TransitionInterpreter(
+            TransitionScheduler scheduler,
+            TransitionParams param,
+            CancellationTokenSource cts,
+            State state,
+            List<List<Tuple<PropertyInfo, List<object?>>>>? preload = null)
         {
-            TransitionScheduler = machine;
-            TransitionParams = transitionParams;
-            var newCount = (int)machine.FrameCount;
-            FrameCount = newCount >= 2 ? newCount : 2;
+            TransitionScheduler = scheduler;
+            Param = param;
+            Cts = cts;
+            State = state;
+            if (scheduler.TransitionApplied.TryGetTarget(out var target))
+            {
+                Target = target;
+                DeltaTime = XMath.Clamp((int)param.DeltaTime, 0, int.MaxValue);
+                FrameCount = XMath.Clamp((int)param.FrameCount, 2, int.MaxValue);
+                LoadFrames(preload);
+            }
+            else
+            {
+                Target = new object();
+                scheduler.Dispose();
+            }
         }
 
-        public TransitionParams TransitionParams { get; set; }
-        public List<List<Tuple<PropertyInfo, List<object?>>>> FrameSequence { get; set; } = [];
-
         public TransitionScheduler TransitionScheduler { get; internal set; }
-        internal int DeltaTime { get; set; } = 0;
+        public TransitionParams Param { get; internal set; }
+        public CancellationTokenSource Cts { get; internal set; }
+        public State State { get; internal set; }
 
-        private bool IsRunning { get; set; } = false;
-        private bool IsStop { get; set; } = false;
-        private int LoopDepth { get; set; } = 0;
+        public object Target { get; set; }
+        public List<List<Tuple<PropertyInfo, List<object?>>>> FrameSequence { get; set; } = [];
+        public FrameEventArgs FrameEventArgs { get; internal set; } = new();
+
+        private int DeltaTime { get; set; } = 0;
         private int FrameCount { get; set; } = 1;
+        private int LoopDepth { get; set; } = 0;
 
         public async Task Start(object? target = null)
         {
-            if (IsStop || IsRunning) { WhileEnded(); return; }
-            IsRunning = true;
-
             var accTimes = GetAccDeltaTime(FrameCount);
-            var isInvokeAsync = !Application.Current.Dispatcher.CheckAccess() || TransitionParams.IsAsync;
-
-            for (int x = LoopDepth; TransitionParams.LoopTime == int.MaxValue || x <= TransitionParams.LoopTime; x++, LoopDepth++)
+            var isInvokeAsync = !Application.Current.Dispatcher.CheckAccess() || Param.IsAsync;
+            try
             {
-                if (!TransitionParams.IsAutoReverse && x > 0)
+                Param.StartInvoke(Target, FrameEventArgs);
+                for (int x = LoopDepth; Param.LoopTime == int.MaxValue || x <= Param.LoopTime; x++, LoopDepth++)
                 {
-                    Reset();
-                }
-
-                for (int i = 0; i < FrameCount; i++)
-                {
-                    if (EndConditionCheck()) return;
-                    FrameStart();
-                    for (int j = 0; j < FrameSequence.Count; j++)
+                    if (!Param.IsAutoReverse && x > 0)
                     {
-                        for (int k = 0; k < FrameSequence[j].Count; k++)
-                        {
-                            FrameUpdate(i, j, k, isInvokeAsync);
-                        }
+                        ConditionCheck();
+                        Reset();
                     }
-                    FrameEnd();
-                    await Task.Delay(TransitionParams.Acceleration == 0 ? DeltaTime : i < accTimes.Count & accTimes.Count > 0 ? accTimes[i] : DeltaTime);
-                }
 
-                if (TransitionParams.IsAutoReverse)
-                {
-                    for (int i = FrameCount - 1; i > -1; i--)
+                    for (int i = 0; i < FrameCount; i++)
                     {
-                        if (EndConditionCheck()) return;
+                        ConditionCheck();
+                        FrameEventArgs.Progress = (i + 1) / FrameCount;
                         FrameStart();
                         for (int j = 0; j < FrameSequence.Count; j++)
                         {
@@ -72,23 +74,52 @@ namespace MinimalisticWPF.TransitionSystem
                             }
                         }
                         FrameEnd();
-                        await Task.Delay(TransitionParams.Acceleration == 0 ? DeltaTime : i < accTimes.Count & accTimes.Count > 0 ? accTimes[i] : DeltaTime);
+                        await Task.Delay(Param.Acceleration == 0 ? DeltaTime : i < accTimes.Count & accTimes.Count > 0 ? accTimes[i] : DeltaTime, Cts.Token);
+                    }
+
+                    if (Param.IsAutoReverse)
+                    {
+                        for (int i = FrameCount - 1; i > -1; i--)
+                        {
+                            ConditionCheck();
+                            FrameEventArgs.Progress = (i + 1) / FrameCount;
+                            FrameStart();
+                            for (int j = 0; j < FrameSequence.Count; j++)
+                            {
+                                for (int k = 0; k < FrameSequence[j].Count; k++)
+                                {
+                                    FrameUpdate(i, j, k, isInvokeAsync);
+                                }
+                            }
+                            FrameEnd();
+                            await Task.Delay(Param.Acceleration == 0 ? DeltaTime : i < accTimes.Count & accTimes.Count > 0 ? accTimes[i] : DeltaTime, Cts.Token);
+                        }
                     }
                 }
             }
-
-            WhileEnded();
+            catch
+            {
+                WhileCancled();
+            }
+            finally
+            {
+                WhileEnded();
+            }
         }
         public void Stop()
         {
-            IsStop = IsRunning;
-            LoopDepth = 0;
+            var oldsource = Interlocked.CompareExchange(ref TransitionScheduler.tokensource, Cts, TransitionScheduler.tokensource);
+            if (oldsource != null)
+            {
+                oldsource.Cancel();
+                oldsource.Dispose();
+            }
         }
 
         private void Reset()
         {
-            var isInvokeAsync = !Application.Current.Dispatcher.CheckAccess() || TransitionParams.IsAsync;
-
+            var isInvokeAsync = !Application.Current.Dispatcher.CheckAccess() || Param.IsAsync;
+            FrameEventArgs.Progress = 0;
             for (int j = 0; j < FrameSequence.Count; j++)
             {
                 for (int k = 0; k < FrameSequence[j].Count; k++)
@@ -97,18 +128,22 @@ namespace MinimalisticWPF.TransitionSystem
                 }
             }
         }
-        private bool EndConditionCheck()
+        private void LoadFrames(List<List<Tuple<PropertyInfo, List<object?>>>>? preload = null)
         {
-            if (IsStop || Application.Current == null || (TransitionScheduler.IsReSet || TransitionScheduler.Interpreter != this))
+            Param.AwakeInvoke(Target, FrameEventArgs);
+            if (preload is null)
             {
-                WhileEnded();
-                return true;
+                var type = Target.GetType();
+                FrameSequence = LinearInterpolation.ComputingFrames(type, State, Target, FrameCount);
             }
-            return false;
+        }
+        private void ConditionCheck()
+        {
+            if (Cts.IsCancellationRequested || FrameEventArgs.Handled) throw new Exception();
         }
         private void FrameStart()
         {
-            TransitionParams.UpdateInvoke();
+            Param.UpdateInvoke(Target, FrameEventArgs);
         }
         private async void FrameUpdate(int i, int j, int k, bool isAsync)
         {
@@ -118,51 +153,31 @@ namespace MinimalisticWPF.TransitionSystem
             {
                 await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    FrameSequence[j][k].Item1.SetValue(TransitionScheduler.TransitionApplied, FrameSequence[j][k].Item2[i]);
-                }, TransitionParams.Priority);
+                    FrameSequence[j][k].Item1.SetValue(Target, FrameSequence[j][k].Item2[i]);
+                }, Param.Priority);
             }
             else
             {
-                FrameSequence[j][k].Item1.SetValue(TransitionScheduler.TransitionApplied, FrameSequence[j][k].Item2[i]);
+                FrameSequence[j][k].Item1.SetValue(Target, FrameSequence[j][k].Item2[i]);
             }
         }
         private void FrameEnd()
         {
-            TransitionParams.LateUpdateInvoke();
+            Param.LateUpdateInvoke(Target, FrameEventArgs);
+        }
+        private void WhileCancled()
+        {
+            Param.CancledInvoke(Target, FrameEventArgs);
         }
         private void WhileEnded()
         {
-            if (TransitionScheduler.IsReSet)
-            {
-                return;
-            }
-
-            TransitionParams.CompletedInvoke();
-
-            IsRunning = false;
-            IsStop = false;
-
-            if (TransitionScheduler.Interpreter == this)
-            {
-                TransitionScheduler.Interpreter = null;
-                if (TransitionScheduler.Interpreters.TryDequeue(out var source))
-                {
-                    TransitionScheduler.InterpreterScheduler(source.Item1, source.Item2.TransitionParams, source.Item2.FrameSequence);
-                }
-                TransitionScheduler.CurrentState = null;
-            }
+            Param.CompletedInvoke(Target, FrameEventArgs);
         }
         private List<int> GetAccDeltaTime(int Steps)
         {
             List<int> result = [];
-            if (TransitionParams.Acceleration == 0) return result;
-
-#if NET
-            var acc = Math.Clamp(TransitionParams.Acceleration, -1, 1);
-#endif
-#if NETFRAMEWORK
-            var acc = TransitionParams.Acceleration.Clamp(-1, 1);
-#endif
+            if (Param.Acceleration == 0) return result;
+            var acc = XMath.Clamp(Param.Acceleration, -1, 1);
             var start = DeltaTime * (1 + acc);
             var end = DeltaTime * (1 - acc);
             var delta = end - start;
@@ -171,7 +186,6 @@ namespace MinimalisticWPF.TransitionSystem
                 var t = (double)(i + 1) / Steps;
                 result.Add((int)(start + t * delta));
             }
-
             return result;
         }
         private bool IsFrameIndexRight(int i, int j, int k)

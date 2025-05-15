@@ -78,22 +78,14 @@ namespace MinimalisticWPF.TransitionSystem
             return meta;
         }
 
-        public static void DisposeAll()
-        {
-            foreach (var machinedic in TransitionScheduler.MachinePool.Values)
-            {
-                foreach (var machine in machinedic.Values)
-                {
-                    machine.Interpreter?.Stop();
-                }
-            }
-        }
         public static void Dispose(params object[] targets)
         {
             foreach (var target in targets)
             {
-                var machine = TransitionScheduler.CreateUniqueUnit(target);
-                machine.Interpreter?.Stop();
+                if (TransitionScheduler.TryGetScheduler(target, out var machine) && machine is not null)
+                {
+                    machine.Dispose();
+                }
             }
         }
     }

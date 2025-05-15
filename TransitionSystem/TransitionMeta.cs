@@ -1,9 +1,7 @@
 ﻿using MinimalisticWPF.StructuralDesign.Animator;
 using MinimalisticWPF.TransitionSystem.Basic;
 using System.Reflection;
-#if NETFRAMEWORK
 using MinimalisticWPF.FrameworkSupport;
-#endif
 
 namespace MinimalisticWPF.TransitionSystem
 {
@@ -40,7 +38,7 @@ namespace MinimalisticWPF.TransitionSystem
         public TransitionParams TransitionParams { get; set; } = new();
         public State PropertyState { get; set; } = new State() { StateName = Transition.TempName };
         public TransitionScheduler TransitionScheduler => TransitionApplied == null ? throw new ArgumentNullException(nameof(TransitionApplied), "The metadata is missing the target instance for this transition effect") : TransitionScheduler.CreateUniqueUnit(TransitionApplied);
-        public List<List<Tuple<PropertyInfo, List<object?>>>> FrameSequence => TransitionScheduler.PreloadFrames(TransitionApplied, PropertyState, TransitionParams) ?? [];
+        public List<List<Tuple<PropertyInfo, List<object?>>>> FrameSequence => TransitionApplied == null ? [] : LinearInterpolation.ComputingFrames(TransitionApplied.GetType(), PropertyState, TransitionApplied, XMath.Clamp((int)TransitionParams.FrameCount, 2, int.MaxValue));
 
         public ITransitionMeta Merge(ICollection<ITransitionMeta> metas)
         {

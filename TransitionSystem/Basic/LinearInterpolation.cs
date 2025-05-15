@@ -1,6 +1,10 @@
 ﻿using MinimalisticWPF.Tools.SolidColor;
 using System.Windows;
 using System.Windows.Media;
+using System.Reflection;
+using MinimalisticWPF.StructuralDesign.Animator;
+
+
 #if NETFRAMEWORK
 using MinimalisticWPF.FrameworkSupport;
 #endif
@@ -9,6 +13,19 @@ namespace MinimalisticWPF.TransitionSystem.Basic
 {
     public static class LinearInterpolation
     {
+        public static List<List<Tuple<PropertyInfo, List<object?>>>> ComputingFrames(Type type, State state, object target, int framecount)
+        {
+            List<List<Tuple<PropertyInfo, List<object?>>>> result = new(7);
+            result.Add(DoubleComputing(type, state, target, framecount));
+            result.Add(BrushComputing(type, state, target, framecount));
+            result.Add(TransformComputing(type, state, target, framecount));
+            result.Add(PointComputing(type, state, target, framecount));
+            result.Add(CornerRadiusComputing(type, state, target, framecount));
+            result.Add(ThicknessComputing(type, state, target, framecount));
+            result.Add(ILinearInterpolationComputing(type, state, target, framecount));
+            return result;
+        }
+
         public static List<object?> DoubleComputing(object? start, object? end, int steps)
         {
             var d1 = (double)(start ?? 0);
@@ -156,7 +173,157 @@ namespace MinimalisticWPF.TransitionSystem.Basic
                 _ => InterpolateBrushOpacity(startBrush as Brush ?? Brushes.Transparent, endBrush as Brush ?? Brushes.Transparent, steps, endBrush)
             };
         }
-
+        
+        public static List<Tuple<PropertyInfo, List<object?>>> DoubleComputing(Type type, State state, object TransitionApplied, int FrameCount)
+        {
+            List<Tuple<PropertyInfo, List<object?>>> allFrames = new(FrameCount);
+            if (TransitionScheduler.SplitedPropertyInfos.TryGetValue(type, out var infodictionary))
+            {
+                foreach (var propertyname in state.Values.Keys)
+                {
+                    if (infodictionary.Item1.TryGetValue(propertyname, out var propertyinfo))
+                    {
+                        var currentValue = propertyinfo.GetValue(TransitionApplied);
+                        var newValue = state.Values[propertyname];
+                        if (!currentValue?.Equals(newValue) ?? true)
+                        {
+                            allFrames.Add(Tuple.Create(propertyinfo, state.Calculators.TryGetValue(propertyname, out var calculator) ? calculator.Invoke(currentValue, newValue, FrameCount) : LinearInterpolation.DoubleComputing(currentValue, newValue, FrameCount)));
+                        }
+                    }
+                }
+            }
+            return allFrames;
+        }
+        public static List<Tuple<PropertyInfo, List<object?>>> BrushComputing(Type type, State state, object TransitionApplied, int FrameCount)
+        {
+            List<Tuple<PropertyInfo, List<object?>>> allFrames = new(FrameCount);
+            if (TransitionScheduler.SplitedPropertyInfos.TryGetValue(type, out var infodictionary))
+            {
+                foreach (var propertyname in state.Values.Keys)
+                {
+                    if (infodictionary.Item2.TryGetValue(propertyname, out var propertyinfo))
+                    {
+                        var currentValue = propertyinfo.GetValue(TransitionApplied);
+                        var newValue = state.Values[propertyname];
+                        if (!currentValue?.Equals(newValue) ?? true)
+                        {
+                            allFrames.Add(Tuple.Create(propertyinfo, state.Calculators.TryGetValue(propertyname, out var calculator) ? calculator.Invoke(currentValue, newValue, FrameCount) : LinearInterpolation.BrushComputing(currentValue, newValue, FrameCount)));
+                        }
+                    }
+                }
+            }
+            return allFrames;
+        }
+        public static List<Tuple<PropertyInfo, List<object?>>> TransformComputing(Type type, State state, object TransitionApplied, int FrameCount)
+        {
+            List<Tuple<PropertyInfo, List<object?>>> allFrames = new(FrameCount);
+            if (TransitionScheduler.SplitedPropertyInfos.TryGetValue(type, out var infodictionary))
+            {
+                foreach (var propertyname in state.Values.Keys)
+                {
+                    if (infodictionary.Item3.TryGetValue(propertyname, out var propertyinfo))
+                    {
+                        var currentValue = propertyinfo.GetValue(TransitionApplied);
+                        var newValue = state.Values[propertyname];
+                        if (!currentValue?.Equals(newValue) ?? true)
+                        {
+                            allFrames.Add(Tuple.Create(propertyinfo, state.Calculators.TryGetValue(propertyname, out var calculator) ? calculator.Invoke(currentValue, newValue, FrameCount) : LinearInterpolation.TransformComputing(currentValue, newValue, FrameCount)));
+                        }
+                    }
+                }
+            }
+            return allFrames;
+        }
+        public static List<Tuple<PropertyInfo, List<object?>>> PointComputing(Type type, State state, object TransitionApplied, int FrameCount)
+        {
+            List<Tuple<PropertyInfo, List<object?>>> allFrames = new(FrameCount);
+            if (TransitionScheduler.SplitedPropertyInfos.TryGetValue(type, out var infodictionary))
+            {
+                foreach (var propertyname in state.Values.Keys)
+                {
+                    if (infodictionary.Item4.TryGetValue(propertyname, out var propertyinfo))
+                    {
+                        var currentValue = propertyinfo.GetValue(TransitionApplied);
+                        var newValue = state.Values[propertyname];
+                        if (!currentValue?.Equals(newValue) ?? true)
+                        {
+                            allFrames.Add(Tuple.Create(propertyinfo, state.Calculators.TryGetValue(propertyname, out var calculator) ? calculator.Invoke(currentValue, newValue, FrameCount) : LinearInterpolation.PointComputing(currentValue, newValue, FrameCount)));
+                        }
+                    }
+                }
+            }
+            return allFrames;
+        }
+        public static List<Tuple<PropertyInfo, List<object?>>> CornerRadiusComputing(Type type, State state, object TransitionApplied, int FrameCount)
+        {
+            List<Tuple<PropertyInfo, List<object?>>> allFrames = new(FrameCount);
+            if (TransitionScheduler.SplitedPropertyInfos.TryGetValue(type, out var infodictionary))
+            {
+                foreach (var propertyname in state.Values.Keys)
+                {
+                    if (infodictionary.Item5.TryGetValue(propertyname, out var propertyinfo))
+                    {
+                        var currentValue = propertyinfo.GetValue(TransitionApplied);
+                        var newValue = state.Values[propertyname];
+                        if (!currentValue?.Equals(newValue) ?? true)
+                        {
+                            allFrames.Add(Tuple.Create(propertyinfo, state.Calculators.TryGetValue(propertyname, out var calculator) ? calculator.Invoke(currentValue, newValue, FrameCount) : LinearInterpolation.CornerRadiusComputing(currentValue, newValue, FrameCount)));
+                        }
+                    }
+                }
+            }
+            return allFrames;
+        }
+        public static List<Tuple<PropertyInfo, List<object?>>> ThicknessComputing(Type type, State state, object TransitionApplied, int FrameCount)
+        {
+            List<Tuple<PropertyInfo, List<object?>>> allFrames = new(FrameCount);
+            if (TransitionScheduler.SplitedPropertyInfos.TryGetValue(type, out var infodictionary))
+            {
+                foreach (var propertyname in state.Values.Keys)
+                {
+                    if (infodictionary.Item6.TryGetValue(propertyname, out var propertyinfo))
+                    {
+                        var currentValue = propertyinfo.GetValue(TransitionApplied);
+                        var newValue = state.Values[propertyname];
+                        if (!currentValue?.Equals(newValue) ?? true)
+                        {
+                            allFrames.Add(Tuple.Create(propertyinfo, state.Calculators.TryGetValue(propertyname, out var calculator) ? calculator.Invoke(currentValue, newValue, FrameCount) : LinearInterpolation.ThicknessComputing(currentValue, newValue, FrameCount)));
+                        }
+                    }
+                }
+            }
+            return allFrames;
+        }
+        public static List<Tuple<PropertyInfo, List<object?>>> ILinearInterpolationComputing(Type type, State state, object TransitionApplied, int FrameCount)
+        {
+            List<Tuple<PropertyInfo, List<object?>>> allFrames = new(FrameCount);
+            if (TransitionScheduler.SplitedPropertyInfos.TryGetValue(type, out var infodictionary))
+            {
+                foreach (var propertyname in state.Values.Keys)
+                {
+                    if (infodictionary.Item7.TryGetValue(propertyname, out var propertyinfo))
+                    {
+                        var currentValue = propertyinfo.GetValue(TransitionApplied);
+                        var newValue = state.Values[propertyname];
+                        if (!currentValue?.Equals(newValue) ?? true)
+                        {
+                            var interpolator = (currentValue as IInterpolable) ?? (newValue as IInterpolable);
+                            if (interpolator != null)
+                            {
+                                allFrames.Add(Tuple.Create(
+                                    propertyinfo,
+                                    state.Calculators.TryGetValue(propertyname, out var calculator)
+                                        ? calculator.Invoke(currentValue, newValue, FrameCount)
+                                        : interpolator.Interpolate(currentValue, newValue, FrameCount)
+                                ));
+                            }
+                        }
+                    }
+                }
+            }
+            return allFrames;
+        }
+        
         private static List<object?> InterpolateSolidColorBrush(SolidColorBrush start, SolidColorBrush end, int steps)
         {
             var rgb1 = RGB.FromBrush(start);

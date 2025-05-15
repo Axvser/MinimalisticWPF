@@ -4,9 +4,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Media;
-#if NETFRAMEWORK
 using MinimalisticWPF.FrameworkSupport;
-#endif
 
 namespace MinimalisticWPF.TransitionSystem
 {
@@ -26,7 +24,7 @@ namespace MinimalisticWPF.TransitionSystem
             {
                 if (!IsPreloaded)
                 {
-                    _frameSequence = TransitionScheduler.PreloadFrames(TransitionApplied, PropertyState, TransitionParams) ?? [];
+                    _frameSequence = TransitionApplied == null ? [] : LinearInterpolation.ComputingFrames(TransitionApplied.GetType(), PropertyState, TransitionApplied, XMath.Clamp((int)TransitionParams.FrameCount, 2, int.MaxValue));
                     return _frameSequence;
                 }
                 return _frameSequence;

@@ -125,11 +125,11 @@ namespace MinimalisticWPF.Theme
             foreach (var item in GlobalInstance)
             {
                 param ??= TransitionParams.Theme.DeepCopy();
-                param.Start += () =>
+                param.Start += (s,e) =>
                 {
                     item.IsThemeChanging = true;
                 };
-                param.Completed += () =>
+                param.Completed += (s,e) =>
                 {
                     var old = item.CurrentTheme;
                     item.CurrentTheme = themeType;

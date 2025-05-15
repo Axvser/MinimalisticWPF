@@ -7,6 +7,9 @@ namespace MinimalisticWPF.TransitionSystem.Basic
     public sealed class State : ITransitionMeta, ICloneable
     {
         internal State() { }
+
+        public static State Empty { get; internal set; } = new();
+
         public string StateName { get; internal set; } = string.Empty;
         public ConcurrentDictionary<string, object?> Values { get; internal set; } = new();
         public ConcurrentDictionary<string, InterpolationHandler> Calculators { get; internal set; } = new();

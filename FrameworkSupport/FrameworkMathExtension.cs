@@ -1,7 +1,6 @@
-﻿#if NETFRAMEWORK
-namespace MinimalisticWPF.FrameworkSupport
+﻿namespace MinimalisticWPF.FrameworkSupport
 {
-    public static class FrameworkMathExtension
+    public static class XMath
     {
         public static double Clamp(this double value, double min, double max)
         {
@@ -23,4 +22,3 @@ namespace MinimalisticWPF.FrameworkSupport
         }
     }
 }
-#endif

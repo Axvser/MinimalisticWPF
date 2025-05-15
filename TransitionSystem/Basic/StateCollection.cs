@@ -28,8 +28,7 @@ namespace MinimalisticWPF.TransitionSystem.Basic
         {
             get
             {
-                if (!Nodes.TryGetValue(stateName, out var result))
-                    throw new ArgumentException($"There is no State named [ {stateName} ] in the collection");
+                if (!Nodes.TryGetValue(stateName, out var result)) return State.Empty;
                 return result;
             }
         }
