@@ -21,9 +21,9 @@ namespace MinimalisticWPF.HotKey
             if (TryGetTarget(out var element) && element is not null)
             {
                 element.Focusable = true;
-                element.AddHandler(UIElement.PreviewKeyDownEvent, new KeyEventHandler(OnPreviewKeyDown), true);
-                element.AddHandler(UIElement.PreviewKeyUpEvent, new KeyEventHandler(OnPreviewKeyUp), true);
-                element.AddHandler(UIElement.LostKeyboardFocusEvent, new RoutedEventHandler(OnLostFocus), true);
+                element.AddHandler(UIElement.PreviewKeyDownEvent, (KeyEventHandler)OnPreviewKeyDown, true);
+                element.AddHandler(UIElement.PreviewKeyUpEvent, (KeyEventHandler)OnPreviewKeyUp, true);
+                element.AddHandler(UIElement.LostKeyboardFocusEvent, (RoutedEventHandler)OnLostFocus, true);
             }
         }
 
@@ -45,8 +45,7 @@ namespace MinimalisticWPF.HotKey
                 CheckInvoke(e);
             }
         }
-        private void OnLostFocus(object sender, RoutedEventArgs e) =>
-            _pressedKeys.Clear();
+        private void OnLostFocus(object sender, RoutedEventArgs e) => _pressedKeys.Clear();
         private void CheckInvoke(KeyEventArgs e)
         {
             if (_pressedKeys.IsSupersetOf(_targetKeys))
