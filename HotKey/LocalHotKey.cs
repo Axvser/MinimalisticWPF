@@ -6,6 +6,12 @@ using System.Windows.Input;
 
 namespace MinimalisticWPF.HotKey
 {
+    /// <summary>
+    /// 🧰 > Local hotkey registration
+    /// <para><see cref="Register"/></para>
+    /// <para><see cref="Unregister(UIElement)"/></para>
+    /// <para><see cref="Unregister(UIElement, HashSet{Key})"/></para>
+    /// </summary>
     public static class LocalHotKey
     {
         private static readonly ConditionalWeakTable<UIElement, HashSet<LocalHotKeyInjector>> _injectors = new();
