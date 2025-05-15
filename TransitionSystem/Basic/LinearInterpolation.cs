@@ -3,11 +3,7 @@ using System.Windows;
 using System.Windows.Media;
 using System.Reflection;
 using MinimalisticWPF.StructuralDesign.Animator;
-
-
-#if NETFRAMEWORK
 using MinimalisticWPF.FrameworkSupport;
-#endif
 
 namespace MinimalisticWPF.TransitionSystem.Basic
 {
@@ -385,11 +381,7 @@ namespace MinimalisticWPF.TransitionSystem.Basic
             {
                 opacity *= scb.Color.A / 255.0;
             }
-#if NET
-            return Math.Clamp(opacity, 0, 1);
-#elif NETFRAMEWORK
-            return opacity.Clamp(0, 1);
-#endif
+            return XMath.Clamp(opacity, 0, 1);
         }
         private static void SetCompositeOpacity(Brush brush, double targetOpacity)
         {
