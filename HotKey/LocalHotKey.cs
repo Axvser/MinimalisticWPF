@@ -7,17 +7,16 @@ namespace MinimalisticWPF.HotKey
     /// 🧰 > Local hotkey registration
     /// <para>Core</para>
     /// <para>- <see cref="Register"/></para>
-    /// <para>- <see cref="Unregister(IInputElement,HashSet{Key})"/></para>
-    /// <para>- <see cref="Unregister(IInputElement)"/></para>
+    /// <para>- <see cref="Unregister(UIElement,HashSet{Key})"/></para>
+    /// <para>- <see cref="Unregister(UIElement)"/></para>
     /// </summary>
     public static class LocalHotKey
     {
-        public static void Register(IInputElement target, HashSet<Key> keys, KeyEventHandler keyevent)
+        public static void Register(UIElement target, HashSet<Key> keys, KeyEventHandler keyevent)
         {
             var injector = new LocalHotKeyInjector(target, keys, keyevent);
             if (LocalHotKeyInjector.Injectors.TryGetValue(target, out var injectorSet))
             {
-
                 injectorSet.Add(injector);
             }
             else
@@ -25,7 +24,7 @@ namespace MinimalisticWPF.HotKey
                 LocalHotKeyInjector.Injectors.Add(target, [injector]);
             }
         }
-        public static int Unregister(IInputElement target, HashSet<Key> keys)
+        public static int Unregister(UIElement target, HashSet<Key> keys)
         {
             int count = 0;
 
@@ -36,9 +35,9 @@ namespace MinimalisticWPF.HotKey
                 {
                     if (keys.IsSupersetOf(injector._targetKeys))
                     {
-                        target.PreviewKeyDown -= injector.Receiver;
-                        target.PreviewKeyUp -= injector.ReleaseReceiver;
-                        target.MouseLeave -= injector.MouseLeave;
+                        target.RemoveHandler(UIElement.PreviewKeyDownEvent, injector.Receiver);
+                        target.RemoveHandler(UIElement.PreviewKeyUpEvent, injector.ReleaseReceiver);
+                        target.RemoveHandler(UIElement.LostFocusEvent, injector.ClearValues);
                         removed.Add(injector);
                     }
                 }
@@ -56,7 +55,7 @@ namespace MinimalisticWPF.HotKey
 
             return count;
         }
-        public static int Unregister(IInputElement target)
+        public static int Unregister(UIElement target)
         {
             int count = 0;
 
@@ -64,9 +63,9 @@ namespace MinimalisticWPF.HotKey
             {
                 foreach (var injector in injectorSet)
                 {
-                    target.PreviewKeyDown -= injector.Receiver;
-                    target.PreviewKeyUp -= injector.ReleaseReceiver;
-                    target.MouseLeave -= injector.MouseLeave;
+                    target.RemoveHandler(UIElement.PreviewKeyDownEvent, injector.Receiver);
+                    target.RemoveHandler(UIElement.PreviewKeyUpEvent, injector.ReleaseReceiver);
+                    target.RemoveHandler(UIElement.LostFocusEvent, injector.ClearValues);
                     count++;
                 }
                 LocalHotKeyInjector.Injectors.Remove(target);

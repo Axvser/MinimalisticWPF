@@ -5,9 +5,9 @@ namespace MinimalisticWPF.HotKey
 {
     internal class LocalHotKeyInjector
     {
-        internal static readonly Dictionary<IInputElement, HashSet<LocalHotKeyInjector>> Injectors = [];
+        internal static readonly Dictionary<UIElement, HashSet<LocalHotKeyInjector>> Injectors = [];
 
-        internal IInputElement _target;
+        internal UIElement _target;
 
         internal HashSet<Key> _pressedKeys = [];
 
@@ -15,14 +15,15 @@ namespace MinimalisticWPF.HotKey
 
         internal KeyEventHandler keyEventHandler;
 
-        internal LocalHotKeyInjector(IInputElement target, HashSet<Key> keys, KeyEventHandler keyevent)
+        internal LocalHotKeyInjector(UIElement target, HashSet<Key> keys, KeyEventHandler keyevent)
         {
             _target = target;
             _targetKeys = keys;
             keyEventHandler = keyevent;
-            target.PreviewKeyDown += Receiver;
-            target.PreviewKeyUp += ReleaseReceiver;
-            target.MouseLeave += MouseLeave;
+            target.Focusable = true;
+            target.AddHandler(UIElement.PreviewKeyDownEvent, Receiver, true);
+            target.AddHandler(UIElement.PreviewKeyUpEvent, ReleaseReceiver, true);
+            target.AddHandler(UIElement.LostFocusEvent, ClearValues, true);
         }
 
         internal void Invoke(KeyEventArgs e)
@@ -45,7 +46,7 @@ namespace MinimalisticWPF.HotKey
 
             Invoke(e);
         }
-        internal void MouseLeave(object sender, RoutedEventArgs e)
+        internal void ClearValues(object sender, RoutedEventArgs e)
         {
             _pressedKeys.Clear();
         }
