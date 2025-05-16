@@ -5,6 +5,7 @@ using MinimalisticWPF.TransitionSystem;
 using MinimalisticWPF.TransitionSystem.Basic;
 using System.Collections.Concurrent;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Media;
 
@@ -28,12 +29,8 @@ namespace MinimalisticWPF.Theme
         public static IEnumerable<Type>? Attributes { get; private set; }
 
         public static ConcurrentDictionary<Type, ConcurrentDictionary<Type, State>> SharedSource { get; internal set; } = new();
-        public static ConcurrentDictionary<IThemeApplied, ConcurrentDictionary<Type, State>> IsolatedSource { get; internal set; } = new();
-#if NET
-        public static HashSet<IThemeApplied> GlobalInstance { get; internal set; } = new(64);
-#elif NETFRAMEWORK
-        public static HashSet<IThemeApplied> GlobalInstance { get; internal set; } = [];
-#endif
+        public static ConditionalWeakTable<IThemeApplied, ConcurrentDictionary<Type, State>> IsolatedSource { get; internal set; } = new();
+        public static List<WeakReference<IThemeApplied>> GlobalInstance { get; internal set; } = [];
 
         public static event Action? SharedValueInitialized;
         public static event Action<Type, Type>? ThemeChangeLoading;
@@ -113,34 +110,37 @@ namespace MinimalisticWPF.Theme
             _isloaded = false;
             GlobalInstance.Clear();
             SharedSource.Clear();
-            IsolatedSource.Clear();
             RemoveSystemThemeEvent();
         }
         public static void Apply(Type themeType, TransitionParams? param = null)
         {
+            GlobalInstance.RemoveAll(x => !x.TryGetTarget(out _));
             var oldTheme = CurrentTheme;
             ThemeChangeLoading?.Invoke(oldTheme, themeType);
             Awake();
             _currentTheme = themeType;
-            foreach (var item in GlobalInstance)
+            foreach (var reference in GlobalInstance)
             {
-                param ??= TransitionParams.Theme.DeepCopy();
-                param.Start += (s,e) =>
+                if (reference.TryGetTarget(out var item) && item != null)
                 {
-                    item.IsThemeChanging = true;
-                };
-                param.Completed += (s,e) =>
-                {
-                    var old = item.CurrentTheme;
-                    item.CurrentTheme = themeType;
-                    item.IsThemeChanging = false;
-                    item.RunThemeChanged(old, themeType);
-                };
-                item.RunThemeChanging(item.CurrentTheme, themeType);
+                    param ??= TransitionParams.Theme.DeepCopy();
+                    param.Start += (s, e) =>
+                    {
+                        item.IsThemeChanging = true;
+                    };
+                    param.Completed += (s, e) =>
+                    {
+                        var old = item.CurrentTheme;
+                        item.CurrentTheme = themeType;
+                        item.IsThemeChanging = false;
+                        item.RunThemeChanged(old, themeType);
+                    };
+                    item.RunThemeChanging(item.CurrentTheme, themeType);
 
-                if (TryGetTransitionMeta(item, themeType, out var meta))
-                {
-                    item.BeginTransition(meta, param);
+                    if (TryGetTransitionMeta(item, themeType, out var meta))
+                    {
+                        item.BeginTransition(meta, param);
+                    }
                 }
             }
             ThemeChangeLoaded?.Invoke(oldTheme, themeType);
@@ -324,7 +324,7 @@ namespace MinimalisticWPF.Theme
 
             foreach (var target in targets)
             {
-                GlobalInstance.Add(target);
+                GlobalInstance.Add(new WeakReference<IThemeApplied>(target));
                 target.CurrentTheme = CurrentTheme;
                 if (!TransitionScheduler.SplitedPropertyInfos.TryGetValue(target.GetType(), out var group)) break;
                 var unit = new ConcurrentDictionary<Type, State>();
@@ -412,23 +412,34 @@ namespace MinimalisticWPF.Theme
                     unit.TryAdd(attribute, state);
                 }
 
-                IsolatedSource.TryAdd(target, unit);
+                IsolatedSource.Add(target, unit);
             }
         }
 
-        public static Brush ParseBrush(Type target, string parameter)
+        private static readonly ConcurrentDictionary<string, Brush> _brushCache = new();
+        private static Brush ParseBrush(Type target, string parameter)
         {
             if (string.IsNullOrEmpty(parameter))
                 return Brushes.Transparent;
 
+            // 使用缓存加速Brush解析,仅限资源查找与反射查找
+            if (_brushCache.TryGetValue(parameter, out var cachedBrush))
+                return cachedBrush;
+
             // 1. 尝试作为资源 Key 查找
             if (Application.Current.TryFindResource(parameter) is Brush resourceBrush)
+            {
+                _brushCache.TryAdd(parameter, resourceBrush);
                 return resourceBrush;
+            }
 
             // 2. 尝试作为 target 的静态字段或属性查找
             Brush? memberBrush = GetStaticBrushFromType(target, parameter);
             if (memberBrush != null)
+            {
+                _brushCache.TryAdd(parameter, memberBrush);
                 return memberBrush;
+            }
 
             // 3. 尝试解析为颜色字符串
             try
