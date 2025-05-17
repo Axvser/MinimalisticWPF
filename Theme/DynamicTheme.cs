@@ -28,6 +28,7 @@ namespace MinimalisticWPF.Theme
         {
             get => _currentTheme ?? (_followSystem ? GetSystemTheme(_alternativeTheme) : _alternativeTheme);
         }
+        public static bool IsThemeChanging { get; private set; } = false;
         public static IEnumerable<Type>? Attributes { get; private set; }
 
         public static ConcurrentDictionary<Type, ConcurrentDictionary<Type, State>> SharedSource { get; internal set; } = new();
@@ -154,6 +155,7 @@ namespace MinimalisticWPF.Theme
 
             ThemeChangeLoading?.Invoke(oldTheme, themeType);
             _currentTheme = themeType;
+            IsThemeChanging = true;
             foreach (var target in targets)
             {
                 target.RunThemeChanging(oldTheme, themeType);
@@ -177,6 +179,7 @@ namespace MinimalisticWPF.Theme
             {
                 target.RunThemeChanged(oldTheme, themeType);
                 target.IsThemeChanging = false;
+                IsThemeChanging = false;
             }
             ThemeChangeLoaded?.Invoke(oldTheme, themeType);
         }
