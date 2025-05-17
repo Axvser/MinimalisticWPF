@@ -1,4 +1,5 @@
 ﻿using Microsoft.Win32;
+using MinimalisticWPF.FrameworkSupport;
 using MinimalisticWPF.StructuralDesign.Animator;
 using MinimalisticWPF.StructuralDesign.Theme;
 using MinimalisticWPF.TransitionSystem;
@@ -6,6 +7,7 @@ using MinimalisticWPF.TransitionSystem.Basic;
 using System.Collections.Concurrent;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 
@@ -31,6 +33,19 @@ namespace MinimalisticWPF.Theme
         public static ConcurrentDictionary<Type, ConcurrentDictionary<Type, State>> SharedSource { get; internal set; } = new();
         public static ConditionalWeakTable<IThemeApplied, ConcurrentDictionary<Type, State>> IsolatedSource { get; internal set; } = new();
         public static List<WeakReference<IThemeApplied>> GlobalInstance { get; internal set; } = [];
+        public static IEnumerable<IThemeApplied> ThemeApplieds
+        {
+            get
+            {
+                foreach (var reference in GlobalInstance)
+                {
+                    if (reference.TryGetTarget(out var item) && item != null)
+                    {
+                        yield return item;
+                    }
+                }
+            }
+        }
 
         public static event Action? SharedValueInitialized;
         public static event Action<Type, Type>? ThemeChangeLoading;
@@ -63,6 +78,7 @@ namespace MinimalisticWPF.Theme
             _currentTheme = themeType;
         }
 
+        private static CancellationTokenSource? cts;
         public static bool TryGetTransitionMeta<T>(T target, Type themeType, out ITransitionMeta result) where T : IThemeApplied
         {
             Awake();
@@ -112,38 +128,145 @@ namespace MinimalisticWPF.Theme
             SharedSource.Clear();
             RemoveSystemThemeEvent();
         }
-        public static void Apply(Type themeType, TransitionParams? param = null)
-        {
-            GlobalInstance.RemoveAll(x => !x.TryGetTarget(out _));
-            var oldTheme = CurrentTheme;
-            ThemeChangeLoading?.Invoke(oldTheme, themeType);
-            Awake();
-            _currentTheme = themeType;
-            foreach (var reference in GlobalInstance)
-            {
-                if (reference.TryGetTarget(out var item) && item != null)
-                {
-                    param ??= TransitionParams.Theme.DeepCopy();
-                    param.Start += (s, e) =>
-                    {
-                        item.IsThemeChanging = true;
-                    };
-                    param.Completed += (s, e) =>
-                    {
-                        var old = item.CurrentTheme;
-                        item.CurrentTheme = themeType;
-                        item.IsThemeChanging = false;
-                        item.RunThemeChanged(old, themeType);
-                    };
-                    item.RunThemeChanging(item.CurrentTheme, themeType);
 
-                    if (TryGetTransitionMeta(item, themeType, out var meta))
+        public static async void Apply(Type themeType, TransitionParams? param = null)
+        {
+            Awake();
+
+            var source = new CancellationTokenSource();
+            var oldsource = Interlocked.Exchange(ref cts, source);
+            if (oldsource != null)
+            {
+                oldsource.Cancel();
+                oldsource.Dispose();
+            }
+            if (GlobalInstance.Count > 0)
+            {
+                GlobalInstance.RemoveAll(x => !x.TryGetTarget(out _));
+            }
+            var oldTheme = CurrentTheme;
+
+            var targets = ThemeApplieds;
+            var newParam = param ?? TransitionParams.Theme.DeepCopy();
+            var spans = GetAccDeltaTime(newParam.DeltaTime, newParam.Acceleration, XMath.Clamp((int)newParam.FrameCount, 2, int.MaxValue));
+            var data = await CalculateAtomAsync(targets, themeType, newParam, spans, source);
+            if (source.IsCancellationRequested) return;
+
+            ThemeChangeLoading?.Invoke(oldTheme, themeType);
+            _currentTheme = themeType;
+            foreach (var target in targets)
+            {
+                target.RunThemeChanging(oldTheme, themeType);
+                target.IsThemeChanging = true;
+                target.CurrentTheme = themeType;
+            }
+            foreach (var atom in data)
+            {
+                try
+                {
+                    atom.Invoke();
+                    await Task.Delay(atom.Duration, source.Token);
+                }
+                catch
+                {
+
+                }
+                finally
+                {
+                    foreach (var target in targets)
                     {
-                        item.BeginTransition(meta, param);
+                        target.RunThemeChanged(oldTheme, themeType);
+                        target.IsThemeChanging = false;
                     }
                 }
             }
             ThemeChangeLoaded?.Invoke(oldTheme, themeType);
+        }
+        private static Task<IEnumerable<TransitionAtom>> CalculateAtomAsync(
+            IEnumerable<IThemeApplied> targets,
+            Type theme,
+            TransitionParams param,
+            List<int> spans,
+            CancellationTokenSource cts)
+        {
+            var tcs = new TaskCompletionSource<IEnumerable<TransitionAtom>>();
+
+            ThreadPool.QueueUserWorkItem(_ =>
+            {
+                try
+                {
+                    var result = CalculateAtom(targets, theme, param, spans, cts);
+                    tcs.SetResult(result);
+                }
+                catch
+                {
+
+                }
+            });
+
+            return tcs.Task;
+        }
+        private static IEnumerable<TransitionAtom> CalculateAtom(
+            IEnumerable<IThemeApplied> targets,
+            Type theme,
+            TransitionParams param,
+            List<int> spans,
+            CancellationTokenSource cts)
+        {
+            var framecount = XMath.Clamp((int)param.FrameCount, 2, int.MaxValue);
+            List<Tuple<ITransitionMeta, IThemeApplied>> metas = new(framecount);
+            foreach (var target in targets)
+            {
+                if (cts.IsCancellationRequested) break;
+                if (TryGetTransitionMeta(target, theme, out var meta))
+                {
+                    metas.Add(Tuple.Create(meta, target));
+                }
+            }
+            List<Tuple<IThemeApplied, List<List<Tuple<PropertyInfo, List<object?>>>>>> framesGroup = new(metas.Count);
+            var deltatime = (int)param.DeltaTime;
+            foreach (var meta in metas)
+            {
+                if (cts.IsCancellationRequested) break;
+                framesGroup.Add(Tuple.Create(meta.Item2, LinearInterpolation.ComputingFrames(meta.Item2.GetType(), meta.Item1.PropertyState, meta.Item2, framecount)));
+            }
+            for (int i = 0; i < framecount; i++)
+            {
+                if (cts.IsCancellationRequested) break;
+                var atom = new TransitionAtom() { Duration = param.Acceleration == 0 ? deltatime : spans[i] };
+                foreach (var group in framesGroup)
+                {
+                    if (cts.IsCancellationRequested) break;
+                    foreach (var item in group.Item2)
+                    {
+                        if (cts.IsCancellationRequested) break;
+                        foreach (var tuple in item)
+                        {
+                            if (cts.IsCancellationRequested) break;
+                            atom.Updated += () =>
+                            {
+                                tuple.Item1.SetValue(group.Item1, tuple.Item2[i]);
+                            };
+                        }
+                    }
+                }
+                yield return atom;
+            }
+        }
+        private static List<int> GetAccDeltaTime(double deltaTime, double acceleration, int steps)
+        {
+            List<int> result = [];
+            if (acceleration == 0) return result;
+            var acc = XMath.Clamp(acceleration, -1, 1);
+            var start = deltaTime * (1 + acc);
+            var end = deltaTime * (1 - acc);
+            var delta = end - start;
+            for (int i = 0; i < steps; i++)
+            {
+                var t = (double)(i + 1) / steps;
+                result.Add((int)(start + t * delta));
+            }
+            return result;
         }
 
         public static void SetSharedValue(Type classType, Type themeType, string propertyName, object? newValue)
