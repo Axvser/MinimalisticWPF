@@ -1,5 +1,6 @@
 ﻿using MinimalisticWPF.StructuralDesign.Message;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 
 namespace MinimalisticWPF.MessageFlow
 {
@@ -38,7 +39,7 @@ namespace MinimalisticWPF.MessageFlow
     /// </summary>
     public static class MessageCentral
     {
-        public static ConcurrentDictionary<string, HashSet<IMessageFlow>> MessageFlows { get; internal set; } = [];
+        public static ConcurrentDictionary<string, List<WeakReference<IMessageFlow>>> MessageFlows { get; internal set; } = [];
 
         public static void ClearMessageFlows()
         {
@@ -59,34 +60,45 @@ namespace MinimalisticWPF.MessageFlow
         {
             if (MessageFlows.TryGetValue(name, out var values))
             {
-                values.Remove(messageFlow);
+                values.RemoveAll(x => x.TryGetTarget(out var target) && target == messageFlow);
             }
         }
-        public static void SubscribeMessageFlow(string name, IMessageFlow messageFlow)
+        public static void SubscribeMessageFlow(string name, IMessageFlow target)
         {
             if (MessageFlows.TryGetValue(name, out var values))
             {
-                values.Add(messageFlow);
+                values.Add(new WeakReference<IMessageFlow>(target));
             }
             else
             {
-                MessageFlows.TryAdd(name, [messageFlow]);
+                MessageFlows.TryAdd(name, [new WeakReference<IMessageFlow>(target)]);
             }
         }
         public static void SendMessage(object sender, string name, params object?[] messages)
         {
             if (MessageFlows.TryGetValue(name, out var subscribers))
             {
-                var args = new MessageFlowArgs
+                try
                 {
-                    Name = name,
-                    Messages = messages
-                };
-                foreach (var subscriber in subscribers)
+                    if (subscribers.Count > 0) subscribers.RemoveAll(subscribers => !subscribers.TryGetTarget(out _));
+                    var args = new MessageFlowArgs
+                    {
+                        Name = name,
+                        Messages = messages
+                    };
+                    foreach (var subscriber in subscribers)
+                    {
+                        if (subscriber.TryGetTarget(out var target) && target is IMessageFlow mf)
+                        {
+                            mf.RecieveMessageFlow(sender, args);
+                            args.FlowSequence.Add(mf);
+                            if (args.Handled) break;
+                        }
+                    }
+                }
+                catch (Exception e)
                 {
-                    subscriber.RecieveMessageFlow(sender, args);
-                    args.FlowSequence.Add(subscriber);
-                    if (args.Handled) break;
+                    Debug.WriteLine($"MessageCentral.SendMessage: {e.Message}");
                 }
             }
         }
