@@ -164,6 +164,7 @@ namespace MinimalisticWPF.Theme
             {
                 try
                 {
+                    if (source.Token.IsCancellationRequested) break;
                     atom.Invoke();
                     await Task.Delay(atom.Duration, source.Token);
                 }
@@ -171,14 +172,11 @@ namespace MinimalisticWPF.Theme
                 {
 
                 }
-                finally
-                {
-                    foreach (var target in targets)
-                    {
-                        target.RunThemeChanged(oldTheme, themeType);
-                        target.IsThemeChanging = false;
-                    }
-                }
+            }
+            foreach (var target in targets)
+            {
+                target.RunThemeChanged(oldTheme, themeType);
+                target.IsThemeChanging = false;
             }
             ThemeChangeLoaded?.Invoke(oldTheme, themeType);
         }
