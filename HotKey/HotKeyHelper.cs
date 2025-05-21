@@ -243,7 +243,7 @@ namespace MinimalisticWPF.HotKey
             {
                 VirtualKeys virtualKey = keyMapping.Value;
 #if NETFRAMEWORK
-                GlobalHotKey.Register(VirtualModifiers.Ctrl, virtualKey, new HotKeyEventHandler((instance, args) =>
+                GlobalHotKey.Register(VirtualModifiers.Ctrl, virtualKey, new EventHandler<HotKeyEventArgs>((instance, args) =>
                 {
                     MessageBox.Show($"Pressed Ctrl + {virtualKey}");
                 }));

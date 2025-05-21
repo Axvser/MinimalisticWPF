@@ -1,7 +1,5 @@
 ﻿namespace MinimalisticWPF.HotKey
 {
-    public delegate void HotKeyEventHandler(object? sender, HotKeyEventArgs e);
-
     public class HotKeyEventArgs(uint modifiers, uint triggers) : EventArgs
     {
         public uint Modifiers => modifiers;

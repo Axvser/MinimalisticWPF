@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Interop;
 #if NETFRAMEWORK
 using MinimalisticWPF.FrameworkSupport;
@@ -13,7 +14,7 @@ namespace MinimalisticWPF.HotKey
     /// 🧰 > Global hotkey registration
     /// <para>Core</para>
     /// <para>- <see cref="Register(IHotKeyComponent)"/></para>
-    /// <para>- <see cref="Register(VirtualModifiers, VirtualKeys, HotKeyEventHandler[])"/></para>
+    /// <para>- <see cref="Register(VirtualModifiers, VirtualKeys, EventHandler{HotKeyEventArgs}[])"/></para>
     /// <para>- <see cref="Unregister(IHotKeyComponent)"/></para>
     /// <para>- <see cref="Unregister(uint, uint)"/></para>
     /// <para>- <see cref="Unregister(VirtualModifiers, VirtualKeys)"/></para>
@@ -30,7 +31,7 @@ namespace MinimalisticWPF.HotKey
         public static bool IsAwaked { get; private set; } = false;
 
         private static Dictionary<int, IHotKeyComponent> Components { get; set; } = [];
-        private static ConcurrentQueue<Tuple<uint, uint, ICollection<HotKeyEventHandler>>> WaitToBeRegisteredInvisible { get; set; } = [];
+        private static ConcurrentQueue<Tuple<uint, uint, ICollection<EventHandler<HotKeyEventArgs>>>> WaitToBeRegisteredInvisible { get; set; } = [];
         private static ConcurrentQueue<Tuple<uint, uint, IHotKeyComponent>> WaitToBeRegisteredVisual { get; set; } = [];
 
         internal const int WM_HOTKEY = 0x0312;
@@ -133,7 +134,7 @@ namespace MinimalisticWPF.HotKey
                 return 0;
             }
         }
-        public static int Register(uint modifiers, uint triggers, params HotKeyEventHandler[] handlers)
+        public static int Register(uint modifiers, uint triggers, params EventHandler<HotKeyEventArgs>[] handlers)
         {
             if (modifiers == 0x0000 || triggers == 0x0000) return -1;
 
@@ -161,11 +162,11 @@ namespace MinimalisticWPF.HotKey
             }
             else
             {
-                WaitToBeRegisteredInvisible.Enqueue(Tuple.Create(modifiers, triggers, handlers as ICollection<HotKeyEventHandler>));
+                WaitToBeRegisteredInvisible.Enqueue(Tuple.Create(modifiers, triggers, handlers as ICollection<EventHandler<HotKeyEventArgs>>));
                 return 0;
             }
         }
-        public static int Register(VirtualModifiers modifierKeys, VirtualKeys triggerKeys, params HotKeyEventHandler[] handlers)
+        public static int Register(VirtualModifiers modifierKeys, VirtualKeys triggerKeys, params EventHandler<HotKeyEventArgs>[] handlers)
         {
             return Register((uint)modifierKeys, (uint)triggerKeys, handlers);
         }

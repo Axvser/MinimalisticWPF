@@ -1,4 +1,5 @@
 ﻿using MinimalisticWPF.HotKey;
+using System.Windows.Input;
 
 namespace MinimalisticWPF.StructuralDesign.HotKey
 {
@@ -6,7 +7,7 @@ namespace MinimalisticWPF.StructuralDesign.HotKey
     {
         public uint RecordedModifiers { get; set; }
         public uint RecordedKey { get; set; }
-        public event HotKeyEventHandler? HotKeyInvoked;
+        public event EventHandler<HotKeyEventArgs> HotKeyInvoked;
         public void InvokeHotKey();
         public void CoverHotKey();
     }

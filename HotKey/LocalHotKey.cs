@@ -16,7 +16,7 @@ namespace MinimalisticWPF.HotKey
     {
         private static readonly ConditionalWeakTable<UIElement, HashSet<LocalHotKeyInjector>> _injectors = new();
 
-        public static void Register(UIElement target, HashSet<Key> keys, KeyEventHandler handler)
+        public static void Register(UIElement target, HashSet<Key> keys, EventHandler<KeyEventArgs> handler)
         {
             if (target == null) throw new ArgumentNullException(nameof(target));
 

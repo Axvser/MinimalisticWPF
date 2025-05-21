@@ -2,11 +2,10 @@
 using System.Windows.Input;
 using System.Windows.Threading;
 using MinimalisticWPF.FrameworkSupport;
+using MinimalisticWPF.WeakDelegate;
 
 namespace MinimalisticWPF.TransitionSystem
 {
-    public delegate void FrameEventHandler(object sender, FrameEventArgs e);
-
     public class FrameEventArgs : EventArgs
     {
         public bool Handled { get; set; } = false;
@@ -66,12 +65,42 @@ namespace MinimalisticWPF.TransitionSystem
         public double DeltaTime => 1000.0 / XMath.Clamp(FrameRate, MIN_FPS, MAX_FPS);
         public double FrameCount => XMath.Clamp(Duration * XMath.Clamp(FrameRate, MIN_FPS, MAX_FPS), 1, int.MaxValue);
 
-        public event FrameEventHandler? Awaked;
-        public event FrameEventHandler? Start;
-        public event FrameEventHandler? Update;
-        public event FrameEventHandler? LateUpdate;
-        public event FrameEventHandler? Completed;
-        public event FrameEventHandler? Canceled;
+        private WeakDelegate<EventHandler<FrameEventArgs>> _awaked = new();
+        private WeakDelegate<EventHandler<FrameEventArgs>> _start = new();
+        private WeakDelegate<EventHandler<FrameEventArgs>> _update = new();
+        private WeakDelegate<EventHandler<FrameEventArgs>> _lateupdate = new();
+        private WeakDelegate<EventHandler<FrameEventArgs>> _cancled = new();
+        private WeakDelegate<EventHandler<FrameEventArgs>> _completed = new();
+        public event EventHandler<FrameEventArgs> Awaked
+        {
+            add => _awaked.AddHandler(value);
+            remove => _awaked.RemoveHandler(value);
+        }
+        public event EventHandler<FrameEventArgs> Start
+        {
+            add => _start.AddHandler(value);
+            remove => _start.RemoveHandler(value);
+        }
+        public event EventHandler<FrameEventArgs> Update
+        {
+            add => _update.AddHandler(value);
+            remove => _update.RemoveHandler(value);
+        }
+        public event EventHandler<FrameEventArgs> LateUpdate
+        {
+            add => _lateupdate.AddHandler(value);
+            remove => _lateupdate.RemoveHandler(value);
+        }
+        public event EventHandler<FrameEventArgs> Canceled
+        {
+            add => _cancled.AddHandler(value);
+            remove => _cancled.RemoveHandler(value);
+        }
+        public event EventHandler<FrameEventArgs> Completed
+        {
+            add => _completed.AddHandler(value);
+            remove => _completed.RemoveHandler(value);
+        }
 
         public bool IsAutoReverse { get; set; } = false;
         public int LoopTime { get; set; } = 0;
@@ -85,12 +114,12 @@ namespace MinimalisticWPF.TransitionSystem
         {
             var copy = new TransitionParams
             {
-                Awaked = Awaked?.Clone() as FrameEventHandler,
-                Start = Start?.Clone() as FrameEventHandler,
-                Update = Update?.Clone() as FrameEventHandler,
-                LateUpdate = LateUpdate?.Clone() as FrameEventHandler,
-                Completed = Completed?.Clone() as FrameEventHandler,
-                Canceled = Canceled?.Clone() as FrameEventHandler,
+                _awaked = _awaked,
+                _start = _start,
+                _update = _update,
+                _lateupdate = _lateupdate,
+                _cancled = _cancled,
+                _completed = _completed,
                 IsAutoReverse = IsAutoReverse,
                 LoopTime = LoopTime,
                 Duration = Duration,
@@ -99,43 +128,38 @@ namespace MinimalisticWPF.TransitionSystem
                 Priority = Priority,
                 IsAsync = IsAsync
             };
-            // 不复制事件处理程序
             return copy;
         }
 
         internal void AwakeInvoke(object sender, FrameEventArgs e)
         {
-            Awaked?.Invoke(sender, e);
+            var handlers = _awaked.GetInvocationList();
+            handlers?.Invoke(this, e);
         }
         internal void StartInvoke(object sender, FrameEventArgs e)
         {
-            Start?.Invoke(sender, e);
+            var handlers = _start.GetInvocationList();
+            handlers?.Invoke(this, e);
         }
         internal void UpdateInvoke(object sender, FrameEventArgs e)
         {
-            Update?.Invoke(sender, e);
+            var handlers = _update.GetInvocationList();
+            handlers?.Invoke(this, e);
         }
         internal void LateUpdateInvoke(object sender, FrameEventArgs e)
         {
-            LateUpdate?.Invoke(sender, e);
+            var handlers = _lateupdate.GetInvocationList();
+            handlers?.Invoke(this, e);
         }
         internal void CompletedInvoke(object sender, FrameEventArgs e)
         {
-            Completed?.Invoke(sender, e);
+            var handlers = _completed.GetInvocationList();
+            handlers?.Invoke(this, e);
         }
         internal void CancledInvoke(object sender, FrameEventArgs e)
         {
-            Canceled?.Invoke(sender, e);
-        }
-
-        public void ClearAllEventHandlers()
-        {
-            Awaked = null;
-            Start = null;
-            Update = null;
-            LateUpdate = null;
-            Completed = null;
-            Canceled = null;
+            var handlers = _cancled.GetInvocationList();
+            handlers?.Invoke(this, e);
         }
 
         public object Clone()
