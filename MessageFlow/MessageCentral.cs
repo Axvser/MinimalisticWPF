@@ -5,13 +5,6 @@ using System.Diagnostics;
 namespace MinimalisticWPF.MessageFlow
 {
     /// <summary>
-    /// ✨ ViewModel >> Define what to do when receiving a message flow
-    /// </summary>
-    /// <param name="sender">the sender of message flow</param>
-    /// <param name="e">parameters for message flow</param>
-    public delegate void MessageFlowHandler(object sender, MessageFlowArgs e);
-
-    /// <summary>
     /// ✨ ViewModel >> Parameters for message flow
     /// <para>Args</para>
     /// <para>- <see cref="Name"/></para>
