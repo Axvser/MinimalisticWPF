@@ -1,5 +1,5 @@
 ﻿using MinimalisticWPF.StructuralDesign.HotKey;
-using MinimalisticWPF.WeakDelegate;
+using MinimalisticWPF.WeakTypes;
 
 namespace MinimalisticWPF.HotKey
 {

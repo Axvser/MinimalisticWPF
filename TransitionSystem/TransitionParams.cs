@@ -2,7 +2,7 @@
 using System.Windows.Input;
 using System.Windows.Threading;
 using MinimalisticWPF.FrameworkSupport;
-using MinimalisticWPF.WeakDelegate;
+using MinimalisticWPF.WeakTypes;
 
 namespace MinimalisticWPF.TransitionSystem
 {

@@ -4,8 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MinimalisticWPF.WeakDelegate
+namespace MinimalisticWPF.WeakTypes
 {
+    /// <summary>
+    /// 🧰 > Weak reference delegate
+    /// <para><see cref="AddHandler(TDelegate)"/></para>
+    /// <para><see cref="RemoveHandler(TDelegate)"/></para>
+    /// <para><see cref="GetInvocationList"/> - Release invalid elements and return valid TDelegate </para>
+    /// </summary>
     public sealed class WeakDelegate<TDelegate> where TDelegate : Delegate
     {
         private TDelegate? _combinedDelegate;

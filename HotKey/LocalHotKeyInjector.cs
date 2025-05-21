@@ -1,4 +1,4 @@
-﻿using MinimalisticWPF.WeakDelegate;
+﻿using MinimalisticWPF.WeakTypes;
 using System;
 using System.Collections.Generic;
 using System.Windows;
@@ -55,7 +55,7 @@ namespace MinimalisticWPF.HotKey
         private void OnLostFocus(object sender, RoutedEventArgs e) => _pressedKeys.Clear();
         private void CheckInvoke(KeyEventArgs e)
         {
-            if (_pressedKeys.IsSupersetOf(_targetKeys))
+            if (_pressedKeys.SetEquals(_targetKeys))
             {
                 if (TryGetTarget(out var target))
                 {
