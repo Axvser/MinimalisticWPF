@@ -28,9 +28,11 @@ namespace MinimalisticWPF.TransitionSystem
     /// <para>- <see cref="TransitionParams.Priority"/></para>
     /// <para>- <see cref="TransitionParams.IsAsync"/></para>
     /// <para>Life cycle</para>
+    /// <para>- <see cref="TransitionParams.Awaked"/></para>
     /// <para>- <see cref="TransitionParams.Start"/></para>
     /// <para>- <see cref="TransitionParams.Update"/></para>
     /// <para>- <see cref="TransitionParams.LateUpdate"/></para>
+    /// <para>- <see cref="TransitionParams.Canceled"/></para>
     /// <para>- <see cref="TransitionParams.Completed"/></para>
     /// </summary>
     public sealed class TransitionParams : ICloneable
@@ -56,7 +58,7 @@ namespace MinimalisticWPF.TransitionSystem
             FrameRate = DefaultFrameRate,
             Duration = 0.3
         };
-        public static TransitionParams Empty { get; private set; } = new()
+        public static TransitionParams Empty { get; } = new()
         {
             Duration = 0
         };
@@ -97,6 +99,7 @@ namespace MinimalisticWPF.TransitionSystem
                 Priority = Priority,
                 IsAsync = IsAsync
             };
+            // 不复制事件处理程序
             return copy;
         }
 
@@ -123,6 +126,16 @@ namespace MinimalisticWPF.TransitionSystem
         internal void CancledInvoke(object sender, FrameEventArgs e)
         {
             Canceled?.Invoke(sender, e);
+        }
+
+        public void ClearAllEventHandlers()
+        {
+            Awaked = null;
+            Start = null;
+            Update = null;
+            LateUpdate = null;
+            Completed = null;
+            Canceled = null;
         }
 
         public object Clone()

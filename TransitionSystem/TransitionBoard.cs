@@ -10,7 +10,7 @@ namespace MinimalisticWPF.TransitionSystem
 {
     public sealed class TransitionBoard<T> : ITransitionMeta, IMergeableTransition, IConvertibleTransitionMeta, IExecutableTransition, ITransitionWithTarget, ICompilableTransition where T : class
     {
-        private object? _target = null;
+        private WeakReference<object>? _target = null;
         private TransitionParams _params = new();
         private State _propertyState = new() { StateName = Transition.TempName };
         private List<List<Tuple<PropertyInfo, List<object?>>>> _frameSequence = [];
@@ -30,7 +30,7 @@ namespace MinimalisticWPF.TransitionSystem
                 return _frameSequence;
             }
         }
-        public object? TransitionApplied
+        public WeakReference<object>? TransitionApplied
         {
             get => _target;
             set
@@ -68,13 +68,9 @@ namespace MinimalisticWPF.TransitionSystem
         {
             if (target == null)
             {
-                if (TransitionApplied == null)
+                if (TransitionApplied?.TryGetTarget(out var value) ?? false)
                 {
-                    throw new ArgumentNullException(nameof(target), "The metadata is missing the target instance for this transition effect");
-                }
-                else
-                {
-                    var Machine = TransitionScheduler.CreateUniqueUnit(TransitionApplied);
+                    var Machine = TransitionScheduler.CreateUniqueUnit(value);
                     Machine.Dispose();
                     PropertyState.StateName = Transition.TempName + Machine.States.BoardSuffix;
                     Machine.States.Add(PropertyState);
@@ -83,7 +79,7 @@ namespace MinimalisticWPF.TransitionSystem
             }
             else
             {
-                TransitionApplied = target;
+                TransitionApplied = new WeakReference<object>(target);
                 var Machine = TransitionScheduler.CreateUniqueUnit(target);
                 Machine.Dispose();
                 PropertyState.StateName = Transition.TempName + Machine.States.BoardSuffix;
@@ -158,7 +154,7 @@ namespace MinimalisticWPF.TransitionSystem
             }
             else
             {
-                TransitionApplied = target;
+                TransitionApplied = new WeakReference<object>(target);
                 var Machine = TransitionScheduler.CreateIndependentUnit(target);
                 Machine.Dispose();
                 PropertyState.StateName = Transition.TempName + Machine.States.BoardSuffix;

@@ -8,7 +8,7 @@ namespace MinimalisticWPF.TransitionSystem.Basic
     {
         internal State() { }
 
-        public static State Empty { get; internal set; } = new();
+        public static State Empty { get; } = new();
 
         public string StateName { get; internal set; } = string.Empty;
         public ConcurrentDictionary<string, object?> Values { get; internal set; } = new();

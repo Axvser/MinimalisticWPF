@@ -21,13 +21,16 @@ namespace MinimalisticWPF.TransitionSystem
 
         public static TransitionBoard<T> Create<T>(T? target = null) where T : class
         {
-            return new TransitionBoard<T>() { TransitionApplied = target };
+            return new TransitionBoard<T>()
+            {
+                TransitionApplied = target is null ? null : new WeakReference<object>(target),
+            };
         }
         public static TransitionBoard<T> Create<T>(ICollection<T> values, object? target = null) where T : class, ITransitionMeta
         {
             var meta = new TransitionBoard<T>()
             {
-                TransitionApplied = target,
+                TransitionApplied = target is null ? null : new WeakReference<object>(target),
             };
             meta.Merge(values.Select(v => v as ITransitionMeta).ToArray());
             return meta;
@@ -36,7 +39,7 @@ namespace MinimalisticWPF.TransitionSystem
         {
             var meta = new TransitionBoard<T>()
             {
-                TransitionApplied = target,
+                TransitionApplied = target is null ? null : new WeakReference<object>(target),
                 TransitionParams = transitionParams
             };
             meta.Merge(values.Select(v => v as ITransitionMeta).ToArray());
@@ -48,7 +51,7 @@ namespace MinimalisticWPF.TransitionSystem
             transitionSet(para);
             var meta = new TransitionBoard<T>()
             {
-                TransitionApplied = target,
+                TransitionApplied = target is null ? null : new WeakReference<object>(target),
                 TransitionParams = para
             };
             meta.Merge(values.Select(v => v as ITransitionMeta).ToArray());
@@ -59,7 +62,7 @@ namespace MinimalisticWPF.TransitionSystem
         {
             var meta = new TransitionBoard<T>()
             {
-                TransitionApplied = target,
+                TransitionApplied = target is null ? null : new WeakReference<object>(target),
                 TransitionParams = transitionParams.DeepCopy()
             };
             meta.Merge(values.Select(v => v as ITransitionMeta).ToArray());
@@ -71,7 +74,7 @@ namespace MinimalisticWPF.TransitionSystem
             transitionSet(para);
             var meta = new TransitionBoard<T>()
             {
-                TransitionApplied = target,
+                TransitionApplied = target is null ? null : new WeakReference<object>(target),
                 TransitionParams = para
             };
             meta.Merge(values.Select(v => v as ITransitionMeta).ToArray());

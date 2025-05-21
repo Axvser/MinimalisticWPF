@@ -2,6 +2,6 @@
 {
     public interface ITransitionWithTarget
     {
-        public object? TransitionApplied { get; set; }
+        public WeakReference<object>? TransitionApplied { get; set; }
     }
 }

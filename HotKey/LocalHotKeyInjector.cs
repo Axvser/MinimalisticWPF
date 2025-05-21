@@ -10,13 +10,13 @@ namespace MinimalisticWPF.HotKey
         internal readonly WeakReference<UIElement> _targetWeakRef;
         internal readonly HashSet<Key> _pressedKeys = new();
         internal readonly HashSet<Key> _targetKeys;
-        internal readonly KeyEventHandler _keyEventHandler;
+        internal event KeyEventHandler? _keyEventHandler;
 
         internal LocalHotKeyInjector(UIElement target, HashSet<Key> keys, KeyEventHandler handler)
         {
             _targetWeakRef = new WeakReference<UIElement>(target);
             _targetKeys = keys;
-            _keyEventHandler = handler;
+            _keyEventHandler += handler;
 
             if (TryGetTarget(out var element) && element is not null)
             {
@@ -52,7 +52,7 @@ namespace MinimalisticWPF.HotKey
             {
                 if (TryGetTarget(out var target))
                 {
-                    _keyEventHandler(target, e);
+                    _keyEventHandler?.Invoke(target, e);
                     _pressedKeys.Clear();
                 }
             }
@@ -62,12 +62,14 @@ namespace MinimalisticWPF.HotKey
         {
             if (TryGetTarget(out var target) && target is not null)
             {
+                _keyEventHandler = null;
+                _pressedKeys.Clear();
+                _targetKeys.Clear();
                 target.RemoveHandler(UIElement.PreviewKeyDownEvent, (KeyEventHandler)OnPreviewKeyDown);
                 target.RemoveHandler(UIElement.PreviewKeyUpEvent, (KeyEventHandler)OnPreviewKeyUp);
                 target.RemoveHandler(UIElement.LostKeyboardFocusEvent, (RoutedEventHandler)OnLostFocus);
             }
             GC.SuppressFinalize(this);
         }
-        ~LocalHotKeyInjector() => Dispose();
     }
 }

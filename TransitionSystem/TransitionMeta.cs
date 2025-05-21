@@ -34,7 +34,7 @@ namespace MinimalisticWPF.TransitionSystem
             Merge(transitionMetas);
         }
 
-        public object? TransitionApplied { get; set; }
+        public WeakReference<object>? TransitionApplied { get; set; }
         public TransitionParams TransitionParams { get; set; } = new();
         public State PropertyState { get; set; } = new State() { StateName = Transition.TempName };
         public TransitionScheduler TransitionScheduler => TransitionApplied == null ? throw new ArgumentNullException(nameof(TransitionApplied), "The metadata is missing the target instance for this transition effect") : TransitionScheduler.CreateUniqueUnit(TransitionApplied);
@@ -72,8 +72,8 @@ namespace MinimalisticWPF.TransitionSystem
         }
         public Task Start(object? target = null)
         {
-            TransitionApplied = target ?? TransitionApplied;
-            if (TransitionApplied == null) throw new ArgumentNullException(nameof(target), "The metadata is missing the target instance for this transition effect");
+            TransitionApplied = target is null ? null : new WeakReference<object>(target);
+            if (TransitionApplied == null) return Task.CompletedTask;
             PropertyState.StateName = Transition.TempName + TransitionScheduler.States.BoardSuffix;
             TransitionApplied.BeginTransition(ToState(), TransitionParams);
             return Task.CompletedTask;

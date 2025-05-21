@@ -6,7 +6,10 @@ namespace MinimalisticWPF.TransitionSystem
     {
         public static TransitionBoard<T> Transition<T>(this T element) where T : class
         {
-            TransitionBoard<T> tempStoryBoard = new() { TransitionApplied = element };
+            TransitionBoard<T> tempStoryBoard = new()
+            {
+                TransitionApplied = element is null ? null : new WeakReference<object>(element),
+            };
             return tempStoryBoard;
         }
         public static TransitionScheduler[] BeginTransitions<T1, T2>(this T1 source, params TransitionBoard<T2>[] transitions) where T1 : class where T2 : class
