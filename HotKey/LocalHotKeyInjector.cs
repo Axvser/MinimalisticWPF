@@ -1,5 +1,4 @@
-﻿using MinimalisticWPF.WeakTypes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Input;
@@ -8,33 +7,29 @@ namespace MinimalisticWPF.HotKey
 {
     internal sealed class LocalHotKeyInjector : IDisposable
     {
-        internal readonly WeakReference<UIElement> _targetWeakRef;
+        internal readonly WeakReference<FrameworkElement> _targetWeakRef;
         internal readonly HashSet<Key> _pressedKeys = new();
         internal readonly HashSet<Key> _targetKeys;
 
-        private readonly WeakDelegate<EventHandler<KeyEventArgs>> _handlers = new();
-        internal event EventHandler<KeyEventArgs> KeyEventHandler
-        {
-            add => _handlers.AddHandler(value);
-            remove => _handlers.RemoveHandler(value);
-        }
+        internal event KeyEventHandler? KeyEventInvoked;
 
-        internal LocalHotKeyInjector(UIElement target, HashSet<Key> keys, EventHandler<KeyEventArgs> handler)
+        internal LocalHotKeyInjector(FrameworkElement target, HashSet<Key> keys, KeyEventHandler handler)
         {
-            _targetWeakRef = new WeakReference<UIElement>(target);
+            _targetWeakRef = new WeakReference<FrameworkElement>(target);
             _targetKeys = keys;
-            KeyEventHandler += handler;
+            KeyEventInvoked += handler;
 
             if (TryGetTarget(out var element) && element is not null)
             {
                 element.Focusable = true;
-                element.AddHandler(UIElement.PreviewKeyDownEvent, (KeyEventHandler)OnPreviewKeyDown, true);
-                element.AddHandler(UIElement.PreviewKeyUpEvent, (KeyEventHandler)OnPreviewKeyUp, true);
-                element.AddHandler(UIElement.LostKeyboardFocusEvent, (RoutedEventHandler)OnLostFocus, true);
+                element.AddHandler(FrameworkElement.PreviewKeyDownEvent, (KeyEventHandler)OnPreviewKeyDown, true);
+                element.AddHandler(FrameworkElement.PreviewKeyUpEvent, (KeyEventHandler)OnPreviewKeyUp, true);
+                element.AddHandler(FrameworkElement.LostKeyboardFocusEvent, (RoutedEventHandler)OnLostFocus, true);
+                element.AddHandler(FrameworkElement.UnloadedEvent, (RoutedEventHandler)OnUnloaded, true);
             }
         }
 
-        private bool TryGetTarget(out UIElement? target) => _targetWeakRef.TryGetTarget(out target);
+        private bool TryGetTarget(out FrameworkElement? target) => _targetWeakRef.TryGetTarget(out target);
 
         private void OnPreviewKeyDown(object sender, KeyEventArgs e)
         {
@@ -53,14 +48,17 @@ namespace MinimalisticWPF.HotKey
             }
         }
         private void OnLostFocus(object sender, RoutedEventArgs e) => _pressedKeys.Clear();
+        private void OnUnloaded(object sender, RoutedEventArgs e)
+        {
+            Dispose();
+        }
         private void CheckInvoke(KeyEventArgs e)
         {
             if (_pressedKeys.SetEquals(_targetKeys))
             {
                 if (TryGetTarget(out var target))
                 {
-                    var handlers = _handlers.GetInvocationList();
-                    handlers?.Invoke(target, e);
+                    KeyEventInvoked?.Invoke(target, e);
                     _pressedKeys.Clear();
                 }
             }
@@ -68,11 +66,12 @@ namespace MinimalisticWPF.HotKey
 
         public void Dispose()
         {
+            KeyEventInvoked = null;
             if (TryGetTarget(out var target) && target is not null)
             {
-                target.RemoveHandler(UIElement.PreviewKeyDownEvent, (KeyEventHandler)OnPreviewKeyDown);
-                target.RemoveHandler(UIElement.PreviewKeyUpEvent, (KeyEventHandler)OnPreviewKeyUp);
-                target.RemoveHandler(UIElement.LostKeyboardFocusEvent, (RoutedEventHandler)OnLostFocus);
+                target.RemoveHandler(FrameworkElement.PreviewKeyDownEvent, (KeyEventHandler)OnPreviewKeyDown);
+                target.RemoveHandler(FrameworkElement.PreviewKeyUpEvent, (KeyEventHandler)OnPreviewKeyUp);
+                target.RemoveHandler(FrameworkElement.LostKeyboardFocusEvent, (RoutedEventHandler)OnLostFocus);
             }
             GC.SuppressFinalize(this);
         }

@@ -18,7 +18,7 @@ namespace MinimalisticWPF.HotKey
         public void InvokeHotKey()
         {
             var handler = _handlers.GetInvocationList();
-            handler?.Invoke(this, new HotKeyEventArgs(RecordedModifiers, RecordedKey));
+            handler?.Invoke(null, new HotKeyEventArgs(RecordedModifiers, RecordedKey));
         }
         public void CoverHotKey()
         {

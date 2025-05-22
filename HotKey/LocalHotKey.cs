@@ -9,14 +9,14 @@ namespace MinimalisticWPF.HotKey
     /// <summary>
     /// 🧰 > Local hotkey registration
     /// <para><see cref="Register"/></para>
-    /// <para><see cref="Unregister(UIElement)"/></para>
-    /// <para><see cref="Unregister(UIElement, HashSet{Key})"/></para>
+    /// <para><see cref="Unregister(FrameworkElement)"/></para>
+    /// <para><see cref="Unregister(FrameworkElement, HashSet{Key})"/></para>
     /// </summary>
     public static class LocalHotKey
     {
-        private static readonly ConditionalWeakTable<UIElement, HashSet<LocalHotKeyInjector>> _injectors = new();
+        private static readonly ConditionalWeakTable<FrameworkElement, HashSet<LocalHotKeyInjector>> _injectors = new();
 
-        public static void Register(UIElement target, HashSet<Key> keys, EventHandler<KeyEventArgs> handler)
+        public static void Register(FrameworkElement target, HashSet<Key> keys, KeyEventHandler handler)
         {
             if (target == null) throw new ArgumentNullException(nameof(target));
 
@@ -24,7 +24,7 @@ namespace MinimalisticWPF.HotKey
             var injectorSet = _injectors.GetOrCreateValue(target);
             injectorSet.Add(injector);
         }
-        public static int Unregister(UIElement target, HashSet<Key> keys)
+        public static int Unregister(FrameworkElement target, HashSet<Key> keys)
         {
             if (_injectors.TryGetValue(target, out var injectorSet))
             {
@@ -34,7 +34,7 @@ namespace MinimalisticWPF.HotKey
             }
             return 0;
         }
-        public static int Unregister(UIElement target)
+        public static int Unregister(FrameworkElement target)
         {
             if (_injectors.TryGetValue(target, out var injectorSet))
             {

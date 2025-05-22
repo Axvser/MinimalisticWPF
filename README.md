@@ -1,6 +1,5 @@
 ﻿# MinimalisticWPF
 
-## English Documentation 📚  
 [👉 Wiki](https://github.com/Axvser/MinimalisticWPF/wiki)
 
 # 简介 📖
@@ -11,13 +10,13 @@
 
 > 自 V5.0.0 开始，MinimalisticWPF 正式进入稳定期
 
-  - 已有 API 不再变更
-  - 阶段性完成了基于弱引用的内存使用率优化
+  - 已有 API 不再变更，V5系列仅存在增量更新
+  - 已阶段性完成基于弱引用的内存使用率优化
   - 下一阶段
     - 对 TransitionSystem 采取更多可能的性能优化
     - 对 DynamicTheme 采取更多可能的性能优化
     - 增加一些 InterpolationHandler 封装 ，以支持弹簧缓冲 、正弦波等过渡效果支持
-
+    - ……
 ---
 
 # 核心功能导航 🚀
@@ -246,11 +245,6 @@ grid.Transition()
   - 全局快捷方式需要等待MainWindow加载完成后才会被注册,因为需要在MainWindow的事件中做一些处理
     - `SourceInitialized`事件中，调用`GlobalHotKey.Awake()`方法
     - `Closed`事件中，调用`GlobalHotKey.Dispose()`方法
-    - 当然,如果你的`MainWindow`被识别为`增强版View`,那这些工作会自动完成
-      - 使用过`Theme`特性特性的UIElement会被识别为增强版View
-      - 使用过`HotKeyComponent`特性特性的UIElement会被识别为增强版View
-      - 使用过`Hover`特性特性的UIElement会被识别为增强版View
-      - 使用过`MonoBehaviour`的UIElement会被识别为增强版View
-      - 使用过`AspectOriented`特性的UIElement会被识别为增强版View
-    - 不过,你也不需要担心GlobalHotKey.Awake()方法没能及时调用,因为GlobalHotKey的注册行为具备缓冲机制,如果注册发生在Awake()之前,那么它会被暂存然后在Awake()成功后立即执行
+    - 当然如果你的`MainWindow`使用了View功能扩展`特性`,那这些工作会自动完成
+  - 不需要担心GlobalHotKey.Awake()方法没能及时调用,因为GlobalHotKey的注册行为具备缓冲机制,如果注册发生在Awake()之前,那么它会被暂存然后在Awake()成功后立即执行
   - 局部快捷方式需要保证UIElement可聚焦,即 `Focusable = true`,可通过为类标注`FocusModule`特性一键配置
