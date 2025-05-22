@@ -24,6 +24,7 @@ namespace MinimalisticWPF.TransitionSystem
                 Target = target;
                 DeltaTime = XMath.Clamp((int)param.DeltaTime, 0, int.MaxValue);
                 FrameCount = XMath.Clamp((int)param.FrameCount, 2, int.MaxValue);
+                FrameEventArgs.MaxFrameIndex = FrameCount;
                 LoadFrames(preload);
             }
             else
@@ -64,7 +65,7 @@ namespace MinimalisticWPF.TransitionSystem
                     for (int i = 0; i < FrameCount; i++)
                     {
                         ConditionCheck();
-                        FrameEventArgs.Progress = (i + 1) / FrameCount;
+                        FrameEventArgs.CurrentFrameIndex = i;
                         FrameStart();
                         for (int j = 0; j < FrameSequence.Count; j++)
                         {
@@ -82,7 +83,7 @@ namespace MinimalisticWPF.TransitionSystem
                         for (int i = FrameCount - 1; i > -1; i--)
                         {
                             ConditionCheck();
-                            FrameEventArgs.Progress = (i + 1) / FrameCount;
+                            FrameEventArgs.CurrentFrameIndex = i;
                             FrameStart();
                             for (int j = 0; j < FrameSequence.Count; j++)
                             {
@@ -119,7 +120,7 @@ namespace MinimalisticWPF.TransitionSystem
         private void Reset()
         {
             var isInvokeAsync = !Application.Current.Dispatcher.CheckAccess() || Param.IsAsync;
-            FrameEventArgs.Progress = 0;
+            FrameEventArgs.CurrentFrameIndex = 0;
             for (int j = 0; j < FrameSequence.Count; j++)
             {
                 for (int k = 0; k < FrameSequence[j].Count; k++)

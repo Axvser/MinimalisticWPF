@@ -9,7 +9,8 @@ namespace MinimalisticWPF.TransitionSystem
     public class FrameEventArgs : EventArgs
     {
         public bool Handled { get; set; } = false;
-        public double Progress { get; internal set; } = 0;
+        public int CurrentFrameIndex { get; internal set; } = 0;
+        public int MaxFrameIndex { get; internal set; } = 0;
     }
 
     /// <summary>
