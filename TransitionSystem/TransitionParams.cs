@@ -47,7 +47,7 @@ namespace MinimalisticWPF.TransitionSystem
         public const int MIN_FPS = 1;
 
         public static int DefaultFrameRate { get; set; } = 60;
-        public static DispatcherPriority DefaultPriority { get; set; } = DispatcherPriority.Normal;
+        public static DispatcherPriority DefaultPriority { get; set; } = DispatcherPriority.Render;
         public static TransitionParams Theme { get; set; } = new()
         {
             FrameRate = DefaultFrameRate,
