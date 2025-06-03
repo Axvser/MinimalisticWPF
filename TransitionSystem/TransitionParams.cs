@@ -135,32 +135,32 @@ namespace MinimalisticWPF.TransitionSystem
         internal void AwakeInvoke(object sender, FrameEventArgs e)
         {
             var handlers = _awaked.GetInvocationList();
-            handlers?.Invoke(this, e);
+            handlers?.Invoke(sender, e);
         }
         internal void StartInvoke(object sender, FrameEventArgs e)
         {
             var handlers = _start.GetInvocationList();
-            handlers?.Invoke(this, e);
+            handlers?.Invoke(sender, e);
         }
         internal void UpdateInvoke(object sender, FrameEventArgs e)
         {
             var handlers = _update.GetInvocationList();
-            handlers?.Invoke(this, e);
+            handlers?.Invoke(sender, e);
         }
         internal void LateUpdateInvoke(object sender, FrameEventArgs e)
         {
             var handlers = _lateupdate.GetInvocationList();
-            handlers?.Invoke(this, e);
+            handlers?.Invoke(sender, e);
         }
         internal void CompletedInvoke(object sender, FrameEventArgs e)
         {
             var handlers = _completed.GetInvocationList();
-            handlers?.Invoke(this, e);
+            handlers?.Invoke(sender, e);
         }
         internal void CancledInvoke(object sender, FrameEventArgs e)
         {
             var handlers = _cancled.GetInvocationList();
-            handlers?.Invoke(this, e);
+            handlers?.Invoke(sender, e);
         }
 
         public object Clone()
