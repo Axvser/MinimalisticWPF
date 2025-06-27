@@ -8,15 +8,6 @@
 [![GitHub](https://img.shields.io/badge/GitHub-Repository-blue?logo=github)](https://github.com/Axvser/MinimalisticWPF)  
 [![NuGet](https://img.shields.io/nuget/v/MinimalisticWPF?color=green&logo=nuget)](https://www.nuget.org/packages/MinimalisticWPF/)
 
-> 自 V5.0.0 开始，MinimalisticWPF 正式进入稳定期
-
-  - 已有 API 不再变更，V5系列仅存在增量更新
-  - 已阶段性完成基于弱引用的内存使用率优化
-  - 下一阶段
-    - 对 TransitionSystem 采取更多可能的性能优化
-    - 对 DynamicTheme 采取更多可能的性能优化
-    - 增加一些 InterpolationHandler 封装 ，以支持弹簧缓冲 、正弦波等过渡效果支持
-    - ……
 ---
 
 # 核心功能导航 🚀

@@ -59,11 +59,24 @@ namespace MinimalisticWPF.Theme
         /// </para>
         /// </summary>
         /// <param name="alternativeTheme">Alternate topic to take if the system topic fails to be read</param>
-        public static void FollowSystem(Type alternativeTheme)
+        /// <param name="CanApply">Whether to attempt to load the theme switching animation immediately after the call</param>
+        public static void FollowSystem(Type alternativeTheme, bool CanApply = false)
         {
             _followSystem = true;
             _alternativeTheme = alternativeTheme;
-            _currentTheme = GetSystemTheme(alternativeTheme);
+            if (CanApply)
+            {
+                var oldTheme = _currentTheme;
+                var newTheme = GetSystemTheme(alternativeTheme);
+                if (oldTheme != newTheme)
+                {
+                    Apply(newTheme);
+                }
+            }
+            else
+            {
+                _currentTheme = GetSystemTheme(alternativeTheme);
+            }
         }
         /// <summary>
         /// [ App.cs ] Call before anything happens to make sure it works
@@ -77,6 +90,27 @@ namespace MinimalisticWPF.Theme
             _followSystem = false;
             _alternativeTheme = themeType;
             _currentTheme = themeType;
+        }
+        /// <summary>
+        /// Get the current system theme
+        /// </summary>
+        /// <param name="alternativeTheme">If the theme of system can not be found, return the alternative theme</param>
+        /// <returns>Type</returns>
+        public static Type GetSystemTheme(Type alternativeTheme)
+        {
+            RegistryKey? key = Registry.CurrentUser.OpenSubKey(SYSTEM_THEME_REGISTRYKEY);
+            if (key != null)
+            {
+                var theme = (int?)key.GetValue(SYSTEM_THEME_LIGHT, -1);
+                key.Close();
+                if (theme == 1)
+                {
+                    _currentTheme = typeof(Light);
+                    return typeof(Light);
+                }
+            }
+            _currentTheme = alternativeTheme;
+            return alternativeTheme;
         }
 
         private static CancellationTokenSource? cts;
@@ -334,22 +368,6 @@ namespace MinimalisticWPF.Theme
             {
                 Apply(GetSystemTheme(_alternativeTheme), TransitionParams.Theme.DeepCopy());
             }
-        }
-        private static Type GetSystemTheme(Type alternativeTheme)
-        {
-            RegistryKey? key = Registry.CurrentUser.OpenSubKey(SYSTEM_THEME_REGISTRYKEY);
-            if (key != null)
-            {
-                var theme = (int?)key.GetValue(SYSTEM_THEME_LIGHT, -1);
-                key.Close();
-                if (theme == 1)
-                {
-                    _currentTheme = typeof(Light);
-                    return typeof(Light);
-                }
-            }
-            _currentTheme = alternativeTheme;
-            return alternativeTheme;
         }
 
         private static void SharedGeneration(IEnumerable<Type> classes, IEnumerable<Type> attributes)
